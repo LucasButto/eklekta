@@ -1,0 +1,32 @@
+[
+  {
+    "id": "automatizaciones",
+    "title": "Automatizaciones",
+    "description": "Conectamos las herramientas que ya usás para que el trabajo repetitivo deje de ocupar horas.",
+    "deliverables": ["Mapa de procesos", "Integraciones", "Alertas y reportes"]
+  },
+  {
+    "id": "crm",
+    "title": "CRM",
+    "description": "Implementamos y configuramos tu CRM: pipeline claro, datos limpios y tableros que se leen de un vistazo.",
+    "deliverables": ["Configuración", "Migración de datos", "Capacitación"]
+  },
+  {
+    "id": "desarrollo-web",
+    "title": "Desarrollo web a medida",
+    "description": "Sitios y aplicaciones rápidas y mantenibles, construidas para tu caso y no para una plantilla.",
+    "deliverables": ["Web corporativa", "E-commerce", "Paneles internos"]
+  },
+  {
+    "id": "ux-ui",
+    "title": "UX/UI",
+    "description": "Investigación, flujos e interfaz. Diseñamos productos que se entienden sin manual.",
+    "deliverables": ["Research", "Prototipos", "Design system"]
+  },
+  {
+    "id": "branding",
+    "title": "Branding",
+    "description": "Identidad, sistema visual y lineamientos de uso. Una marca que se sostiene en todos los formatos.",
+    "deliverables": ["Identidad", "Sistema visual", "Manual de marca"]
+  }
+]

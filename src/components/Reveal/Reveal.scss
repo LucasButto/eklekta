@@ -1,0 +1,28 @@
+@use 'styles' as *;
+
+[data-reveal] {
+  transition:
+    opacity $dur-reveal $ease-out,
+    transform $dur-reveal $ease-out;
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+[data-reveal='hidden'] {
+  opacity: 0;
+  transform: translate3d(0, 28px, 0);
+}
+
+[data-reveal='shown'] {
+  opacity: 1;
+  transform: none;
+}
+
+// Nothing is ever hidden for people who asked for less motion — this
+// has to win over the hidden state above, hence the !important.
+@include reduced-motion {
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none;
+  }
+}

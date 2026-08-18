@@ -1,0 +1,42 @@
+[
+  {
+    "id": "valentina-rios",
+    "name": "Valentina Ríos",
+    "role": "Dirección de producto",
+    "focus": "Traduce lo que el negocio necesita en algo que se puede construir.",
+    "photo": "/images/team/member-1.jpg",
+    "linkedin": "https://www.linkedin.com/company/112493054/"
+  },
+  {
+    "id": "mateo-herrera",
+    "name": "Mateo Herrera",
+    "role": "Automatizaciones",
+    "focus": "Encuentra el paso manual que nadie mira y lo hace desaparecer.",
+    "photo": "/images/team/member-2.jpg",
+    "linkedin": "https://www.linkedin.com/company/112493054/"
+  },
+  {
+    "id": "camila-ortiz",
+    "name": "Camila Ortiz",
+    "role": "Diseño UX/UI",
+    "focus": "Prototipa rápido para que discutamos pantallas y no opiniones.",
+    "photo": "/images/team/member-3.jpg",
+    "linkedin": "https://www.linkedin.com/company/112493054/"
+  },
+  {
+    "id": "tomas-aguirre",
+    "name": "Tomás Aguirre",
+    "role": "Desarrollo",
+    "focus": "Escribe el código que va a seguir siendo legible dentro de dos años.",
+    "photo": "/images/team/member-4.jpg",
+    "linkedin": "https://www.linkedin.com/company/112493054/"
+  },
+  {
+    "id": "julia-benitez",
+    "name": "Julia Benítez",
+    "role": "Branding",
+    "focus": "Define el sistema para que la marca aguante cualquier formato.",
+    "photo": "/images/team/member-5.jpg",
+    "linkedin": "https://www.linkedin.com/company/112493054/"
+  }
+]

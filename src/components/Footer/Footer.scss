@@ -1,0 +1,147 @@
+@use 'styles' as *;
+
+.footer {
+  padding-top: clamp(3rem, 2rem + 4vw, 6rem);
+  overflow: hidden;
+  background-color: var(--bg-alt);
+  transition: background-color $dur-slow $ease-out;
+
+  &__inner {
+    @include container;
+  }
+
+  &__top {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(2rem, 1rem + 4vw, 4rem);
+    padding-bottom: clamp(2rem, 1.5rem + 2vw, 3.5rem);
+
+    @include up($bp-lg) {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+    }
+  }
+
+  // ------------------------------------------------ brand block
+  &__brand {
+    display: flex;
+    flex-direction: column;
+    gap: $space-sm;
+    align-items: flex-start;
+  }
+
+  &__brand-link {
+    border-radius: $radius-xs;
+
+    @include focus-ring;
+  }
+
+  &__logo {
+    font-size: 30px;
+    color: var(--text);
+  }
+
+  &__claim {
+    max-width: 34ch;
+    font-size: $text-base;
+    color: var(--text-muted);
+    text-wrap: pretty;
+  }
+
+  &__email {
+    font-size: $text-base;
+    font-weight: $fw-medium;
+    color: var(--brand);
+    border-bottom: 1px solid currentcolor;
+
+    @include focus-ring;
+
+    @include hover {
+      opacity: 0.75;
+    }
+  }
+
+  // ------------------------------------------------ link columns
+  &__columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: $space-lg;
+  }
+
+  &__column-title {
+    @include eyebrow;
+
+    margin-bottom: $space-sm;
+  }
+
+  &__links {
+    display: flex;
+    flex-direction: column;
+    gap: $space-2xs;
+  }
+
+  &__link {
+    font-size: $text-sm;
+    color: var(--text-muted);
+    transition: color $dur-base $ease-out;
+
+    @include focus-ring;
+
+    @include hover {
+      color: var(--brand);
+    }
+  }
+
+  // ------------------------------------------------ bottom bar
+  &__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-sm $space-md;
+    align-items: center;
+    justify-content: space-between;
+    padding-block: $space-md;
+    border-top: 1px solid var(--border);
+  }
+
+  &__legal {
+    font-size: $text-xs;
+    color: var(--text-faint);
+  }
+
+  &__top-link {
+    font-size: $text-xs;
+    font-weight: $fw-semibold;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+
+    @include focus-ring;
+
+    @include hover {
+      color: var(--brand);
+    }
+  }
+
+  // ------------------------------------------------ closing wordmark
+  &__mark {
+    display: block;
+    padding-inline: var(--gutter);
+    color: var(--text);
+    opacity: 0.07;
+
+    // The variable has to be set on .logo itself: .logo--wordmark
+    // declares its own value, which would beat an inherited one.
+    .logo {
+      --logo-wordmark-size: auto;
+
+      display: block;
+      width: 100%;
+    }
+
+    svg {
+      width: 100%;
+      // lets the mark run off the bottom edge, so it reads as a
+      // watermark rather than a second logo
+      margin-bottom: -2%;
+    }
+  }
+}

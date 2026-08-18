@@ -1,0 +1,77 @@
+// =============================================================
+//  Global entry — imported once from main.tsx
+// =============================================================
+@use 'tokens' as *;
+@use 'mixins' as *;
+@use 'fonts';
+@use 'theme';
+@use 'reset';
+
+// ---------------------------------------------- shared primitives
+
+.container {
+  @include container;
+}
+
+.container--narrow {
+  @include container($content-max);
+}
+
+.sr-only {
+  @include visually-hidden;
+}
+
+// Skip link — first thing a keyboard user reaches.
+.skip-link {
+  position: absolute;
+  top: $space-sm;
+  left: $space-sm;
+  z-index: $z-modal;
+  padding: $space-2xs $space-md;
+  font-size: $text-sm;
+  font-weight: $fw-semibold;
+  color: var(--on-brand);
+  background-color: var(--brand-deep);
+  border-radius: $radius-pill;
+  transform: translateY(-200%);
+  transition: transform $dur-base $ease-out;
+
+  &:focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: 3px;
+    transform: translateY(0);
+  }
+}
+
+// ---------------------------------------------- utilities
+
+.text-brand {
+  color: var(--brand);
+}
+
+// The mockup's signature: a solid brand slab sitting behind one word.
+// The inset is tuned to Monument's tall ascent so the block hugs the
+// cap height instead of the full line box.
+.text-slab {
+  position: relative;
+  z-index: 0;
+  padding-inline: 0.14em;
+  color: var(--text);
+
+  // The horizontal bleed has to clear the glyph edges: in dark mode
+  // the letters are near-black, so any sliver outside the slab would
+  // fall on a dark background and disappear.
+  &::before {
+    position: absolute;
+    inset: 0.20em -0.08em 0.14em;
+    z-index: -1;
+    content: '';
+    background-color: var(--brand);
+  }
+}
+
+// Dark text on the violet slab keeps the contrast the mockup has,
+// in both themes.
+:root[data-theme='dark'] .text-slab {
+  color: var(--text-invert);
+}

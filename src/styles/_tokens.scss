@@ -1,0 +1,105 @@
+// =============================================================
+//  eklekta · design tokens
+//  Compile-time Sass values. Anything that has to change between
+//  light and dark lives in _theme.scss as a CSS custom property.
+// =============================================================
+
+// ---------------------------------------------- brand palette
+// Reference values. Components should read the themed custom
+// properties (var(--brand)) instead of these, so dark mode works.
+$brand:          #6d64f1; // primary, straight from the logo
+$brand-deep:     #6259ee; // filled buttons — 5.0:1 with white text
+$brand-press:    #5348e4;
+$brand-lift:     #8f88ff; // dark-mode brand, lifted for contrast
+
+$ink:            #0b0b10;
+$paper:          #ffffff;
+
+// editorial accents, taken from the brand photography
+$accent-orange:  #ff5c1a;
+$accent-blue:    #1f44ff;
+$accent-lime:    #c6f24e;
+
+// ---------------------------------------------- typography
+$font-display: 'Monument Extended', 'Poppins', 'Arial Black', system-ui, sans-serif;
+$font-body:    'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+$fw-light:     300;
+$fw-regular:   400;
+$fw-medium:    500;
+$fw-semibold:  600;
+$fw-bold:      700;
+$fw-ultra:     800;
+
+// fluid type scale — min / preferred / max
+$text-xs:   clamp(0.72rem, 0.70rem + 0.10vw, 0.78rem);
+$text-sm:   clamp(0.82rem, 0.79rem + 0.14vw, 0.92rem);
+$text-base: clamp(0.95rem, 0.90rem + 0.22vw, 1.08rem);
+$text-md:   clamp(1.05rem, 0.98rem + 0.34vw, 1.28rem);
+$text-lg:   clamp(1.25rem, 1.10rem + 0.70vw, 1.70rem);
+
+// The display face is very wide, and Spanish has long words
+// ("proveedores", "herramientas"). The lower bounds are set so the
+// longest word on the page still fits a 360px viewport.
+$display-sm: clamp(1.60rem, 0.95rem + 2.90vw, 3.60rem);
+$display-md: clamp(1.95rem, 0.90rem + 4.90vw, 5.60rem);
+$display-lg: clamp(2.20rem, 0.80rem + 6.60vw, 8.00rem);
+$display-xl: clamp(2.50rem, 0.60rem + 9.20vw, 11.5rem);
+
+// ---------------------------------------------- spacing
+$space-3xs: 0.25rem;
+$space-2xs: 0.5rem;
+$space-xs:  0.75rem;
+$space-sm:  1rem;
+$space-md:  1.5rem;
+$space-lg:  2rem;
+$space-xl:  3rem;
+$space-2xl: 4rem;
+$space-3xl: 6rem;
+$space-4xl: 8rem;
+
+// Vertical rhythm between page sections.
+$section-y: clamp(2.25rem, 1.5rem + 3vw, 4.5rem);
+
+// Gap between a section's heading block and its content. Kept in
+// proportion to $section-y so the space inside a section always reads
+// as tighter than the space between two of them.
+$heading-gap: clamp(1.75rem, 1.1rem + 2.6vw, 3.5rem);
+
+// ---------------------------------------------- layout
+$container-max: 1440px;
+$content-max:   1180px;
+$gutter:        clamp(1.25rem, 0.6rem + 3vw, 4rem);
+
+// ---------------------------------------------- radii
+$radius-xs: 6px;
+$radius-sm: 10px;
+$radius-md: 16px;
+$radius-lg: 24px;
+$radius-xl: 32px;
+$radius-pill: 999px;
+
+// ---------------------------------------------- motion
+$ease-out:  cubic-bezier(0.22, 1, 0.36, 1);
+$ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+$ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+
+$dur-fast:   140ms;
+$dur-base:   240ms;
+$dur-slow:   420ms;
+$dur-reveal: 720ms;
+
+// ---------------------------------------------- breakpoints
+$bp-xs: 480px;
+$bp-sm: 640px;
+$bp-md: 768px;
+$bp-lg: 1024px;
+$bp-xl: 1280px;
+$bp-2xl: 1536px;
+
+// ---------------------------------------------- z-index
+$z-base:    1;
+$z-sticky:  50;
+$z-header:  100;
+$z-overlay: 200;
+$z-modal:   300;

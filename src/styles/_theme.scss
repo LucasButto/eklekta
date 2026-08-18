@@ -1,0 +1,93 @@
+@use "tokens" as *;
+
+// =============================================================
+//  Themed custom properties.
+//  Light is the default and is defined on bare :root so the page
+//  is never dependent on a media query or a data attribute.
+//  Dark is opt-in: the user toggles it, we store it, and the
+//  inline script in index.html stamps data-theme before paint.
+// =============================================================
+
+:root {
+  // layout — kept as custom properties (not just Sass) so a child can
+  // measure its distance to the viewport edge and bleed out exactly.
+  --gutter: #{$gutter};
+  --container-max: #{$container-max};
+  --edge: max(
+    var(--gutter),
+    calc((100vw - var(--container-max)) / 2 + var(--gutter))
+  );
+
+  // surfaces
+  --bg: #{$paper};
+  --bg-alt: #f1f0f5;
+  --bg-band: #e8e7ee;
+  --bg-nav: rgba(255, 255, 255, 0.9);
+  --surface: #f4f3f7;
+  --surface-2: #e9e8ef;
+  --surface-invert: #{$ink};
+
+  // text
+  --text: #{$ink};
+  --text-muted: #56565f;
+  --text-faint: #8b8b95;
+  --text-invert: #{$paper};
+
+  // brand
+  --brand: #{$brand};
+  --brand-deep: #{$brand-deep};
+  --brand-press: #{$brand-press};
+  --brand-soft: #{rgba($brand, 0.12)};
+  --brand-softer: #{rgba($brand, 0.06)};
+  --on-brand: #{$paper};
+
+  // accents
+  --accent-orange: #{$accent-orange};
+  --accent-blue: #{$accent-blue};
+  --accent-lime: #{$accent-lime};
+
+  // lines & effects
+  --border: #{rgba($ink, 0.12)};
+  --border-strong: #{rgba($ink, 0.24)};
+  --focus: #{$brand-deep};
+  --shadow-sm: 0 1px 2px #{rgba($ink, 0.06)}, 0 2px 8px #{rgba($ink, 0.04)};
+  --shadow-md: 0 4px 12px #{rgba($ink, 0.08)}, 0 12px 32px #{rgba($ink, 0.06)};
+  --shadow-lg: 0 12px 32px #{rgba($ink, 0.1)}, 0 32px 64px #{rgba($ink, 0.08)};
+  --header-blur: #{rgba($paper, 0.72)};
+
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg: #0b0b10;
+  --bg-alt: #101017;
+  --bg-band: #15151d;
+  --bg-nav: rgba(23, 23, 31, 0.9);
+  --surface: #17171f;
+  --surface-2: #1f1f29;
+  --surface-invert: #{$paper};
+
+  --text: #f5f5f8;
+  --text-muted: #a2a2b0;
+  --text-faint: #6f6f7d;
+  --text-invert: #{$ink};
+
+  --brand: #{$brand-lift};
+  --brand-deep: #{$brand};
+  --brand-press: #{$brand-press};
+  --brand-soft: #{rgba($brand-lift, 0.16)};
+  --brand-softer: #{rgba($brand-lift, 0.08)};
+  --on-brand: #{$paper};
+
+  --border: #{rgba(#ffffff, 0.12)};
+  --border-strong: #{rgba(#ffffff, 0.24)};
+  --focus: #{$brand-lift};
+  --shadow-sm: 0 1px 2px #{rgba(#000000, 0.4)};
+  --shadow-md:
+    0 4px 12px #{rgba(#000000, 0.45)}, 0 12px 32px #{rgba(#000000, 0.3)};
+  --shadow-lg:
+    0 12px 32px #{rgba(#000000, 0.5)}, 0 32px 64px #{rgba(#000000, 0.4)};
+  --header-blur: #{rgba(#0b0b10, 0.72)};
+
+  color-scheme: dark;
+}

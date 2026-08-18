@@ -1,0 +1,128 @@
+@use 'tokens' as *;
+
+// ---------------------------------------------- media queries
+// Mobile-first: `@include up($bp-md) { ... }`
+@mixin up($bp) {
+  @media (min-width: $bp) {
+    @content;
+  }
+}
+
+// Max-width, for the few places where mobile needs its own rules.
+@mixin down($bp) {
+  @media (max-width: ($bp - 0.02px)) {
+    @content;
+  }
+}
+
+@mixin hover {
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      @content;
+    }
+  }
+}
+
+@mixin reduced-motion {
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+}
+
+// ---------------------------------------------- layout helpers
+@mixin container($max: $container-max) {
+  width: 100%;
+  max-width: $max;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+// Breaks a direct child of a container out to the full viewport width.
+@mixin full-bleed {
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+}
+
+// Runs an element off one edge of the viewport while the rest of the
+// row stays on the container grid. Works from anywhere inside a
+// container, including grid items, because --edge is absolute.
+@mixin bleed-start {
+  margin-inline-start: calc(-1 * var(--edge));
+}
+
+@mixin bleed-end {
+  margin-inline-end: calc(-1 * var(--edge));
+}
+
+@mixin section-spacing {
+  padding-block: $section-y;
+}
+
+// ---------------------------------------------- typography helpers
+@mixin display($size: $display-md, $weight: $fw-ultra) {
+  font-family: $font-display;
+  font-weight: $weight;
+  font-size: $size;
+  line-height: 0.94;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  // Monument is very wide; without this the reset's break-word will
+  // split words mid-glyph at display sizes.
+  overflow-wrap: normal;
+  hyphens: none;
+}
+
+@mixin eyebrow {
+  font-family: $font-body;
+  font-size: $text-xs;
+  font-weight: $fw-semibold;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+@mixin body-copy {
+  font-size: $text-md;
+  font-weight: $fw-regular;
+  line-height: 1.6;
+  color: var(--text-muted);
+  text-wrap: pretty;
+}
+
+// ---------------------------------------------- a11y
+@mixin focus-ring($offset: 3px) {
+  &:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: $offset;
+    border-radius: $radius-xs;
+  }
+}
+
+@mixin visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+// ---------------------------------------------- surfaces
+@mixin card-surface {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: $radius-lg;
+}
+
+// Hides the scrollbar while keeping the element scrollable.
+@mixin hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

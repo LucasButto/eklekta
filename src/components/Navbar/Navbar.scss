@@ -1,0 +1,259 @@
+@use "styles" as *;
+
+.navbar {
+  // Fixed rather than sticky so the hero's grey band can run all the
+  // way to the top of the page underneath it, as in the mockup.
+  position: fixed;
+  inset-inline: 0;
+  top: 0;
+  z-index: $z-header;
+  padding-block: $space-xs;
+  padding-inline: clamp(0.75rem, 0.4rem + 1.6vw, 2rem);
+
+  // ------------------------------------------------ the pill
+  &__inner {
+    display: flex;
+    gap: $space-md;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.5rem 0.5rem 0.75rem;
+    background-color: var(--bg-nav);
+    filter: drop-shadow(0 0 0.5rem rgba(0, 0, 0, 0.1));
+    border: 1px solid transparent;
+    border-radius: $radius-pill;
+    transition:
+      background-color $dur-base $ease-out,
+      border-color $dur-base $ease-out,
+      box-shadow $dur-base $ease-out;
+  }
+
+  &--scrolled &__inner {
+    background-color: var(--header-blur);
+    border-color: var(--border);
+    box-shadow: var(--shadow-sm);
+
+    @supports (backdrop-filter: blur(1px)) {
+      backdrop-filter: blur(14px) saturate(160%);
+    }
+  }
+
+  // ------------------------------------------------ brand
+  &__brand {
+    display: inline-flex;
+    gap: $space-2xs;
+    align-items: center;
+    flex-shrink: 0;
+    border-radius: $radius-pill;
+
+    @include focus-ring;
+  }
+
+  &__mark {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    font-size: 17px;
+    color: var(--brand);
+    background-color: var(--brand-soft);
+    border-radius: 50%;
+    transition:
+      background-color $dur-base $ease-out,
+      transform $dur-base $ease-spring;
+  }
+
+  &__brand:hover &__mark {
+    transform: rotate(-8deg) scale(1.05);
+  }
+
+  &__wordmark {
+    font-size: 24px;
+    color: var(--text);
+
+    @include down($bp-sm) {
+      display: none;
+    }
+  }
+
+  // ------------------------------------------------ links
+  &__nav {
+    @include down($bp-lg) {
+      display: none;
+    }
+  }
+
+  &__list {
+    display: flex;
+    gap: clamp(0.5rem, 0.1rem + 1.2vw, 1.4rem);
+    align-items: center;
+  }
+
+  &__link {
+    position: relative;
+    display: inline-block;
+    padding: $space-2xs $space-3xs;
+    font-size: $text-sm;
+    font-weight: $fw-medium;
+    color: var(--text-muted);
+    transition: color $dur-base $ease-out;
+
+    @include focus-ring;
+
+    // underline grows from the left on hover and stays for the
+    // section you are actually in
+    &::after {
+      position: absolute;
+      inset-inline: $space-3xs;
+      bottom: 0;
+      height: 2px;
+      content: "";
+      background-color: var(--brand);
+      border-radius: 2px;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform $dur-base $ease-out;
+    }
+
+    @include hover {
+      color: var(--text);
+
+      &::after {
+        transform: scaleX(1);
+      }
+    }
+
+    &[aria-current="true"] {
+      color: var(--text);
+
+      &::after {
+        transform: scaleX(1);
+      }
+    }
+  }
+
+  // ------------------------------------------------ actions
+  &__actions {
+    display: flex;
+    gap: $space-2xs;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  &__cta {
+    @include down($bp-md) {
+      display: none;
+    }
+  }
+
+  &__burger {
+    display: none;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    color: var(--text);
+    background-color: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+
+    @include focus-ring;
+
+    @include down($bp-lg) {
+      display: grid;
+    }
+  }
+
+  &__burger-lines {
+    display: grid;
+    gap: 5px;
+    width: 17px;
+
+    span {
+      height: 2px;
+      background-color: currentcolor;
+      border-radius: 2px;
+      transition: transform $dur-base $ease-out;
+    }
+  }
+
+  &__burger[aria-expanded="true"] &__burger-lines {
+    span:first-child {
+      transform: translateY(3.5px) rotate(45deg);
+    }
+
+    span:last-child {
+      transform: translateY(-3.5px) rotate(-45deg);
+    }
+  }
+
+  // ------------------------------------------------ mobile panel
+  &__panel {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    display: flex;
+    flex-direction: column;
+    gap: $space-xl;
+    justify-content: center;
+    padding: $space-4xl $gutter $space-2xl;
+    background-color: var(--bg);
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  &__panel-list {
+    display: flex;
+    flex-direction: column;
+    gap: $space-2xs;
+  }
+
+  &__panel-link {
+    @include display($display-sm, $fw-ultra);
+
+    display: flex;
+    gap: $space-sm;
+    align-items: baseline;
+    padding-block: $space-3xs;
+    color: var(--text);
+    opacity: 0;
+    animation: navbar-item-in $dur-slow $ease-out forwards;
+    animation-delay: calc(var(--i) * 55ms + 60ms);
+
+    @include focus-ring;
+
+    @include hover {
+      color: var(--brand);
+    }
+  }
+
+  &__panel-index {
+    font-family: $font-body;
+    font-size: $text-xs;
+    font-weight: $fw-semibold;
+    color: var(--brand);
+  }
+
+  &__panel-cta {
+    align-self: flex-start;
+  }
+
+  @include reduced-motion {
+    &__panel-link {
+      opacity: 1;
+      animation: none;
+    }
+  }
+}
+
+@keyframes navbar-item-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

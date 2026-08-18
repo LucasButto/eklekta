@@ -1,0 +1,30 @@
+[
+  {
+    "id": "diagnostico",
+    "step": "01",
+    "title": "Diagnóstico",
+    "description": "Miramos cómo trabajás hoy: herramientas, planillas, quién toca qué. Salimos con un mapa de los cuellos de botella y una estimación honesta de qué conviene resolver primero.",
+    "duration": "1 semana"
+  },
+  {
+    "id": "diseno",
+    "step": "02",
+    "title": "Diseño",
+    "description": "Definimos el flujo nuevo y lo prototipamos antes de escribir código. Vas a poder recorrer la solución y pedir cambios cuando todavía son baratos.",
+    "duration": "2 a 3 semanas"
+  },
+  {
+    "id": "implementacion",
+    "step": "03",
+    "title": "Implementación",
+    "description": "Construimos, integramos y probamos con datos reales. Entregamos por partes para que el equipo vea avances cada semana en lugar de esperar al final.",
+    "duration": "4 a 8 semanas"
+  },
+  {
+    "id": "escala",
+    "step": "04",
+    "title": "Escala",
+    "description": "Capacitamos al equipo, dejamos la documentación y medimos el resultado. Después seguimos ajustando, porque el proceso cambia cuando el negocio crece.",
+    "duration": "Continuo"
+  }
+]

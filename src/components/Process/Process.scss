@@ -1,0 +1,150 @@
+@use 'styles' as *;
+
+.process {
+  @include section-spacing;
+
+  background-color: var(--bg-alt);
+  transition: background-color $dur-slow $ease-out;
+
+  &__inner {
+    @include container;
+
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(2rem, 1rem + 4vw, 4rem);
+
+    @include up($bp-lg) {
+      grid-template-columns: minmax(0, 0.72fr) minmax(0, 1fr);
+      align-items: start;
+    }
+  }
+
+  &__figure {
+    overflow: hidden;
+    background-color: var(--surface-2);
+    border-radius: $radius-md;
+
+    img {
+      width: 100%;
+      height: clamp(260px, 40vw, 640px);
+      object-fit: cover;
+    }
+
+    @include up($bp-lg) {
+      position: sticky;
+      top: 7.5rem;
+      // Capped by the viewport, not just by width — sized purely off
+      // vw, this could run past the fold on a short window and never
+      // fully come into view while it's stuck.
+      height: clamp(420px, 52vw, min(720px, calc(100svh - 7.5rem - 2rem)));
+
+      img {
+        height: 100%;
+      }
+    }
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(2rem, 1rem + 3vw, 3.5rem);
+  }
+
+  &__head {
+    display: flex;
+    flex-direction: column;
+    gap: $space-md;
+    align-items: flex-start;
+  }
+
+  &__eyebrow {
+    @include eyebrow;
+
+    display: flex;
+    gap: $space-2xs;
+    align-items: center;
+
+    &::before {
+      display: inline-block;
+      width: 22px;
+      height: 2px;
+      content: '';
+      background-color: var(--brand);
+    }
+  }
+
+  &__title {
+    @include display($display-md);
+  }
+
+  &__intro {
+    @include body-copy;
+
+    max-width: 48ch;
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-sm;
+  }
+
+  // ------------------------------------------------ steps
+  &__steps {
+    display: flex;
+    flex-direction: column;
+    gap: $space-sm;
+  }
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2xs;
+  padding: clamp(1.25rem, 1rem + 1vw, 2rem);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: $radius-lg;
+  transition:
+    border-color $dur-base $ease-out,
+    transform $dur-base $ease-out;
+
+  @include hover {
+    border-color: var(--brand-soft);
+    transform: translateX(4px);
+  }
+
+  &__meta {
+    display: flex;
+    gap: $space-sm;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+
+  &__number {
+    font-family: $font-display;
+    font-size: $text-sm;
+    font-weight: $fw-ultra;
+    color: var(--brand);
+  }
+
+  &__duration {
+    font-size: $text-xs;
+    font-weight: $fw-medium;
+    color: var(--text-faint);
+  }
+
+  &__title {
+    font-size: $text-md;
+    font-weight: $fw-semibold;
+    line-height: 1.25;
+    color: var(--text);
+  }
+
+  &__body {
+    @include body-copy;
+
+    max-width: 56ch;
+    font-size: $text-base;
+  }
+}

@@ -1,0 +1,141 @@
+@use 'styles' as *;
+
+.manifesto {
+  @include section-spacing;
+
+  overflow: hidden;
+
+  &__stage {
+    @include container;
+
+    position: relative;
+    display: grid;
+    gap: $space-md;
+    // Section-spacing already provides the approach; this only needs
+    // to keep the collage photos clear of the text's own line box.
+    padding-block: clamp(0.5rem, 0.25rem + 1.25vw, 1.5rem);
+  }
+
+  // ------------------------------------------------ photographs
+  &__figure {
+    overflow: hidden;
+    border-radius: $radius-sm;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    // Stacked and quiet on small screens; the collage only makes
+    // sense once there is room for the text to sit across it.
+    @include down($bp-lg) {
+      img {
+        height: clamp(200px, 44vw, 320px);
+      }
+    }
+
+    // Pinned to the outer edges so the statement crosses only the
+    // inner sliver of each picture. That keeps the mockup's collage
+    // without ever putting a full word on top of a dark panel.
+    @include up($bp-lg) {
+      position: absolute;
+      z-index: 0;
+
+      &--lead {
+        top: 0;
+        left: 0;
+        width: clamp(150px, 13vw, 215px);
+        height: clamp(200px, 17vw, 285px);
+      }
+
+      &--mid {
+        top: 30%;
+        right: 0;
+        width: clamp(200px, 18vw, 300px);
+        height: clamp(250px, 23vw, 390px);
+      }
+
+      &--trail {
+        bottom: 2%;
+        left: 3%;
+        width: clamp(140px, 12vw, 200px);
+        height: clamp(190px, 16vw, 265px);
+      }
+    }
+  }
+
+  // ------------------------------------------------ the statement
+  // Sits above the photographs, exactly as in the mockup.
+  &__text {
+    @include display($display-md, $fw-ultra);
+
+    position: relative;
+    z-index: 1;
+    // A notch below the section scale: this is a full sentence, and
+    // "herramientas." has to clear a 360px viewport on its own line.
+    font-size: clamp(1.7rem, 0.8rem + 4.3vw, 5rem);
+    max-width: 18ch;
+    margin-inline: auto;
+    text-align: center;
+    text-wrap: balance;
+    color: var(--text);
+
+    @include up($bp-lg) {
+      max-width: 13ch;
+      // Was up to 7rem a side — mostly bare whitespace stacked on top
+      // of the section's own padding. Trimmed to just enough clearance
+      // for the collage photos pinned to the stage's corners.
+      padding-block: clamp(1.5rem, 0.5rem + 3vw, 3.5rem);
+    }
+  }
+
+  &__closing {
+    @include container;
+
+    margin-top: clamp(2rem, 1rem + 4vw, 5rem);
+  }
+
+  &__closing-line {
+    @include display($display-lg, $fw-ultra);
+
+    color: var(--brand);
+  }
+
+  // ------------------------------------------------ scroll parallax
+  // Progressive enhancement: browsers without scroll-driven animations
+  // simply get the static collage, which is already the finished look.
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      @include up($bp-lg) {
+        &__figure {
+          animation: manifesto-drift linear both;
+          animation-timeline: view();
+          animation-range: entry 0% exit 100%;
+        }
+
+        &__figure--lead {
+          --drift: -46px;
+        }
+
+        &__figure--mid {
+          --drift: 54px;
+        }
+
+        &__figure--trail {
+          --drift: -30px;
+        }
+      }
+    }
+  }
+}
+
+@keyframes manifesto-drift {
+  from {
+    transform: translate3d(0, calc(var(--drift, 0px) * -1), 0);
+  }
+
+  to {
+    transform: translate3d(0, var(--drift, 0px), 0);
+  }
+}

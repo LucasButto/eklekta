@@ -1,0 +1,37 @@
+@use 'styles' as *;
+
+// The SVGs are traced from the brand files and fill with currentColor,
+// so the logo follows whatever colour it sits in.
+//
+// Sizing goes through custom properties rather than plain heights, so a
+// consumer (the hero, the footer watermark) can opt out with
+// `--logo-wordmark-size: auto` instead of fighting specificity.
+.logo {
+  --logo-isotype-size: 1em;
+  --logo-wordmark-size: 0.62em;
+
+  display: inline-flex;
+  gap: 0.44em;
+  align-items: center;
+  color: currentcolor;
+
+  &__isotype {
+    // 2588 × 2368 viewBox
+    width: auto;
+    height: var(--logo-isotype-size);
+    aspect-ratio: 2588 / 2368;
+    fill: currentcolor;
+  }
+
+  &__wordmark {
+    // 3724 × 836 viewBox
+    width: auto;
+    height: var(--logo-wordmark-size);
+    aspect-ratio: 3724 / 836;
+    fill: currentcolor;
+  }
+
+  &--wordmark {
+    --logo-wordmark-size: 1em;
+  }
+}

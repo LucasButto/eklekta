@@ -1,0 +1,165 @@
+@use 'styles' as *;
+
+.contact {
+  @include section-spacing;
+
+  &__inner {
+    @include container;
+  }
+
+  // The oversized line that opens the section, right-aligned like the
+  // hero so the page closes on the same axis it opened on.
+  &__banner {
+    margin-bottom: $heading-gap;
+    text-align: right;
+  }
+
+  &__banner-line {
+    @include display($display-lg, $fw-ultra);
+
+    color: var(--text);
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(2rem, 1rem + 4vw, 4rem);
+    align-items: center;
+
+    @include up($bp-lg) {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 0.78fr);
+    }
+  }
+
+  &__panel {
+    display: flex;
+    flex-direction: column;
+    gap: $space-md;
+    align-items: flex-start;
+  }
+
+  &__eyebrow {
+    @include eyebrow;
+
+    display: flex;
+    gap: $space-2xs;
+    align-items: center;
+
+    &::before {
+      display: inline-block;
+      width: 22px;
+      height: 2px;
+      content: '';
+      background-color: var(--brand);
+    }
+  }
+
+  &__title {
+    font-size: clamp(1.5rem, 1.1rem + 1.8vw, 2.5rem);
+    font-weight: $fw-semibold;
+    line-height: 1.2;
+    color: var(--text);
+    text-wrap: balance;
+  }
+
+  &__intro {
+    @include body-copy;
+
+    max-width: 48ch;
+  }
+
+  // ------------------------------------------------ details
+  &__details {
+    display: grid;
+    gap: $space-sm;
+    width: 100%;
+    max-width: 40rem;
+    padding-block: $space-md;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  &__detail {
+    display: grid;
+    gap: $space-3xs;
+
+    @include up($bp-sm) {
+      grid-template-columns: 10rem minmax(0, 1fr);
+      gap: $space-sm;
+      align-items: baseline;
+    }
+
+    dt {
+      @include eyebrow;
+    }
+
+    dd {
+      margin: 0;
+      font-size: $text-base;
+      color: var(--text);
+      text-wrap: pretty;
+    }
+  }
+
+  &__email {
+    font-weight: $fw-medium;
+    color: var(--brand);
+    border-bottom: 1px solid currentcolor;
+    transition: opacity $dur-base $ease-out;
+
+    @include focus-ring;
+
+    @include hover {
+      opacity: 0.7;
+    }
+  }
+
+  // ------------------------------------------------ actions
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-md $space-lg;
+    align-items: center;
+  }
+
+  &__socials {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-md;
+  }
+
+  &__social {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    font-size: $text-sm;
+    font-weight: $fw-semibold;
+    color: var(--text);
+    transition: color $dur-base $ease-out;
+
+    @include focus-ring;
+
+    @include hover {
+      color: var(--brand);
+    }
+  }
+
+  &__social-handle {
+    font-size: $text-xs;
+    font-weight: $fw-regular;
+    color: var(--text-faint);
+  }
+
+  // ------------------------------------------------ figure
+  &__figure {
+    overflow: hidden;
+    background-color: var(--surface-2);
+    border-radius: $radius-md;
+
+    img {
+      width: 100%;
+      height: clamp(260px, 40vw, 520px);
+      object-fit: cover;
+    }
+  }
+}

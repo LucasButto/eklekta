@@ -1,0 +1,112 @@
+@use 'styles' as *;
+
+.ribbon {
+  padding-block: clamp(1.25rem, 0.8rem + 2vw, 2.5rem);
+  overflow: hidden;
+  background-color: var(--bg);
+
+  &__viewport {
+    overflow: hidden;
+  }
+
+  &__track {
+    display: flex;
+    width: max-content;
+    animation: ribbon-scroll 52s linear infinite;
+
+    // Pausing on hover and on keyboard focus keeps the links reachable.
+    &:hover,
+    &:focus-within {
+      animation-play-state: paused;
+    }
+  }
+
+  // The spacing lives on the item, not as a track `gap`. With a gap the
+  // two sets differ by half a gap and the -50% loop visibly jumps.
+  &__item {
+    flex: 0 0 auto;
+    margin-inline-end: clamp(0.5rem, 0.3rem + 1vw, 1.25rem);
+  }
+
+  &__link {
+    position: relative;
+    display: block;
+    width: clamp(150px, 12vw, 240px);
+    overflow: hidden;
+    border-radius: $radius-sm;
+
+    @include focus-ring;
+
+    &--clone {
+      pointer-events: none;
+    }
+  }
+
+  &__image {
+    width: 100%;
+    height: clamp(210px, 17vw, 340px);
+    object-fit: cover;
+    background-color: var(--surface-2);
+    transition: transform $dur-slow $ease-out;
+  }
+
+  // The label only appears on the panel you are pointing at, so the
+  // strip stays quiet while it is just texture.
+  &__meta {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: $space-md $space-sm $space-xs;
+    color: #fff;
+    background-image: linear-gradient(to top, rgb(0 0 0 / 78%), transparent);
+    opacity: 0;
+    transition: opacity $dur-base $ease-out;
+  }
+
+  &__name {
+    font-family: $font-display;
+    font-size: $text-sm;
+    font-weight: $fw-ultra;
+    letter-spacing: -0.01em;
+  }
+
+  &__tag {
+    font-size: $text-xs;
+    font-weight: $fw-medium;
+    opacity: 0.85;
+  }
+
+  &__link:hover &__image,
+  &__link:focus-visible &__image {
+    transform: scale(1.06);
+  }
+
+  &__link:hover &__meta,
+  &__link:focus-visible &__meta {
+    opacity: 1;
+  }
+
+  @include reduced-motion {
+    &__viewport {
+      overflow-x: auto;
+      @include hide-scrollbar;
+    }
+
+    &__track {
+      animation: none;
+    }
+  }
+}
+
+@keyframes ribbon-scroll {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}

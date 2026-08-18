@@ -1,0 +1,281 @@
+@use "styles" as *;
+
+.hero {
+  &__band {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    // Always the full viewport, on every device — not clamped between
+    // a min and max like a regular content section.
+    height: 100svh;
+    overflow: hidden;
+    // Desktop's bottom gap, raising the whole content block well off
+    // the floor rather than just clearing it.
+    padding-block: clamp(5rem, 3.5rem + 6vw, 8rem)
+      clamp(4.5rem, 3rem + 5.5vw, 10rem);
+    background-color: var(--bg-band);
+    transition: background-color $dur-slow $ease-out;
+
+    // Content gets tight on short viewports (landscape phones, small
+    // laptop windows) since height is fixed rather than growing with
+    // content. Trim rhythm in two steps rather than letting anything
+    // overflow the 100svh band.
+    @media (max-height: 700px) {
+      padding-block: clamp(4.5rem, 3.5rem + 4vw, 6rem) 1.5rem;
+    }
+
+    @media (max-height: 480px) {
+      padding-block: 4.5rem 1.25rem;
+    }
+
+    // On a phone the gap is measured from the BOTTOM up: the content
+    // stays bottom-anchored (same as desktop), just with more floor
+    // clearance, so it sits roughly a quarter of the way up the screen
+    // instead of flush against the edge. Only the bottom value is
+    // touched, so the top clearance still comes from whichever rule
+    // above matches the viewport's height.
+    @include down($bp-md) {
+      padding-bottom: 16svh;
+    }
+  }
+
+  // ------------------------------------------------ background photo
+  &__bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    // Keeps the laptop screen and the service cards in frame; it's
+    // the part of the photo that actually says what eklekta does.
+    object-position: 42% 32%;
+    filter: brightness(1) saturate(1);
+    transition: filter $dur-slow $ease-out;
+  }
+
+  // Fades the photo into the theme background from the top down, so
+  // the text block always lands on a near-solid surface regardless of
+  // what is behind it, while the top of the band still reads as a photo.
+  &__scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      color-mix(in srgb, var(--bg) 25%, transparent) 36%,
+      color-mix(in srgb, var(--bg) 80%, transparent) 58%,
+      var(--bg) 80%
+    );
+    transition: background-color $dur-slow $ease-out;
+
+    // Mobile content is bottom-anchored too, just closer to the floor
+    // than this (16svh vs desktop's ~6rem max) — the ramp starts later
+    // so more of the photo shows above the text, and stays clear
+    // longer than the desktop curve since the block itself sits lower.
+    @include down($bp-md) {
+      background-image: linear-gradient(
+        to bottom,
+        transparent 0%,
+        color-mix(in srgb, var(--bg) 12%, transparent) 48%,
+        color-mix(in srgb, var(--bg) 80%, transparent) 68%,
+        var(--bg) 86%
+      );
+    }
+  }
+
+  // ------------------------------------------------ content
+  &__inner {
+    @include container;
+
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: clamp(1.1rem, 0.8rem + 1.2vw, 1.9rem);
+    text-align: right;
+
+    // Pulls the whole right-aligned block off the container's own
+    // edge — extra inset on top of the container gutter, not a
+    // re-alignment, so it stays right-anchored rather than centred.
+    @include up($bp-lg) {
+      padding-inline-end: clamp(2.5rem, 6vw, 8rem);
+    }
+  }
+
+  &__title {
+    width: 100%;
+  }
+
+  // The mockup keeps the wordmark well short of full width, floating
+  // in the grey band rather than stretching edge to edge — scaled off
+  // the viewport instead of the container so that ratio holds at every
+  // breakpoint. Opts out of Logo's em-based sizing to do it.
+  &__wordmark {
+    --logo-wordmark-size: auto;
+
+    display: block;
+    color: var(--brand);
+    animation: hero-mark-in 900ms $ease-out both;
+
+    svg {
+      width: clamp(12.5rem, 8rem + 20vw, 40rem);
+      margin-inline-start: auto;
+    }
+
+    @media (max-height: 700px) {
+      svg {
+        width: clamp(10rem, 7rem + 16vw, 26rem);
+      }
+    }
+  }
+
+  &__lede {
+    max-width: 42ch;
+    font-size: $text-lg;
+    font-weight: $fw-light;
+    line-height: 1.45;
+    color: var(--text);
+    text-wrap: pretty;
+    animation: hero-rise 700ms $ease-out 140ms both;
+
+    @media (max-height: 700px) {
+      font-size: $text-base;
+    }
+
+    @media (max-height: 480px) {
+      display: none;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-md;
+    align-items: center;
+    justify-content: flex-end;
+    animation: hero-rise 700ms $ease-out 260ms both;
+  }
+
+  &__secondary {
+    position: relative;
+    font-size: $text-sm;
+    font-weight: $fw-medium;
+    color: var(--text-muted);
+    transition: color $dur-base $ease-out;
+
+    @include focus-ring;
+
+    &::after {
+      position: absolute;
+      inset-inline: 0;
+      bottom: -3px;
+      height: 1px;
+      content: "";
+      background-color: currentcolor;
+      transform-origin: right;
+      transition: transform $dur-base $ease-out;
+    }
+
+    @include hover {
+      color: var(--text);
+
+      &::after {
+        transform: scaleX(0);
+        transform-origin: left;
+      }
+    }
+  }
+
+  // ------------------------------------------------ scroll cue
+  &__scroll {
+    @include container;
+
+    position: relative;
+    z-index: 2;
+    display: flex;
+    gap: $space-2xs;
+    align-items: center;
+    margin-top: clamp(1.5rem, 1rem + 3vw, 3rem);
+    font-size: $text-xs;
+    font-weight: $fw-medium;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+
+    @include down($bp-md) {
+      display: none;
+    }
+
+    @media (max-height: 700px) {
+      display: none;
+    }
+  }
+
+  &__scroll-line {
+    display: block;
+    width: 54px;
+    height: 1px;
+    background-color: var(--border-strong);
+    transform-origin: left;
+    animation: hero-scroll-line 2.4s $ease-in-out infinite;
+  }
+
+  @include reduced-motion {
+    &__wordmark,
+    &__lede,
+    &__actions {
+      animation: none;
+    }
+
+    &__scroll-line {
+      animation: none;
+    }
+  }
+}
+
+@keyframes hero-mark-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 40px, 0);
+    clip-path: inset(0 0 100% 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+    clip-path: inset(0 0 -10% 0);
+  }
+}
+
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes hero-scroll-line {
+  0%,
+  100% {
+    transform: scaleX(0.35);
+  }
+
+  50% {
+    transform: scaleX(1);
+  }
+}
+
+// The source photo is a bright office scene; dimmed to sit comfortably
+// in the dark surface instead of glowing against it.
+:root[data-theme="dark"] .hero__bg {
+  filter: brightness(0.45) saturate(0.85);
+}

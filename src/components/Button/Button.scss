@@ -1,0 +1,86 @@
+@use 'styles' as *;
+
+.button {
+  --button-bg: var(--brand-deep);
+  --button-fg: var(--on-brand);
+  --button-border: transparent;
+
+  display: inline-flex;
+  gap: $space-2xs;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85em 1.5em;
+  font-size: $text-sm;
+  font-weight: $fw-semibold;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--button-fg);
+  background-color: var(--button-bg);
+  border: 1px solid var(--button-border);
+  border-radius: $radius-pill;
+  transition:
+    background-color $dur-base $ease-out,
+    border-color $dur-base $ease-out,
+    color $dur-base $ease-out,
+    transform $dur-base $ease-spring;
+
+  @include focus-ring;
+
+  &__arrow {
+    width: 1.15em;
+    height: 1.15em;
+    transition: transform $dur-base $ease-out;
+  }
+
+  @include hover {
+    transform: translateY(-2px);
+
+    .button__arrow {
+      transform: translateX(3px);
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  // ------------------------------------------------ variants
+  &--solid {
+    @include hover {
+      --button-bg: var(--brand-press);
+    }
+  }
+
+  &--outline {
+    --button-bg: transparent;
+    --button-fg: var(--brand);
+    --button-border: var(--border-strong);
+
+    @include hover {
+      --button-border: var(--brand);
+      --button-bg: var(--brand-softer);
+    }
+  }
+
+  // The white pill sitting on the grey hero band.
+  &--ghost {
+    --button-bg: var(--bg);
+    --button-fg: var(--brand);
+    --button-border: transparent;
+    box-shadow: var(--shadow-sm);
+
+    @include hover {
+      --button-bg: var(--bg);
+      --button-fg: var(--brand-press);
+      box-shadow: var(--shadow-md);
+    }
+  }
+
+  // ------------------------------------------------ sizes
+  &--sm {
+    padding: 0.7em 1.15em;
+    font-size: $text-xs;
+  }
+}

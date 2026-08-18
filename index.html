@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>eklekta</title>
+    <meta
+      name="description"
+      content="Estudio digital. Automatizamos procesos, implementamos CRM y diseñamos productos y marcas que se entienden solas."
+    />
+    <meta
+      name="theme-color"
+      content="#ffffff"
+      media="(prefers-color-scheme: light)"
+    />
+    <meta
+      name="theme-color"
+      content="#0b0b10"
+      media="(prefers-color-scheme: dark)"
+    />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href="https://eklekta.studio/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_ES" />
+    <meta property="og:site_name" content="eklekta" />
+    <meta
+      property="og:title"
+      content="eklekta — Automatización, CRM, desarrollo web, UX/UI y branding"
+    />
+    <meta
+      property="og:description"
+      content="Automatizamos procesos, implementamos CRM y diseñamos productos y marcas que se entienden solas."
+    />
+    <meta property="og:image" content="/images/og.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link
+      rel="preload"
+      href="/fonts/MonumentExtended-Ultrabold.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/Poppins-Regular.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
+    <!-- Hero background photo — the page's largest paint. `type` lets
+         browsers without WebP support skip this and fetch the <picture>
+         element's JPEG fallback instead, so nothing double-fetches.
+         `media` mirrors the <picture> breakpoint so a phone never
+         preloads the desktop shot it is not going to display. -->
+    <link
+      rel="preload"
+      as="image"
+      type="image/webp"
+      media="(max-width: 767px)"
+      href="/images/hero/hero-mobile-800.webp"
+      imagesrcset="/images/hero/hero-mobile-800.webp 800w, /images/hero/hero-mobile-1200.webp 1200w"
+      imagesizes="100vw"
+      fetchpriority="high"
+    />
+    <link
+      rel="preload"
+      as="image"
+      type="image/webp"
+      media="(min-width: 768px)"
+      href="/images/hero/hero-1920.webp"
+      imagesrcset="/images/hero/hero-960.webp 960w, /images/hero/hero-1920.webp 1920w"
+      imagesizes="100vw"
+      fetchpriority="high"
+    />
+
+    <!-- Applies the stored theme before first paint so the page never flashes. -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("eklekta-theme");
+          document.documentElement.dataset.theme =
+            stored === "dark" ? "dark" : "light";
+        } catch (e) {
+          document.documentElement.dataset.theme = "light";
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

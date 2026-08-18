@@ -1,0 +1,82 @@
+@use 'styles' as *;
+
+.about {
+  @include section-spacing;
+
+  &__intro {
+    @include container;
+
+    margin-bottom: $heading-gap;
+  }
+
+  // Image / text / image, with the outer figures running off the
+  // edges of the viewport the way the mockup does.
+  &__feature {
+    @include container;
+
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $space-lg;
+    align-items: center;
+
+    @include up($bp-lg) {
+      grid-template-columns: minmax(0, 0.9fr) minmax(320px, 0.85fr) minmax(0, 0.42fr);
+      gap: clamp(2rem, 1rem + 3vw, 4.5rem);
+    }
+  }
+
+  &__figure {
+    overflow: hidden;
+    background-color: var(--surface-2);
+    border-radius: $radius-md;
+
+    img {
+      width: 100%;
+      height: clamp(220px, 34vw, 460px);
+      object-fit: cover;
+    }
+
+    @include up($bp-lg) {
+      &--lead {
+        @include bleed-start;
+
+        border-start-start-radius: 0;
+        border-end-start-radius: 0;
+
+        img {
+          height: clamp(320px, 30vw, 520px);
+        }
+      }
+
+      &--trail {
+        @include bleed-end;
+
+        border-start-end-radius: 0;
+        border-end-end-radius: 0;
+
+        img {
+          height: clamp(260px, 24vw, 400px);
+        }
+      }
+    }
+  }
+
+  &__panel {
+    display: flex;
+    flex-direction: column;
+    gap: $space-md;
+    align-items: flex-start;
+  }
+
+  &__panel-title {
+    font-size: $text-lg;
+    font-weight: $fw-semibold;
+    line-height: 1.28;
+    color: var(--text);
+    text-wrap: balance;
+  }
+
+  &__panel-body {
+    @include body-copy;
+  }
+}

@@ -1,0 +1,127 @@
+@use 'styles' as *;
+
+.team {
+  @include section-spacing;
+
+  overflow: hidden;
+
+  &__inner {
+    @include container;
+  }
+
+  &__heading {
+    margin-bottom: $heading-gap;
+  }
+
+  // ------------------------------------------------ the row
+  // Small screens get a swipeable rail; from md up it becomes the
+  // alternating offset row from the mockup.
+  &__row {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(210px, 62vw);
+    gap: $space-sm;
+    padding-inline: var(--gutter);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-inline: contain;
+
+    @include hide-scrollbar;
+
+    @include up($bp-md) {
+      @include container;
+
+      grid-auto-flow: initial;
+      grid-auto-columns: initial;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: clamp(0.75rem, 0.4rem + 1.2vw, 1.5rem);
+      align-items: start;
+      overflow: visible;
+    }
+  }
+
+  &__cell {
+    scroll-snap-align: center;
+
+    @include up($bp-md) {
+      // 2nd and 4th drop, as in the mockup
+      &:nth-child(even) {
+        margin-top: clamp(2rem, 1rem + 4vw, 5.5rem);
+      }
+    }
+  }
+}
+
+.member {
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+
+  &__photo {
+    overflow: hidden;
+    background-color: var(--surface-2);
+    border-radius: $radius-md;
+
+    img {
+      width: 100%;
+      height: clamp(260px, 26vw, 400px);
+      object-fit: cover;
+      transition:
+        transform $dur-slow $ease-out,
+        filter $dur-slow $ease-out;
+    }
+  }
+
+  &:hover &__photo img {
+    transform: scale(1.05);
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: $space-3xs;
+  }
+
+  &__name {
+    font-family: $font-display;
+    font-size: clamp(1rem, 0.9rem + 0.4vw, 1.2rem);
+    font-weight: $fw-ultra;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+
+  &__role {
+    font-size: $text-sm;
+    font-weight: $fw-medium;
+    color: var(--brand);
+  }
+
+  &__focus {
+    font-size: $text-sm;
+    line-height: 1.5;
+    color: var(--text-muted);
+    text-wrap: pretty;
+  }
+
+  &__link {
+    align-self: flex-start;
+    margin-top: $space-3xs;
+    font-size: $text-xs;
+    font-weight: $fw-semibold;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    border-bottom: 1px solid var(--border-strong);
+    transition:
+      color $dur-base $ease-out,
+      border-color $dur-base $ease-out;
+
+    @include focus-ring;
+
+    @include hover {
+      color: var(--brand);
+      border-color: var(--brand);
+    }
+  }
+}

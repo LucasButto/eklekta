@@ -1,0 +1,175 @@
+@use 'styles' as *;
+
+.services {
+  // Section padding is split: the masthead owns the top so its
+  // background can start at the section's very edge.
+  //
+  // Deliberately no `overflow` here — any value other than visible
+  // silently disables the sticky left rail further down.
+  padding-bottom: $section-y;
+  background-color: var(--bg-alt);
+  transition: background-color $dur-slow $ease-out;
+
+  // ------------------------------------------------ title block
+  &__masthead {
+    position: relative;
+    // Contains the texture, and safe to clip because the sticky rail
+    // lives outside this wrapper.
+    isolation: isolate;
+    overflow: hidden;
+    padding-block: $section-y $heading-gap;
+  }
+
+  // Brand texture behind the title only. The service rows below keep a
+  // plain surface so the densest copy on the page has nothing to fight.
+  &__bg {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    pointer-events: none;
+    opacity: 0.55;
+    // Fades out at the bottom so the texture dissolves into the flat
+    // surface instead of ending on a hard edge.
+    mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%);
+  }
+
+  &__inner {
+    @include container;
+  }
+
+  &__body {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(2rem, 1rem + 4vw, 4.5rem);
+
+    @include up($bp-lg) {
+      grid-template-columns: minmax(0, 0.62fr) minmax(0, 1fr);
+      align-items: start;
+    }
+  }
+
+  // ------------------------------------------------ left rail
+  &__aside {
+    display: flex;
+    flex-direction: column;
+    gap: $space-md;
+    align-items: flex-start;
+
+    @include up($bp-lg) {
+      position: sticky;
+      top: 7.5rem;
+      // Caps the whole sticky column to the viewport. Without this,
+      // a short window pins the column past the fold and the button
+      // stays invisible until the list has almost scrolled past it.
+      max-height: calc(100svh - 7.5rem - 2rem);
+
+      // The button never gives up space — the photo does.
+      > .button {
+        flex-shrink: 0;
+      }
+    }
+  }
+
+  &__figure {
+    width: 100%;
+    overflow: hidden;
+    background-color: var(--surface-2);
+    border-radius: $radius-md;
+
+    img {
+      width: 100%;
+      height: clamp(240px, 32vw, 460px);
+      object-fit: cover;
+    }
+
+    @include up($bp-lg) {
+      // grow:0 keeps this at its normal size when there's room to
+      // spare — only shrink:1 engages, and only once max-height on
+      // the aside actually runs out. Basis is a concrete value rather
+      // than `auto` so it doesn't get tangled with the img's own
+      // percentage height below.
+      flex: 0 1 clamp(240px, 32vw, 460px);
+      min-height: 0;
+
+      img {
+        height: 100%;
+        min-height: 140px;
+      }
+    }
+  }
+
+  &__aside-note {
+    @include body-copy;
+
+    font-size: $text-base;
+
+    @include up($bp-lg) {
+      flex-shrink: 0;
+    }
+  }
+
+  // ------------------------------------------------ service rows
+  &__list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__item {
+    display: flex;
+    flex-direction: column;
+    gap: $space-2xs;
+    padding-block: clamp(1.5rem, 1rem + 1.5vw, 2.25rem);
+    border-top: 1px solid var(--border);
+
+    &:last-child {
+      border-bottom: 1px solid var(--border);
+    }
+  }
+
+  &__item-title {
+    @include display($display-sm, $fw-ultra);
+
+    font-size: clamp(1.5rem, 1.1rem + 1.5vw, 2.4rem);
+    color: var(--text);
+    transition: color $dur-base $ease-out;
+  }
+
+  &__item:hover &__item-title {
+    color: var(--brand);
+  }
+
+  &__item-body {
+    @include body-copy;
+
+    max-width: 52ch;
+    font-size: $text-base;
+  }
+
+  &__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-2xs;
+    margin-top: $space-2xs;
+  }
+
+  &__chip {
+    padding: 0.34em 0.85em;
+    font-size: $text-xs;
+    font-weight: $fw-medium;
+    color: var(--brand);
+    background-color: var(--brand-softer);
+    border: 1px solid var(--brand-soft);
+    border-radius: $radius-pill;
+  }
+}
+
+// Violet on near-black has far less contrast than violet on light grey,
+// so the texture needs more opacity in dark mode, not less, to hold the
+// same visual weight.
+:root[data-theme='dark'] .services__bg {
+  opacity: 0.75;
+}

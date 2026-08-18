@@ -1,0 +1,50 @@
+[
+  {
+    "id": "nodo-crm",
+    "title": "Nodo",
+    "client": "Nodo Logística",
+    "year": "2025",
+    "categories": ["Automatización", "CRM"],
+    "summary": "Un CRM a medida y catorce automatizaciones que reemplazaron la planilla que movía toda la operación. El equipo comercial pasó de cargar datos a usarlos.",
+    "metric": { "value": "-72%", "label": "carga manual por semana" },
+    "cover": "/images/projects/nodo-crm.jpg",
+    "url": "https://eklekta.studio/proyectos/nodo",
+    "featured": true
+  },
+  {
+    "id": "granvia-ops",
+    "title": "Gran Vía",
+    "client": "Gran Vía Retail",
+    "year": "2025",
+    "categories": ["Automatización", "Integraciones"],
+    "summary": "Conectamos tienda, depósito y facturación. Los pedidos entran una sola vez y viajan solos hasta el remito.",
+    "metric": { "value": "9 h", "label": "recuperadas por semana" },
+    "cover": "/images/projects/granvia-ops.jpg",
+    "url": "https://eklekta.studio/proyectos/gran-via",
+    "featured": false
+  },
+  {
+    "id": "lumen-studio",
+    "title": "Lumen",
+    "client": "Lumen Studio",
+    "year": "2024",
+    "categories": ["Desarrollo web", "UX/UI"],
+    "summary": "Sitio propio y panel de gestión de proyectos. Diseño, build y despliegue en seis semanas, sin plantillas.",
+    "metric": { "value": "0.9 s", "label": "carga en móvil" },
+    "cover": "/images/projects/lumen-studio.jpg",
+    "url": "https://eklekta.studio/proyectos/lumen",
+    "featured": false
+  },
+  {
+    "id": "sereno-brand",
+    "title": "Sereno",
+    "client": "Sereno Café",
+    "year": "2024",
+    "categories": ["Branding", "Desarrollo web"],
+    "summary": "Identidad completa, sistema de packaging y tienda online. Una marca que se sostiene igual en una bolsa que en un banner.",
+    "metric": { "value": "3×", "label": "ventas online" },
+    "cover": "/images/projects/sereno-brand.jpg",
+    "url": "https://eklekta.studio/proyectos/sereno",
+    "featured": false
+  }
+]
