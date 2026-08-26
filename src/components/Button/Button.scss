@@ -77,7 +77,13 @@
   // The white pill sitting on the grey hero band.
   &--ghost {
     --button-bg: var(--bg);
-    --button-fg: var(--brand);
+    // The label is uppercase $text-sm — small text, so it owes 4.5:1,
+    // and --brand on the white pill measures 4.43:1. This pill's
+    // background follows --bg and so flips with the theme, which means
+    // no single foreground clears both: $brand-deep is 5.0:1 on the
+    // white pill but only 3.9:1 once the pill goes near-black. So the
+    // light value is set here and the dark one at the end of the file.
+    --button-fg: #{$brand-deep};
     --button-border: transparent;
     box-shadow: var(--shadow-sm);
 
@@ -92,5 +98,16 @@
   &--sm {
     padding: 0.7em 1.15em;
     font-size: $text-xs;
+  }
+}
+
+// The ghost pill's background is --bg, so on the dark page it is a
+// near-black pill, not a white one, and $brand-deep on it would be
+// 3.9:1. The lifted brand is the token made for dark surfaces: 6.7:1.
+:root[data-theme='dark'] .button--ghost {
+  --button-fg: #{$brand-lift};
+
+  @include hover {
+    --button-fg: #{$brand-lift};
   }
 }
