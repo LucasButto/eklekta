@@ -133,8 +133,8 @@
 
   &__social {
     display: flex;
-    flex-direction: column;
-    gap: 1px;
+    gap: $space-2xs;
+    align-items: center;
     font-size: $text-sm;
     font-weight: $fw-semibold;
     color: var(--text);
@@ -145,6 +145,48 @@
     @include hover {
       color: var(--brand);
     }
+  }
+
+  &__social-icon {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    color: var(--text-muted);
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: $radius-pill;
+    transition:
+      color $dur-base $ease-out,
+      border-color $dur-base $ease-out,
+      background-color $dur-base $ease-out;
+
+    svg {
+      width: 1.1rem;
+      height: 1.1rem;
+    }
+
+    // Follows the link's own hover, not a rule of its own — one state
+    // to keep in sync instead of two. Written out rather than via the
+    // @include hover mixin: that mixin always targets &:hover on the
+    // current selector, and this needs the ancestor link's hover
+    // instead — but it keeps the same (hover: hover) guard, so a tap
+    // on touch does not leave the icon stuck lit.
+    @media (hover: hover) and (pointer: fine) {
+      .contact__social:hover & {
+        color: var(--brand);
+        border-color: var(--brand-soft);
+        background-color: var(--brand-softer);
+      }
+    }
+  }
+
+  &__social-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
   }
 
   &__social-handle {
