@@ -1,86 +1,96 @@
 @use 'styles' as *;
 
-.process {
-  @include section-spacing;
+// =============================================================
+//  Proceso — a staircase, not a chapter break.
+//
+//  Sits on --bg-alt, the same alternate surface Servicios uses —
+//  not --surface-invert. Invert flips to the *opposite* of
+//  whatever the current theme is, so in dark mode this section
+//  would turn bright white: a jarring "did I break something"
+//  moment rather than a deliberate contrast. --bg-alt stays in
+//  the current theme's own family (light grey in light mode, dark
+//  grey in dark mode) exactly like Servicios does, so every page
+//  token below (--text, --text-muted, --brand, --border) is
+//  already correctly tuned per theme with no local overrides.
+//
+//  The four stages step further in one after the other — the
+//  sequence drawn as a movement rather than as a list. Nothing
+//  here repeats Servicios (sticky rail + divided column) or
+//  Proyectos (bento of cards): no cards, no dividers, no media.
+//  The oversized outlined numerals carry the structure alone.
+//
+//  The blueprint-grid texture (see Process.tsx) runs the full
+//  section, head and staircase both — same technique as
+//  services__masthead (a low-opacity image behind the content,
+//  re-tinted per theme), just stretched past the head.
+// =============================================================
 
+.process {
+  // .process is now the texture's containing block — inset:0 on
+  // &__bg covers the whole section, staircase included, not just the
+  // head. isolation:isolate keeps the negative z-index bg from
+  // escaping to sit behind neighbouring sections; overflow:hidden
+  // clips the object-fit:cover overscan at the section's own edges.
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding-bottom: clamp(3.5rem, 2rem + 5vw, 7rem);
   background-color: var(--bg-alt);
   transition: background-color $dur-slow $ease-out;
 
   &__inner {
     @include container;
-
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: clamp(2rem, 1rem + 4vw, 4rem);
-
-    @include up($bp-lg) {
-      grid-template-columns: minmax(0, 0.72fr) minmax(0, 1fr);
-      align-items: start;
-    }
   }
 
-  &__figure {
-    overflow: hidden;
-    background-color: var(--surface-2);
-    border-radius: $radius-md;
-
-    img {
-      width: 100%;
-      height: clamp(260px, 40vw, 640px);
-      object-fit: cover;
-    }
-
-    @include up($bp-lg) {
-      position: sticky;
-      top: 7.5rem;
-      // Capped by the viewport, not just by width — sized purely off
-      // vw, this could run past the fold on a short window and never
-      // fully come into view while it's stuck.
-      height: clamp(420px, 52vw, min(720px, calc(100svh - 7.5rem - 2rem)));
-
-      img {
-        height: 100%;
-      }
-    }
+  // Grid texture behind the entire section. Manifiesto above and
+  // Contacto below both sit on the plain --bg (no --bg-alt of their
+  // own), so .process already meets them at a hard colour edge —
+  // that edge is what ends the texture now, the same way every other
+  // section boundary on the page is a flat cut with no blending. No
+  // mask needed: the fade in the masthead-only version existed to
+  // hide the seam between the (textured) masthead and the (plain)
+  // staircase inside this *same* --bg-alt surface; with the texture
+  // covering both, that internal seam no longer exists.
+  &__bg {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+    pointer-events: none;
+    opacity: 0.55;
   }
 
-  &__content {
-    display: flex;
-    flex-direction: column;
-    gap: clamp(2rem, 1rem + 3vw, 3.5rem);
+  // ------------------------------------------------ head
+  &__masthead {
+    padding-block: clamp(3.5rem, 2rem + 5vw, 7rem) clamp(2.5rem, 1.5rem + 3vw, 4.5rem);
   }
 
   &__head {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $space-lg;
+
+    @include up($bp-lg) {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: clamp(2rem, 1rem + 4vw, 5rem);
+      align-items: end;
+    }
+  }
+
+  &__aside {
     display: flex;
     flex-direction: column;
     gap: $space-md;
     align-items: flex-start;
   }
 
-  &__eyebrow {
-    @include eyebrow;
-
-    display: flex;
-    gap: $space-2xs;
-    align-items: center;
-
-    &::before {
-      display: inline-block;
-      width: 22px;
-      height: 2px;
-      content: '';
-      background-color: var(--brand);
-    }
-  }
-
-  &__title {
-    @include display($display-md);
-  }
-
   &__intro {
     @include body-copy;
 
-    max-width: 48ch;
+    max-width: 46ch;
   }
 
   &__actions {
@@ -89,62 +99,126 @@
     gap: $space-sm;
   }
 
-  // ------------------------------------------------ steps
-  &__steps {
-    display: flex;
-    flex-direction: column;
-    gap: $space-sm;
+  // ------------------------------------------------ the descent
+  &__stairs {
+    display: grid;
+    gap: clamp(2.5rem, 1.5rem + 3vw, 4.5rem);
   }
 }
 
-.step {
-  display: flex;
-  flex-direction: column;
-  gap: $space-2xs;
-  padding: clamp(1.25rem, 1rem + 1vw, 2rem);
-  background-color: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: $radius-lg;
-  transition:
-    border-color $dur-base $ease-out,
-    transform $dur-base $ease-out;
+// ------------------------------------------------ one stage
+.stage {
+  // How far each stage steps in past the one above it. Zero until
+  // there is width to spend on it.
+  --rise: 0rem;
 
-  @include hover {
-    border-color: var(--brand-soft);
-    transform: translateX(4px);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: $space-md;
+  row-gap: $space-xs;
+  align-items: baseline;
+  margin-inline-start: calc(var(--step-index, 0) * var(--rise));
+
+  @include up($bp-lg) {
+    --rise: #{clamp(1.5rem, 0.5rem + 2.2vw, 4rem)};
+
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    column-gap: clamp(1.5rem, 1rem + 2vw, 3rem);
   }
 
-  &__meta {
-    display: flex;
-    gap: $space-sm;
-    align-items: baseline;
-    justify-content: space-between;
+  // Reveal owns the style attribute for its delay, so the index comes
+  // from position instead of a custom property set in JSX. Eight is
+  // simply more phases than the section will plausibly grow to.
+  @for $i from 1 through 8 {
+    &:nth-child(#{$i}) {
+      --step-index: #{$i - 1};
+    }
   }
 
-  &__number {
+  &__num {
+    grid-row: 1;
+    grid-column: 1;
     font-family: $font-display;
-    font-size: $text-sm;
+    font-size: clamp(2.75rem, 1.5rem + 5vw, 6.5rem);
     font-weight: $fw-ultra;
+    line-height: 0.8;
     color: var(--brand);
+    letter-spacing: -0.04em;
+
+    // Outlined, not filled: solid at this size the numeral would
+    // out-shout the title beside it. Filling it is the hover state,
+    // so the row lights up as one object. --brand only clears AA at
+    // large text (3:1) — fine here since nothing this size counts as
+    // small text, but it's why body copy below reads off --text/
+    // --text-muted instead. Guarded because without text-stroke the
+    // transparent fill would erase the numeral outright.
+    @supports (-webkit-text-stroke: 1px currentcolor) {
+      color: transparent;
+      -webkit-text-stroke-width: max(1.2px, 0.022em);
+      -webkit-text-stroke-color: var(--brand);
+      transition: color $dur-base $ease-out;
+    }
   }
 
   &__duration {
+    grid-row: 1;
+    grid-column: 2;
+    justify-self: end;
     font-size: $text-xs;
-    font-weight: $fw-medium;
-    color: var(--text-faint);
+    font-weight: $fw-semibold;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+
+    @include up($bp-lg) {
+      grid-column: 3;
+    }
+  }
+
+  &__text {
+    grid-row: 2;
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    gap: $space-2xs;
+
+    @include up($bp-lg) {
+      grid-row: 1;
+      grid-column: 2;
+    }
   }
 
   &__title {
-    font-size: $text-md;
-    font-weight: $fw-semibold;
-    line-height: 1.25;
+    // Set by hand rather than through @include display: that mixin
+    // forces overflow-wrap: normal so display type never splits, and
+    // "Implementación" in an extended face then overhangs its column
+    // instead of wrapping. Here the reset's break-word stays available.
+    font-family: $font-display;
+    font-size: clamp(1.35rem, 1.1rem + 1vw, 2.1rem);
+    font-weight: $fw-ultra;
+    line-height: 1.05;
     color: var(--text);
+    letter-spacing: -0.01em;
   }
 
   &__body {
-    @include body-copy;
-
-    max-width: 56ch;
+    max-width: 60ch;
     font-size: $text-base;
+    line-height: 1.6;
+    color: var(--text-muted);
+    text-wrap: pretty;
   }
+
+  @include hover {
+    .stage__num {
+      color: var(--brand);
+    }
+  }
+}
+
+// Violet on near-black has far less contrast than violet on light
+// grey, so the texture needs more opacity in dark mode, not less, to
+// hold the same visual weight. Same adjustment as services__bg.
+:root[data-theme='dark'] .process__bg {
+  opacity: 0.75;
 }
