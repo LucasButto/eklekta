@@ -261,7 +261,7 @@
   --panel-fill: #{rgba($paper, 0.06)};
   --panel-line: #{rgba($paper, 0.36)};
   --panel-line-hover: #{rgba($paper, 0.52)};
-  // The violet the bento metric uses on dark. --brand-deep would be
+  // Lifted off --brand-lift for this dark panel. --brand-deep would be
   // 3.4:1 here and unreadable as a highlight.
   --panel-accent: #b3acff;
   --panel-pop: #14141b;

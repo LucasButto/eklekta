@@ -1,17 +1,36 @@
-export interface ProjectMetric {
-  value: string
-  label: string
-}
-
 export interface Project {
   id: string
   title: string
   client: string
-  year: string
+  /**
+   * Optional on purpose: a delivery year is a factual claim about a real
+   * client, so a project carries one only once it is confirmed. The card
+   * drops the year from its meta line when it is missing rather than
+   * printing a placeholder.
+   */
+  year?: string
   categories: string[]
+  /** One line under the title in the dialog. Never on the card. */
+  subtitle: string
+  /**
+   * The card's teaser. Clamped to two lines there, so it has to say
+   * something on its own — the reader only gets the rest by opening the
+   * project.
+   */
   summary: string
-  metric: ProjectMetric
+  /** The full account of the work. Dialog only. */
+  description: string
   cover: string
+  /**
+   * Which part of the cover carries the brand. Every cover is a wide
+   * screenshot of a live site dropped into a portrait or square tile, so
+   * object-fit: cover throws most of the width away — 'left' or 'right'
+   * keeps whichever edge holds the logo and headline instead of
+   * centring on whatever happens to sit in the middle. Optional,
+   * defaults to 'center' when a project has no lopsided crop to worry
+   * about.
+   */
+  alignImg?: 'left' | 'center' | 'right'
   /** External link to the case study or the live site. */
   url: string
   featured: boolean

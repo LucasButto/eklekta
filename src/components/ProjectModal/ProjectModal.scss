@@ -1,0 +1,239 @@
+@use 'styles' as *;
+
+// =============================================================
+//  Project dialog
+//
+//  Every colour here comes off the themed custom properties, so the
+//  panel is a light card on the light page and a dark one on the dark
+//  page with no per-theme rules of its own.
+// =============================================================
+
+.project-modal {
+  // The element is in the top layer, so it needs no z-index — but it
+  // does come with a UA border and padding that would show as a frame
+  // around the panel, so both are cleared below.
+  width: min(64rem, 100% - 2 * var(--gutter));
+  max-width: none;
+  max-height: min(46rem, 100dvh - 2 * #{$space-lg});
+  // The UA centres a modal dialog with `inset: 0` plus `margin: auto`,
+  // and the reset's `* { margin: 0 }` beats the UA sheet — which left
+  // the panel resolving all four insets to zero and pinning itself to
+  // the top-left corner. Putting the auto margins back is the whole of
+  // the centring.
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  color: var(--text);
+  background-color: transparent;
+  border: 0;
+  border-radius: $radius-lg;
+
+  &::backdrop {
+    background-color: rgb(0 0 0 / 55%);
+
+    @supports (backdrop-filter: blur(1px)) {
+      backdrop-filter: blur(6px);
+    }
+  }
+
+  // Opening animation only. There is no closing counterpart: animating
+  // a dialog out needs the element to stay rendered while it plays,
+  // which means keeping it mounted after the state says it is gone —
+  // not worth the desync for 200ms of polish.
+  &[open] {
+    animation: project-modal-in $dur-base $ease-out;
+  }
+
+  &[open]::backdrop {
+    animation: project-modal-backdrop-in $dur-base $ease-out;
+  }
+
+  @include reduced-motion {
+    &[open],
+    &[open]::backdrop {
+      animation: none;
+    }
+  }
+
+  // ------------------------------------------------ the panel
+  &__panel {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr;
+    // The panel, not the dialog, is what scrolls: the close button is
+    // pinned to the panel and would scroll away with the content
+    // otherwise.
+    max-height: inherit;
+    overflow-y: auto;
+    background-color: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: $radius-lg;
+
+    @include up($bp-md) {
+      // Fractional, so the cover keeps its share of whatever width the
+      // panel gets. It was a fixed 17rem, which came out at 272px
+      // against 750px of text — a portrait sliver of a landscape
+      // screenshot. At 0.8fr it is closer to half the panel, and the
+      // wider the frame the more of the shot survives the crop.
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr);
+      align-items: start;
+      overflow: hidden;
+    }
+  }
+
+  // ------------------------------------------------ close
+  &__close {
+    position: absolute;
+    top: $space-sm;
+    right: $space-sm;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    color: var(--text);
+    background-color: var(--bg-nav);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    transition:
+      background-color $dur-base $ease-out,
+      color $dur-base $ease-out,
+      transform $dur-base $ease-spring;
+
+    @include focus-ring;
+
+    @supports (backdrop-filter: blur(1px)) {
+      backdrop-filter: blur(8px);
+    }
+
+    @include hover {
+      color: var(--on-brand);
+      background-color: var(--brand-deep);
+      border-color: transparent;
+      transform: rotate(90deg);
+    }
+
+    svg {
+      width: 1.05rem;
+      height: 1.05rem;
+    }
+  }
+
+  // ------------------------------------------------ cover
+  &__figure {
+    margin: 0;
+    overflow: hidden;
+    background-color: var(--surface-2);
+
+    img {
+      width: 100%;
+      // Below $bp-md the cover is a band across the top of the panel;
+      // it cannot be so tall that the text starts below the fold on a
+      // phone, but the band is the only place the screenshot is seen
+      // uncropped-ish, so it takes as much as that allows.
+      height: clamp(11rem, 42vw, 16rem);
+      object-fit: cover;
+      object-position: center;
+
+      &[data-align='left'] {
+        object-position: left center;
+      }
+
+      &[data-align='right'] {
+        object-position: right center;
+      }
+    }
+
+    @include up($bp-md) {
+      height: 100%;
+
+      img {
+        // Fills its column beside the text. The screenshots are ~2:1
+        // landscape and this frame is portrait, so the same left/centre
+        // bias the bento tiles use decides what survives the crop.
+        height: 100%;
+        min-height: 26rem;
+      }
+    }
+  }
+
+  // ------------------------------------------------ text column
+  &__body {
+    display: flex;
+    flex-direction: column;
+    // flex-start so the CTA is only as wide as its own label instead of
+    // stretching across the column. The cost is that every other child
+    // becomes shrink-to-fit too, so the text blocks below take their
+    // width back explicitly — without that the heading sized itself to
+    // its own content and then clipped the last glyph of it.
+    align-items: flex-start;
+    gap: $space-md;
+    padding: $space-lg;
+
+    @include up($bp-md) {
+      max-height: min(46rem, 100dvh - 2 * #{$space-lg});
+      padding: $space-xl $space-lg $space-lg;
+      overflow-y: auto;
+    }
+  }
+
+  &__header {
+    display: flex;
+    flex-direction: column;
+    gap: $space-3xs;
+    align-self: stretch;
+    // Clears the close button, which floats over this corner.
+    padding-right: 3rem;
+  }
+
+  &__eyebrow {
+    @include eyebrow;
+  }
+
+  &__title {
+    @include display($display-sm, $fw-ultra);
+
+    margin-top: $space-2xs;
+    font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.4rem);
+    color: var(--text);
+    // Same guard as the bento tile: the display face sets
+    // overflow-wrap: normal, and a client name is whatever the client
+    // is called. Only fires when a word cannot fit a line by itself.
+    overflow-wrap: break-word;
+  }
+
+  &__subtitle {
+    font-size: $text-md;
+    color: var(--text-muted);
+    text-wrap: pretty;
+  }
+
+  &__description {
+    @include body-copy;
+
+    align-self: stretch;
+    font-size: $text-base;
+  }
+}
+
+@keyframes project-modal-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes project-modal-backdrop-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
