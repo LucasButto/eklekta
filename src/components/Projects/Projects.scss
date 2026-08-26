@@ -136,22 +136,33 @@
   }
 
   // Stops are in px, measured up from the bottom edge — not in
-  // percentages. Tiles in this bento range from 302px to 625px tall,
-  // and with percentage stops the text on a short tile lands where the
-  // gradient is still weak: white on the lime cover measured 2.2:1
-  // there. Fixed offsets put the same dark band under the text at
-  // every tile size, and hold up when real photos replace the
-  // placeholder covers.
+  // percentages. Tiles in this bento range from ~200px to ~640px
+  // tall, and with percentage stops the text on a short tile lands
+  // where the gradient is still weak. Fixed offsets put the same dark
+  // band under the text at every tile size, and hold up when real
+  // photos replace the placeholder covers.
+  //
+  // The stops are set from the actual text positions on the real
+  // project photos, not eyeballed: the darkest requirement is the
+  // small, low-opacity meta line — measured against the four live
+  // covers, the tightest case (Peisino's pale driveway shot) needs
+  // ~46% black behind it to clear 4.5:1, so 50% at 80px carries a
+  // margin. The old curve ran a flat 80-88% through that same band —
+  // WCAG only asks for a third of that — which is what made every
+  // tile read as mostly-black instead of a photo with text on it.
+  // It also used to reach fully clear only 440px up, well past the
+  // ~310px a single-row tile actually is, so a short tile's own top
+  // edge never got there either; this one clears by 320px.
   &__scrim {
     position: absolute;
     inset: 0;
     background-image: linear-gradient(
       to top,
-      rgb(0 0 0 / 88%) 0,
-      rgb(0 0 0 / 80%) 165px,
-      rgb(0 0 0 / 42%) 255px,
-      rgb(0 0 0 / 8%) 355px,
-      rgb(0 0 0 / 0%) 440px
+      rgb(0 0 0 / 60%) 0,
+      rgb(0 0 0 / 50%) 80px,
+      rgb(0 0 0 / 34%) 200px,
+      rgb(0 0 0 / 6%) 280px,
+      rgb(0 0 0 / 0%) 320px
     );
   }
 
