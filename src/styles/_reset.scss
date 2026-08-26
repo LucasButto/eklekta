@@ -1,4 +1,5 @@
 @use 'tokens' as *;
+@use 'mixins' as *;
 
 *,
 *::before,
@@ -40,6 +41,30 @@ html {
   // padding and its pill are both rem-based — so 5.125rem lands a
   // section exactly where the header ends, at every width.
   scroll-padding-top: 5.125rem;
+
+  // ...except that "where the header ends" is the wrong landmark on a
+  // phone, for two reasons that only meet below $bp-lg.
+  //
+  // The header is a floating pill, not a solid bar: its box is 82px
+  // tall but it only PAINTS from 12px to 70px, and even there it is
+  // 72% opaque over a blur. Whatever the anchor leaves above the
+  // target is therefore on screen, not hidden behind a bar.
+  //
+  // And that band is exactly one section's bottom padding on desktop
+  // ($section-y is 67px at 1440, against an 82px header) but only
+  // 36px of it on a phone — so a phone was landing 46px of the
+  // PREVIOUS section's content, usually the bottom slice of a photo,
+  // directly under the pill. Tapping "Equipo" showed the last project
+  // tile first.
+  //
+  // Landing on $section-y instead means the band above the target is
+  // never more than the previous section's own bottom padding: the
+  // boundary itself tucks in behind the pill, and the target's eyebrow
+  // is the first thing under it. It tracks the viewport the same way
+  // the section rhythm does, so it holds from 320px up.
+  @include down($bp-lg) {
+    scroll-padding-top: $section-y;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
