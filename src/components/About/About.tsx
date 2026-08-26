@@ -1,7 +1,7 @@
-import { Button } from '@/components/Button/Button'
-import { Reveal } from '@/components/Reveal/Reveal'
-import { SectionHeading } from '@/components/SectionHeading/SectionHeading'
-import './About.scss'
+import { Button } from "@/components/Button/Button";
+import { Reveal } from "@/components/Reveal/Reveal";
+import { SectionHeading } from "@/components/SectionHeading/SectionHeading";
+import "./About.scss";
 
 export function About() {
   return (
@@ -9,7 +9,7 @@ export function About() {
       <div className="about__intro">
         <SectionHeading
           eyebrow="Quiénes somos"
-          title="Un estudio, no una lista de proveedores."
+          title="Diseñamos lo que tu negocio necesita para avanzar."
           intro="Diseño, desarrollo y automatización trabajan en la misma mesa. Por eso la marca, el producto y el proceso terminan contándose la misma historia en lugar de pelearse entre sí."
         />
       </div>
@@ -52,5 +52,5 @@ export function About() {
         </Reveal>
       </div>
     </section>
-  )
+  );
 }
