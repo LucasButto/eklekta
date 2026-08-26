@@ -1,42 +1,42 @@
 [
   {
-    "id": "valentina-rios",
-    "name": "Valentina Ríos",
-    "role": "Dirección de producto",
-    "focus": "Traduce lo que el negocio necesita en algo que se puede construir.",
-    "photo": "/images/team/member-1.jpg",
-    "linkedin": "https://www.linkedin.com/company/112493054/"
+    "id": "valentin-gonzalez-iturbe",
+    "name": "Valentín González Iturbe",
+    "role": "DISEÑADOR GRÁFICO (si, lo que leiste)",
+    "focus": "Diseño de interfaces de usuario y experiencia de usuario.",
+    "photo": "/images/team/team-valen.jpeg",
+    "linkedin": "https://www.linkedin.com/in/valentingonzaleziturbe/"
   },
   {
-    "id": "mateo-herrera",
-    "name": "Mateo Herrera",
-    "role": "Automatizaciones",
+    "id": "pedro-burdisso",
+    "name": "Pedro Burdisso",
+    "role": "CTC Invoice & Billing Ssr",
+    "focus": "Gestión comercial y gestión de proyectos.",
+    "photo": "/images/team/team-pedro.jpeg",
+    "linkedin": "https://www.linkedin.com/in/pedro-burdisso/"
+  },
+  {
+    "id": "constanza-martinez",
+    "name": "Constanza Martinez (se quemó)",
+    "role": "Automatización / Análisis de Datos",
     "focus": "Encuentra el paso manual que nadie mira y lo hace desaparecer.",
-    "photo": "/images/team/member-2.jpg",
-    "linkedin": "https://www.linkedin.com/company/112493054/"
+    "photo": "/images/team/team-coty.png",
+    "linkedin": "https://www.linkedin.com/in/coty-martinez/"
   },
   {
-    "id": "camila-ortiz",
-    "name": "Camila Ortiz",
-    "role": "Diseño UX/UI",
-    "focus": "Prototipa rápido para que discutamos pantallas y no opiniones.",
-    "photo": "/images/team/member-3.jpg",
-    "linkedin": "https://www.linkedin.com/company/112493054/"
-  },
-  {
-    "id": "tomas-aguirre",
-    "name": "Tomás Aguirre",
+    "id": "lucas-butto",
+    "name": "Lucas Butto",
     "role": "Desarrollo",
     "focus": "Escribe el código que va a seguir siendo legible dentro de dos años.",
-    "photo": "/images/team/member-4.jpg",
-    "linkedin": "https://www.linkedin.com/company/112493054/"
+    "photo": "/images/team/team-lucas.jpeg",
+    "linkedin": "https://www.linkedin.com/in/lucas-butto/"
   },
   {
-    "id": "julia-benitez",
-    "name": "Julia Benítez",
-    "role": "Branding",
-    "focus": "Define el sistema para que la marca aguante cualquier formato.",
-    "photo": "/images/team/member-5.jpg",
-    "linkedin": "https://www.linkedin.com/company/112493054/"
+    "id": "agustin-peisino",
+    "name": "Agustin Peisino",
+    "role": "Ingeniería Industrial / analista de calidad",
+    "focus": "Enfocado en mejorar la calidad de los productos.",
+    "photo": "/images/team/team-agustin.jpeg",
+    "linkedin": "https://www.linkedin.com/in/peisinoagustin/"
   }
 ]
