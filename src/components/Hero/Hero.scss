@@ -191,21 +191,23 @@
   }
 
   // ------------------------------------------------ scroll cue
+  // The mouse outline. Anchored to the band rather than placed in the
+  // flow, so it sits centred on the bottom edge without pushing the
+  // content block off the vertical rhythm it already has.
   &__scroll {
-    @include container;
-
-    position: relative;
+    position: absolute;
+    bottom: clamp(1rem, 0.4rem + 1.6vw, 2.25rem);
+    left: 50%;
     z-index: 2;
-    display: flex;
-    gap: $space-2xs;
-    align-items: center;
-    margin-top: clamp(1.5rem, 1rem + 3vw, 3rem);
-    font-size: $text-xs;
-    font-weight: $fw-medium;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--text-faint);
+    width: 1.625rem;
+    height: 2.625rem;
+    border: 2px solid var(--text-faint);
+    border-radius: $radius-pill;
+    transform: translateX(-50%);
 
+    // A mouse means nothing on a touch device, and a short window has
+    // no room to spare below the content. Same two cases the previous
+    // hint bowed out of.
     @include down($bp-md) {
       display: none;
     }
@@ -213,15 +215,20 @@
     @media (max-height: 700px) {
       display: none;
     }
-  }
 
-  &__scroll-line {
-    display: block;
-    width: 3.375rem;
-    height: 1px;
-    background-color: var(--border-strong);
-    transform-origin: left;
-    animation: hero-scroll-line 2.4s $ease-in-out infinite;
+    // The wheel.
+    &::after {
+      position: absolute;
+      top: 0.45rem;
+      left: 50%;
+      width: 0.25rem;
+      height: 0.5rem;
+      margin-left: -0.125rem;
+      content: '';
+      background-color: var(--brand);
+      border-radius: $radius-pill;
+      animation: hero-scroll-wheel 1.9s $ease-in-out infinite;
+    }
   }
 
   @include reduced-motion {
@@ -231,7 +238,11 @@
       animation: none;
     }
 
-    &__scroll-line {
+    // Resting at translate none leaves the wheel at the top of the
+    // mouse, so the hint still reads as a shape rather than an empty
+    // outline.
+    &__scroll::after {
+      transform: none;
       animation: none;
     }
   }
@@ -263,14 +274,25 @@
   }
 }
 
-@keyframes hero-scroll-line {
-  0%,
-  100% {
-    transform: scaleX(0.35);
+// The wheel travels the inside of the outline and fades at both ends,
+// so the loop restarts without a jump back to the top.
+@keyframes hero-scroll-wheel {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
   }
 
-  50% {
-    transform: scaleX(1);
+  25% {
+    opacity: 1;
+  }
+
+  75% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(0.85rem);
   }
 }
 

@@ -74,10 +74,11 @@ export function Hero() {
           </div>
         </div>
 
-        <p className="hero__scroll" aria-hidden="true">
-          <span className="hero__scroll-line" />
-          Scroll
-        </p>
+        {/* The familiar mouse hint, centred along the bottom edge.
+            Purely decorative, so it stays out of the accessibility
+            tree — the page is already reachable by keyboard and the
+            shape means nothing to a screen reader. */}
+        <span className="hero__scroll" aria-hidden="true" />
       </div>
     </section>
   );
