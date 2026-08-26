@@ -42,8 +42,8 @@ export function Hero() {
             // and skips the lazy-loading path every other image uses.
             fetchPriority="high"
             decoding="async"
-            width={1875}
-            height={839}
+            width={1920}
+            height={1080}
           />
         </picture>
         <div className="hero__scrim" aria-hidden="true" />
