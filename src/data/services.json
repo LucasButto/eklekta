@@ -3,30 +3,85 @@
     "id": "automatizaciones",
     "title": "Automatizaciones",
     "description": "Conectamos las herramientas que ya usás para que el trabajo repetitivo deje de ocupar horas.",
-    "deliverables": ["Mapa de procesos", "Integraciones", "Alertas y reportes"]
+    "deliverables": [
+      "Mapa de procesos",
+      "Integraciones",
+      "Alertas y reportes"
+    ],
+    "media": {
+      "src": "/images/services/automatizaciones",
+      "widths": [
+        800,
+        1023
+      ]
+    }
   },
   {
     "id": "crm",
     "title": "CRM",
     "description": "Implementamos y configuramos tu CRM: pipeline claro, datos limpios y tableros que se leen de un vistazo.",
-    "deliverables": ["Configuración", "Migración de datos", "Capacitación"]
+    "deliverables": [
+      "Configuración",
+      "Migración de datos",
+      "Capacitación"
+    ],
+    "media": {
+      "src": "/images/services/crm",
+      "widths": [
+        800,
+        1200
+      ]
+    }
   },
   {
     "id": "desarrollo-web",
     "title": "Desarrollo web a medida",
     "description": "Sitios y aplicaciones rápidas y mantenibles, construidas para tu caso y no para una plantilla.",
-    "deliverables": ["Web corporativa", "E-commerce", "Paneles internos"]
+    "deliverables": [
+      "Web corporativa",
+      "E-commerce",
+      "Paneles internos"
+    ],
+    "media": {
+      "src": "/images/services/desarrollo-web",
+      "widths": [
+        800,
+        1200
+      ]
+    }
   },
   {
     "id": "ux-ui",
     "title": "UX/UI",
     "description": "Investigación, flujos e interfaz. Diseñamos productos que se entienden sin manual.",
-    "deliverables": ["Research", "Prototipos", "Design system"]
+    "deliverables": [
+      "Research",
+      "Prototipos",
+      "Design system"
+    ],
+    "media": {
+      "src": "/images/services/ux-ui",
+      "widths": [
+        800,
+        1200
+      ]
+    }
   },
   {
     "id": "branding",
     "title": "Branding",
     "description": "Identidad, sistema visual y lineamientos de uso. Una marca que se sostiene en todos los formatos.",
-    "deliverables": ["Identidad", "Sistema visual", "Manual de marca"]
+    "deliverables": [
+      "Identidad",
+      "Sistema visual",
+      "Manual de marca"
+    ],
+    "media": {
+      "src": "/images/services/branding",
+      "widths": [
+        800,
+        1200
+      ]
+    }
   }
 ]

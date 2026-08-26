@@ -1,27 +1,33 @@
 @use 'styles' as *;
 
 .services {
+  // .services is the texture's containing block, same move as
+  // .process — but UNLIKE .process this section cannot take
+  // overflow:hidden: services__media further down is position:sticky,
+  // and any non-visible overflow on an ancestor between it and the
+  // scrolling viewport silently turns "sticky" into plain "relative".
+  // isolation:isolate still gives &__bg its stacking context without
+  // touching overflow, so the pinned panel stays intact.
+  position: relative;
+  isolation: isolate;
   // Section padding is split: the masthead owns the top so its
   // background can start at the section's very edge.
-  //
-  // Deliberately no `overflow` here — any value other than visible
-  // silently disables the sticky left rail further down.
   padding-bottom: $section-y;
   background-color: var(--bg-alt);
   transition: background-color $dur-slow $ease-out;
 
-  // ------------------------------------------------ title block
-  &__masthead {
-    position: relative;
-    // Contains the texture, and safe to clip because the sticky rail
-    // lives outside this wrapper.
-    isolation: isolate;
-    overflow: hidden;
-    padding-block: $section-y $heading-gap;
-  }
-
-  // Brand texture behind the title only. The service rows below keep a
-  // plain surface so the densest copy on the page has nothing to fight.
+  // Brand texture behind the entire section — masthead and list both.
+  // About above and Proyectos below both sit on the plain --bg (no
+  // --bg-alt of their own), so .services already meets them at a hard
+  // colour edge; that's what ends the texture now, same as every
+  // other section-to-section boundary on the page. No mask needed:
+  // the old fade existed to hide the seam between the (textured)
+  // masthead and the (plain) list inside this *same* --bg-alt surface
+  // — with the texture covering both, that internal seam is gone.
+  //
+  // object-fit:cover clips the image's own painted content to its own
+  // box regardless of the ancestor's overflow, so dropping
+  // overflow:hidden above doesn't let this escape the section.
   &__bg {
     position: absolute;
     inset: 0;
@@ -29,12 +35,14 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center;
+    object-position: top;
     pointer-events: none;
     opacity: 0.55;
-    // Fades out at the bottom so the texture dissolves into the flat
-    // surface instead of ending on a hard edge.
-    mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 100%);
+  }
+
+  // ------------------------------------------------ title block
+  &__masthead {
+    padding-block: $section-y $heading-gap;
   }
 
   &__inner {
@@ -47,68 +55,84 @@
     gap: clamp(2rem, 1rem + 4vw, 4.5rem);
 
     @include up($bp-lg) {
-      grid-template-columns: minmax(0, 0.62fr) minmax(0, 1fr);
-      align-items: start;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      column-gap: clamp(2rem, 1rem + 4vw, 5rem);
     }
   }
 
-  // ------------------------------------------------ left rail
-  &__aside {
+  // ------------------------------------------------ pinned rail
+  &__rail {
     display: flex;
     flex-direction: column;
     gap: $space-md;
     align-items: flex-start;
 
     @include up($bp-lg) {
+      // DOM order is list-then-rail (for mobile's sake); put the rail
+      // back in the left column explicitly rather than with `order`.
+      grid-column: 1;
+      grid-row: 1;
       position: sticky;
       top: 7.5rem;
-      // Caps the whole sticky column to the viewport. Without this,
-      // a short window pins the column past the fold and the button
-      // stays invisible until the list has almost scrolled past it.
+      // `start`, not the grid default `stretch`: a stretched item fills
+      // the whole row, which leaves sticky nothing to travel inside and
+      // silently turns the pin into a static box.
+      align-self: start;
+      // max-height, so the rail hugs its content and only the window
+      // caps it. A fixed height looked tidier but made the box 1951px
+      // at 4K against 1299px of content, and the pin then ended far too
+      // early for the last service to ever reach the panel's centre.
+      // Hugging keeps panel height, rail height and item height all
+      // rem-proportional, which is why the list padding below can be a
+      // single rem value that holds at every viewport.
       max-height: calc(100svh - 7.5rem - 2rem);
-
-      // The button never gives up space — the photo does.
-      > .button {
-        flex-shrink: 0;
-      }
     }
   }
 
-  &__figure {
+  // ------------------------------------------------ pinned panel
+  &__media {
+    position: relative;
+    display: none;
     width: 100%;
     overflow: hidden;
     background-color: var(--surface-2);
-    border-radius: $radius-md;
-
-    img {
-      width: 100%;
-      height: clamp(240px, 32vw, 460px);
-      object-fit: cover;
-    }
+    border-radius: $radius-lg;
 
     @include up($bp-lg) {
-      // grow:0 keeps this at its normal size when there's room to
-      // spare — only shrink:1 engages, and only once max-height on
-      // the aside actually runs out. Basis is a concrete value rather
-      // than `auto` so it doesn't get tangled with the img's own
-      // percentage height below.
-      flex: 0 1 clamp(240px, 32vw, 460px);
+      display: block;
+      aspect-ratio: 4 / 5;
+      // The panel is the only part that gives ground when the window is
+      // short: grow:0 keeps its aspect-ratio height when there's room,
+      // shrink:1 (with min-height:0 to allow it) trades height away so
+      // the note and button below stay on screen.
+      flex: 0 1 auto;
       min-height: 0;
-
-      img {
-        height: 100%;
-        min-height: 140px;
-      }
     }
   }
 
-  &__aside-note {
-    @include body-copy;
+  // The <picture>, not the <img> — it is the element carrying
+  // data-active, since CSS cannot reach a parent from the image inside.
+  &__shot {
+    position: absolute;
+    inset: 0;
+    display: block;
+    // Stacked, not swapped: cross-fading between five decoded images
+    // avoids the blank frame a changing src would leave behind.
+    opacity: 0;
+    transition: opacity $dur-base linear;
 
-    font-size: $text-base;
+    &[data-active='true'] {
+      opacity: 1;
+    }
 
-    @include up($bp-lg) {
-      flex-shrink: 0;
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    @include reduced-motion {
+      transition: none;
     }
   }
 
@@ -116,24 +140,57 @@
   &__list {
     display: flex;
     flex-direction: column;
+    gap: $space-3xl;
+
+    @include up($bp-lg) {
+      // Pairs with the rail's explicit grid-column: 1 above.
+      grid-column: 2;
+      grid-row: 1;
+      // Generous rhythm is the whole mechanism: the list has to outrun
+      // the pinned panel for the pin to have anything to hold through,
+      // and each service needs its own stretch of scroll to be the one
+      // at the reading line.
+      gap: 24vh;
+      // Buys the first and last service the room to reach the panel's
+      // centre while the rail is still pinned. Measured, not guessed:
+      // the first needs (panel height - item height) / 2 of lead-in, and
+      // the last needs rail height - panel height/2 - item height/2 of
+      // run-out. Both come out constant in rem — ~16.5 and ~27.5 at both
+      // 1920 and 4K — because the rail hugs content, so every term in
+      // them scales together. The values below add a little slack.
+      //
+      // Without this the first service was already 148px past the
+      // panel's centre before the pin even started, and the last one
+      // never reached it at all.
+      padding-block: 17rem 28.5rem;
+    }
   }
 
   &__item {
     display: flex;
     flex-direction: column;
     gap: $space-2xs;
-    padding-block: clamp(1.5rem, 1rem + 1.5vw, 2.25rem);
-    border-top: 1px solid var(--border);
+    align-items: flex-start;
 
-    &:last-child {
-      border-bottom: 1px solid var(--border);
+    @include up($bp-lg) {
+      // Written by useScrollSequence every frame. The fallbacks matter:
+      // before the first rAF, and for anyone on reduced motion, the
+      // item stays fully legible and unmoved.
+      opacity: var(--seq-opacity, 1);
+      transform: translate3d(0, calc(var(--seq-shift, 0) * 1.25rem), 0);
+      will-change: opacity, transform;
+    }
+
+    @include reduced-motion {
+      opacity: 1 !important;
+      transform: none !important;
     }
   }
 
   &__item-title {
     @include display($display-sm, $fw-ultra);
 
-    font-size: clamp(1.5rem, 1.1rem + 1.5vw, 2.4rem);
+    font-size: clamp(2rem, 1.5rem + 2vw, 3.25rem);
     color: var(--text);
     transition: color $dur-base $ease-out;
   }
@@ -146,7 +203,7 @@
     @include body-copy;
 
     max-width: 52ch;
-    font-size: $text-base;
+    font-size: $text-lg;
   }
 
   &__chips {
@@ -158,12 +215,59 @@
 
   &__chip {
     padding: 0.34em 0.85em;
-    font-size: $text-xs;
+    font-size: $text-sm;
     font-weight: $fw-medium;
     color: var(--brand);
     background-color: var(--brand-softer);
     border: 1px solid var(--brand-soft);
     border-radius: $radius-pill;
+  }
+
+  // Each service carries its own photo below $bp-lg, where there is
+  // no room to pin a panel beside the text.
+  &__item-figure {
+    width: 100%;
+    // Same 4:5 the files are generated at, so nothing is cropped twice.
+    // A short landscape band here would have cut the headline out of
+    // the branding photo, which sits across the top of its frame.
+    aspect-ratio: 4 / 5;
+    margin-top: $space-md;
+    overflow: hidden;
+    background-color: var(--surface-2);
+    border-radius: $radius-md;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    @include up($bp-lg) {
+      display: none;
+    }
+  }
+
+  // ------------------------------------------------ closing note
+  // Rides in the pinned rail under the panel, so the invitation stays
+  // on screen through the whole sequence rather than waiting at the
+  // bottom for a reader who may never get there.
+  &__closing {
+    display: flex;
+    flex-direction: column;
+    gap: $space-md;
+    align-items: flex-start;
+    max-width: 46ch;
+
+    @include up($bp-lg) {
+      // Never gives up height — the panel above is what shrinks.
+      flex-shrink: 0;
+    }
+  }
+
+  &__closing-note {
+    @include body-copy;
+
+    font-size: $text-base;
   }
 }
 

@@ -26,11 +26,23 @@ export interface TeamMember {
   linkedin: string
 }
 
+export interface ServiceMedia {
+  /** Path stem — `${src}-${width}.webp` / `.jpg` are the real files. */
+  src: string
+  /**
+   * Widths actually rendered, so the srcset descriptors match the files.
+   * Not every source photo reaches the largest step; none are upscaled.
+   */
+  widths: number[]
+}
+
 export interface Service {
   id: string
   title: string
   description: string
   deliverables: string[]
+  /** Photo the pinned panel swaps to while this service is being read. */
+  media: ServiceMedia
 }
 
 export interface ProcessStep {
