@@ -3,6 +3,11 @@
   "tagline": "Automatización, CRM, desarrollo web, UX/UI y branding.",
   "nav": [
     {
+      "id": "inicio",
+      "label": "Inicio",
+      "href": "#inicio"
+    },
+    {
       "id": "servicios",
       "label": "Servicios",
       "href": "#servicios"
