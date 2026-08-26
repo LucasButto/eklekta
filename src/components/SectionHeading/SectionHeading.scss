@@ -32,8 +32,17 @@
     &:has(.text-slab) {
       line-height: 1.18;
     }
+    // Insets the first line from the anchor edge, so a two-line display
+    // heading staggers the way the mockup does. Gated on $bp-md
+    // because that is where --right actually right-aligns: below it the
+    // heading flips to left-aligned (see the &--right override at the
+    // bottom of this file) and the inset becomes 100px of reserved
+    // space that nothing sits in — a third of the line on a 360px
+    // phone, and 14px past the heading's own box at 320px.
     p {
-      margin-right: 100px;
+      @include up($bp-md) {
+        margin-right: 100px;
+      }
     }
   }
 
