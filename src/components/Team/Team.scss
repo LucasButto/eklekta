@@ -3,7 +3,10 @@
 .team {
   @include section-spacing;
 
-  overflow: hidden;
+  // clip, not hidden: with the swipe rail gone there is nothing here
+  // that should ever scroll, and `hidden` would still leave the
+  // section programmatically scrollable.
+  overflow-x: clip;
 
   &__inner {
     @include container;
@@ -14,37 +17,41 @@
   }
 
   // ------------------------------------------------ the row
-  // Small screens get a swipeable rail; from md up it becomes the
-  // alternating offset row from the mockup.
+  // Wraps at every width. This used to be a swipeable rail below md —
+  // a mandatory-snap scroller sitting inside the page's own vertical
+  // scroll. On a phone the two competed: a near-vertical swipe was
+  // read as horizontal, the snap yanked the row to the next member
+  // mid-gesture, and the page appeared to seize. It also meant the
+  // fifth member was only reachable by a gesture nothing on screen
+  // advertised. A plain grid costs nothing and shows everyone.
   &__row {
+    @include container;
+
     display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(210px, 62vw);
-    gap: $space-sm;
-    padding-inline: var(--gutter);
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    overscroll-behavior-inline: contain;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: $space-lg $space-sm;
 
-    @include hide-scrollbar;
+    @include up($bp-sm) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
 
-    @include up($bp-md) {
-      @include container;
-
-      grid-auto-flow: initial;
-      grid-auto-columns: initial;
+    // The mockup's full five-across row waits for $bp-lg, not $bp-md.
+    // Five columns inside a 768px tablet leaves each card 130px wide
+    // under a 260px-tall photo — the same 1:2 sliver of a face the
+    // mobile rail's fixed height used to produce. Three across holds
+    // the portrait proportion through the whole tablet band.
+    @include up($bp-lg) {
       grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: clamp(0.75rem, 0.4rem + 1.2vw, 1.5rem);
       align-items: start;
-      overflow: visible;
     }
   }
 
   &__cell {
-    scroll-snap-align: center;
-
-    @include up($bp-md) {
-      // 2nd and 4th drop, as in the mockup
+    // 2nd and 4th drop, as in the mockup. Only once the row is the
+    // full five across — staggering a wrapping 2- or 3-up grid just
+    // opens a hole in the next line.
+    @include up($bp-lg) {
       &:nth-child(even) {
         margin-top: clamp(2rem, 1rem + 4vw, 5.5rem);
       }
@@ -64,11 +71,23 @@
 
     img {
       width: 100%;
-      height: clamp(16.25rem, 26vw, 25rem);
+      // While the row wraps, the cell is a fraction of the container
+      // rather than a fixed 210px rail card, so the portrait has to be
+      // sized by ratio. A flat 16.25rem floor against a ~160px column
+      // produced a 1:1.6 sliver of a face.
+      height: auto;
+      aspect-ratio: 3 / 4;
       object-fit: cover;
       transition:
         transform $dur-slow $ease-out,
         filter $dur-slow $ease-out;
+
+      // Five across: the columns are narrow and near-equal at every
+      // width, so a measured height reads more evenly than a ratio.
+      @include up($bp-lg) {
+        height: clamp(16.25rem, 26vw, 25rem);
+        aspect-ratio: auto;
+      }
     }
   }
 
