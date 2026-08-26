@@ -33,7 +33,7 @@
     box-shadow: var(--shadow-sm);
 
     @supports (backdrop-filter: blur(1px)) {
-      backdrop-filter: blur(14px) saturate(160%);
+      backdrop-filter: blur(8px) saturate(160%);
     }
   }
 
@@ -51,8 +51,8 @@
   &__mark {
     display: grid;
     place-items: center;
-    width: 36px;
-    height: 36px;
+    width: 2.25rem;
+    height: 2.25rem;
     font-size: 17px;
     color: var(--brand);
     background-color: var(--brand-soft);
@@ -148,8 +148,8 @@
   &__burger {
     display: none;
     place-items: center;
-    width: 40px;
-    height: 40px;
+    width: 2.5rem;
+    height: 2.5rem;
     color: var(--text);
     background-color: var(--surface-2);
     border: 1px solid var(--border);
@@ -164,6 +164,9 @@
 
   &__burger-lines {
     display: grid;
+    // Stays in px: the burger only renders below $bp-lg, where the root
+    // ramp has not started, and the close-X transform below is tuned in
+    // px against these exact values.
     gap: 5px;
     width: 17px;
 

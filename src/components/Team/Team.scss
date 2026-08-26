@@ -64,7 +64,7 @@
 
     img {
       width: 100%;
-      height: clamp(260px, 26vw, 400px);
+      height: clamp(16.25rem, 26vw, 25rem);
       object-fit: cover;
       transition:
         transform $dur-slow $ease-out,

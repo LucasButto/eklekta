@@ -31,7 +31,7 @@
     // sense once there is room for the text to sit across it.
     @include down($bp-lg) {
       img {
-        height: clamp(200px, 44vw, 320px);
+        height: clamp(12.5rem, 44vw, 20rem);
       }
     }
 
@@ -45,22 +45,22 @@
       &--lead {
         top: 0;
         left: 0;
-        width: clamp(150px, 13vw, 215px);
-        height: clamp(200px, 17vw, 285px);
+        width: clamp(9.375rem, 13vw, 13.4375rem);
+        height: clamp(12.5rem, 17vw, 17.8125rem);
       }
 
       &--mid {
         top: 30%;
         right: 0;
-        width: clamp(200px, 18vw, 300px);
-        height: clamp(250px, 23vw, 390px);
+        width: clamp(12.5rem, 18vw, 18.75rem);
+        height: clamp(15.625rem, 23vw, 24.375rem);
       }
 
       &--trail {
         bottom: 2%;
         left: 3%;
-        width: clamp(140px, 12vw, 200px);
-        height: clamp(190px, 16vw, 265px);
+        width: clamp(8.75rem, 12vw, 12.5rem);
+        height: clamp(11.875rem, 16vw, 16.5625rem);
       }
     }
   }
