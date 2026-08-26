@@ -1,4 +1,5 @@
 import { Button } from '@/components/Button/Button'
+import { ContactForm } from '@/components/ContactForm/ContactForm'
 import { Reveal } from '@/components/Reveal/Reveal'
 import site from '@/data/site.json'
 import type { SiteData } from '@/types'
@@ -67,15 +68,8 @@ export function Contact() {
             </div>
           </Reveal>
 
-          <Reveal className="contact__figure" delay={140}>
-            <img
-              src="/images/editorial/contact.jpg"
-              alt=""
-              loading="lazy"
-              decoding="async"
-              width={1200}
-              height={1200}
-            />
+          <Reveal className="contact__form" delay={140}>
+            <ContactForm />
           </Reveal>
         </div>
       </div>

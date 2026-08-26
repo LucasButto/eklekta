@@ -46,6 +46,16 @@
     transform: translateY(0);
   }
 
+  // Needed since the contact form disables its submit while sending.
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+
+    @include hover {
+      transform: none;
+    }
+  }
+
   // ------------------------------------------------ variants
   &--solid {
     @include hover {

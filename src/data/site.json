@@ -2,11 +2,31 @@
   "name": "eklekta",
   "tagline": "Automatización, CRM, desarrollo web, UX/UI y branding.",
   "nav": [
-    { "id": "servicios", "label": "Servicios", "href": "#servicios" },
-    { "id": "proyectos", "label": "Proyectos", "href": "#proyectos" },
-    { "id": "equipo", "label": "Equipo", "href": "#equipo" },
-    { "id": "proceso", "label": "Proceso", "href": "#proceso" },
-    { "id": "contacto", "label": "Contacto", "href": "#contacto" }
+    {
+      "id": "servicios",
+      "label": "Servicios",
+      "href": "#servicios"
+    },
+    {
+      "id": "proyectos",
+      "label": "Proyectos",
+      "href": "#proyectos"
+    },
+    {
+      "id": "equipo",
+      "label": "Equipo",
+      "href": "#equipo"
+    },
+    {
+      "id": "proceso",
+      "label": "Proceso",
+      "href": "#proceso"
+    },
+    {
+      "id": "contacto",
+      "label": "Contacto",
+      "href": "#contacto"
+    }
   ],
   "cta": {
     "label": "Date un upgrade",
@@ -15,7 +35,8 @@
   "contact": {
     "email": "hola@eklekta.studio",
     "location": "Trabajamos en remoto, con equipos de toda Latinoamérica y España.",
-    "availability": "Agenda abierta para proyectos que arrancan este trimestre."
+    "availability": "Agenda abierta para proyectos que arrancan este trimestre.",
+    "formEndpoint": ""
   },
   "socials": [
     {

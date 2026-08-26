@@ -1,0 +1,273 @@
+@use 'styles' as *;
+
+// =============================================================
+//  A light card on the light page, a dark one on the dark page.
+//
+//  Everything below reads from --panel-*, and the two themes are
+//  the only places those get set — so the layout, the spacing and
+//  the listbox are written once and follow whichever surface they
+//  land on.
+//
+//  One value does not simply mirror: --panel-line. That is the
+//  border of a control, which WCAG holds to 3:1, and the page's
+//  own --border is 1.3:1 on white. So the light theme draws a
+//  deliberately stronger grey than a hairline would give.
+// =============================================================
+
+.contact-form {
+  --panel: var(--surface);
+  --panel-text: var(--text);
+  --panel-muted: var(--text-muted);
+  // The card's own edge is decoration, not a control boundary, so it
+  // can stay on the page hairline.
+  --panel-edge: var(--border);
+  // Fields sit a shade above the card, so the fill separates them as
+  // well as the border does.
+  --panel-fill: #{$paper};
+  // 3.2:1 on that fill. --border would be 1.3:1 and --border-strong
+  // 1.8:1, both under what a control's boundary owes.
+  --panel-line: #{rgba($ink, 0.46)};
+  --panel-line-hover: #{rgba($ink, 0.62)};
+  --panel-accent: var(--brand-deep);
+  --panel-pop: #{$paper};
+  --panel-shadow: var(--shadow-md);
+  --form-error: #c2410c;
+
+  color-scheme: light;
+
+  display: flex;
+  flex-direction: column;
+  gap: $space-md;
+  width: 100%;
+  padding: clamp(1.5rem, 1rem + 1.8vw, 2.5rem);
+  color: var(--panel-text);
+  background-color: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: $radius-lg;
+  box-shadow: var(--panel-shadow);
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: $space-3xs;
+
+    > label {
+      @include eyebrow;
+
+      // eyebrow reads --text-muted directly, which would not follow the
+      // panel when the panel is the thing that changed.
+      color: var(--panel-muted);
+      cursor: pointer;
+    }
+  }
+
+  input,
+  textarea {
+    width: 100%;
+    padding: 0.7em 0.85em;
+    font-family: $font-body;
+    // Floored at 16px: iOS Safari zooms the page in when a focused
+    // control is smaller than that, and $text-base bottoms out at
+    // 15.2px on phones — exactly where it would happen.
+    font-size: max(16px, #{$text-base});
+    line-height: 1.5;
+    color: var(--panel-text);
+    background-color: var(--panel-fill);
+    border: 1px solid var(--panel-line);
+    border-radius: $radius-md;
+    transition: border-color $dur-base $ease-out;
+
+    &::placeholder {
+      // --panel-muted, not --text-faint: faint is 3.4:1 on white, and
+      // placeholder text owes the same 4.5:1 as any other text.
+      color: var(--panel-muted);
+    }
+
+    &:hover {
+      border-color: var(--panel-line-hover);
+    }
+
+    &:focus,
+    &:focus-visible {
+      outline: 2px solid var(--panel-accent);
+      outline-offset: 2px;
+      border-color: var(--panel-accent);
+    }
+  }
+
+  textarea {
+    min-height: 7rem;
+    resize: vertical;
+  }
+
+  &__field[data-invalid='true'] {
+    input,
+    textarea {
+      border-color: var(--form-error);
+    }
+  }
+
+  &__error {
+    font-size: $text-xs;
+    font-weight: $fw-medium;
+    color: var(--form-error);
+  }
+
+  // Off-screen rather than display:none — some bots skip what is
+  // display:none, and the point is that they do fill this in.
+  &__trap {
+    @include visually-hidden;
+  }
+
+  &__foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-sm $space-md;
+    align-items: center;
+    margin-top: $space-2xs;
+  }
+
+  // The filled pill is --brand-deep, which the dark theme flips to a
+  // lighter violet that carries only 4.4:1 with white on it. Pinned to
+  // the literal here so the send button clears 5.0:1 on both pages.
+  .button--solid {
+    --button-bg: #{$brand-deep};
+    --button-fg: #{$paper};
+
+    @include hover {
+      --button-bg: #{$brand-press};
+    }
+  }
+
+  &__status {
+    flex: 1 1 14rem;
+    font-size: $text-sm;
+    color: var(--panel-muted);
+    text-wrap: pretty;
+
+    // Empty between submits — without this the flex gap still reserves
+    // a column and the button drifts off the left edge.
+    &:empty {
+      display: none;
+    }
+
+    a {
+      color: var(--panel-accent);
+      border-bottom: 1px solid currentcolor;
+    }
+  }
+}
+
+// ------------------------------------------------ the listbox
+// Replaces the native <select>, whose popup the OS draws and CSS cannot
+// reach — that blue highlight and those row heights ignore every rule.
+// Here it is real DOM, so it takes the card's palette like the fields.
+.service-select {
+  position: relative;
+
+  &__button {
+    display: flex;
+    gap: $space-2xs;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.7em 0.85em;
+    font-family: $font-body;
+    font-size: max(16px, #{$text-base});
+    line-height: 1.5;
+    text-align: left;
+    color: var(--panel-text);
+    background-color: var(--panel-fill);
+    border: 1px solid var(--panel-line);
+    border-radius: $radius-md;
+    cursor: pointer;
+    transition: border-color $dur-base $ease-out;
+
+    &:hover {
+      border-color: var(--panel-line-hover);
+    }
+
+    &:focus,
+    &:focus-visible {
+      outline: 2px solid var(--panel-accent);
+      outline-offset: 2px;
+      border-color: var(--panel-accent);
+    }
+
+    // Still the prompt, not an answer already given.
+    &[data-placeholder] {
+      color: var(--panel-muted);
+    }
+  }
+
+  &__chevron {
+    flex-shrink: 0;
+    width: 0.45em;
+    height: 0.45em;
+    border-right: 2px solid currentcolor;
+    border-bottom: 2px solid currentcolor;
+    transform: translateY(-25%) rotate(45deg);
+    opacity: 0.6;
+  }
+
+  &__list {
+    position: absolute;
+    top: calc(100% + #{$space-3xs});
+    left: 0;
+    z-index: $z-overlay;
+    width: 100%;
+    max-height: 15rem;
+    padding: $space-3xs;
+    overflow-y: auto;
+    background-color: var(--panel-pop);
+    border: 1px solid var(--panel-edge);
+    border-radius: $radius-md;
+    box-shadow: var(--shadow-lg);
+  }
+
+  &__option {
+    padding: 0.55em 0.7em;
+    font-size: max(16px, #{$text-base});
+    line-height: 1.4;
+    color: var(--panel-text);
+    border-radius: $radius-sm;
+    cursor: pointer;
+
+    // One highlight for both pointer and keyboard: the list sets
+    // data-active on hover as well as on arrow keys, so two rows never
+    // look selected at once.
+    &[data-active] {
+      color: var(--panel-pop);
+      background-color: var(--panel-accent);
+    }
+
+    &[aria-selected='true']:not([data-active]) {
+      font-weight: $fw-semibold;
+      color: var(--panel-accent);
+    }
+  }
+}
+
+// ------------------------------------------------ the dark page
+// The same card, re-pointed at a dark surface.
+:root[data-theme='dark'] .contact-form {
+  // A shade above the page: a flat panel at the page's own colour has no
+  // edge of its own. The bento tiles get theirs from the photograph
+  // underneath, and this card has no photograph.
+  --panel: #1f1f29;
+  --panel-text: #{$paper};
+  --panel-muted: #{rgba($paper, 0.78)};
+  --panel-edge: #{rgba($paper, 0.22)};
+  --panel-fill: #{rgba($paper, 0.06)};
+  --panel-line: #{rgba($paper, 0.36)};
+  --panel-line-hover: #{rgba($paper, 0.52)};
+  // The violet the bento metric uses on dark. --brand-deep would be
+  // 3.4:1 here and unreadable as a highlight.
+  --panel-accent: #b3acff;
+  --panel-pop: #14141b;
+  // A drop shadow does nothing on a dark page.
+  --panel-shadow: none;
+  --form-error: #fb923c;
+
+  color-scheme: dark;
+}

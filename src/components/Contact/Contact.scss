@@ -24,10 +24,13 @@
     display: grid;
     grid-template-columns: 1fr;
     gap: clamp(2rem, 1rem + 4vw, 4rem);
-    align-items: center;
+    // Stacked, each block is only as tall as its own content.
+    align-items: start;
 
     @include up($bp-lg) {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 0.78fr);
+      // Was 0.78fr for the figure. The form needs comfortable line
+      // lengths in its inputs, so the two columns even out.
+      grid-template-columns: minmax(0, 1fr) minmax(0, 0.92fr);
     }
   }
 
@@ -150,16 +153,17 @@
     color: var(--text-faint);
   }
 
-  // ------------------------------------------------ figure
-  &__figure {
-    overflow: hidden;
-    background-color: var(--surface-2);
-    border-radius: $radius-md;
+  // ------------------------------------------------ form column
+  &__form {
+    width: 100%;
 
-    img {
-      width: 100%;
-      height: clamp(260px, 40vw, 520px);
-      object-fit: cover;
+    @include up($bp-lg) {
+      // Starts level with the title, not with the eyebrow above it, so
+      // the two columns open on the same line. That distance is the
+      // eyebrow's own line box plus the panel's flex gap, written out
+      // so it keeps tracking the type scale instead of being a
+      // hardcoded 44px.
+      padding-top: calc(#{$text-xs} * 1.6 + #{$space-md});
     }
   }
 }

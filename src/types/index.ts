@@ -75,6 +75,13 @@ export interface SiteData {
     email: string
     location: string
     availability: string
+    /**
+     * Where the contact form POSTs its JSON (Formspree, Web3Forms, a
+     * serverless function — anything that accepts a JSON body). Leave
+     * empty and the form falls back to opening the visitor's mail
+     * client with every field already filled in.
+     */
+    formEndpoint: string
   }
   socials: SocialLink[]
 }
