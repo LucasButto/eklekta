@@ -1,14 +1,38 @@
 @use 'styles' as *;
 
+// =============================================================
+//  Proyectos opts out of the large-display root ramp.
+//
+//  Every other section grows with the ramp and gains from it, but this
+//  one is a fixed bento that is meant to be taken in at a glance. At
+//  2560 the ramp put the root at 18px and pushed the section from
+//  1259px to 1416px, which no longer clears the header on a 1440-tall
+//  screen — the last tile fell off the fold.
+//
+//  rem always resolves against the root, so a section cannot cancel the
+//  ramp with font-size. The three values that actually carry the
+//  section's height are therefore pinned in px, which do not ramp. The
+//  card text below stays on the shared rem tokens: it is small enough
+//  that the ramp helps there and costs almost nothing in height.
+// =============================================================
+
 .projects {
-  @include section-spacing;
+  // $section-y in px — the ramp took this from 72px to 81px a side.
+  padding-block: clamp(36px, 24px + 3vw, 72px);
 
   &__inner {
     @include container;
   }
 
   &__heading {
-    margin-bottom: $heading-gap;
+    // $heading-gap in px, same reason.
+    margin-bottom: clamp(28px, 17.6px + 2.6vw, 56px);
+  }
+
+  // The display face is what the ramp inflates most: three lines at
+  // 100.8px instead of 89.6px cost the section ~34px on its own.
+  .section-heading__title {
+    font-size: clamp(31.2px, 14.4px + 4.9vw, 89.6px);
   }
 
   // ------------------------------------------------ bento grid
@@ -24,6 +48,8 @@
     @include up($bp-lg) {
       grid-template-columns: repeat(4, minmax(0, 1fr));
       // Row height drives the whole bento; tiles span 1 or 2 of these.
+      // Back in px: this is the single biggest term in the section's
+      // height, and the ramp was stretching each row 310px -> 349px.
       grid-auto-rows: clamp(200px, 21vw, 310px);
     }
   }
