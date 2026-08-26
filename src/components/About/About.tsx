@@ -17,7 +17,7 @@ export function About() {
       <div className="about__feature">
         <Reveal className="about__figure about__figure--lead">
           <img
-            src="/images/editorial/about.jpg"
+            src="/images/editorial/about0.jpg"
             alt=""
             loading="lazy"
             decoding="async"
@@ -42,7 +42,7 @@ export function About() {
 
         <Reveal className="about__figure about__figure--trail" delay={220}>
           <img
-            src="/images/editorial/manifesto-2.jpg"
+            src="/images/editorial/manifesto-20.jpg"
             alt=""
             loading="lazy"
             decoding="async"

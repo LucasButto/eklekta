@@ -2,9 +2,9 @@ import { Reveal } from '@/components/Reveal/Reveal'
 import './Manifesto.scss'
 
 const figures = [
-  { src: '/images/editorial/manifesto-1.jpg', position: 'lead', width: 900, height: 1100 },
-  { src: '/images/editorial/manifesto-2.jpg', position: 'mid', width: 1100, height: 1200 },
-  { src: '/images/editorial/manifesto-3.jpg', position: 'trail', width: 900, height: 1100 },
+  { src: '/images/editorial/manifesto-100.jpg', position: 'lead', width: 900, height: 1100 },
+  { src: '/images/editorial/manifesto-200.jpg', position: 'mid', width: 1100, height: 1200 },
+  { src: '/images/editorial/manifesto-300.jpg', position: 'trail', width: 900, height: 1100 },
 ]
 
 export function Manifesto() {
