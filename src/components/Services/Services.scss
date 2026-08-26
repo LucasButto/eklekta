@@ -51,7 +51,15 @@
 
   &__body {
     display: grid;
-    grid-template-columns: 1fr;
+    // minmax(0, …), never a bare `1fr`. A bare fr track floors at the
+    // min-content width of what is inside it, and what is inside it is
+    // display type with overflow-wrap:normal — one unbreakable word
+    // ("Automatizaciones") measured 382px and dragged the track, the
+    // figures, the rail and the whole document out to 404px on a 375px
+    // phone. That document overflow is also what widened the layout
+    // viewport on Android, which is why the fixed navbar was rendering
+    // wider than the screen with its right edge off-frame.
+    grid-template-columns: minmax(0, 1fr);
     gap: clamp(2rem, 1rem + 4vw, 4.5rem);
 
     @include up($bp-lg) {
@@ -66,6 +74,10 @@
     flex-direction: column;
     gap: $space-md;
     align-items: flex-start;
+    // Grid items default to min-width:auto, so the track cap above is
+    // only half the guard — without this the item still reports its
+    // min-content width and overflows the track it was given.
+    min-width: 0;
 
     @include up($bp-lg) {
       // DOM order is list-then-rail (for mobile's sake); put the rail
@@ -141,6 +153,8 @@
     display: flex;
     flex-direction: column;
     gap: $space-3xl;
+    // Same guard as &__rail — see the note on &__body.
+    min-width: 0;
 
     @include up($bp-lg) {
       // Pairs with the rail's explicit grid-column: 1 above.
