@@ -190,9 +190,37 @@
   &__item-title {
     @include display($display-sm, $fw-ultra);
 
-    font-size: clamp(2rem, 1.5rem + 2vw, 3.25rem);
+    // The scale has to honour the same contract the display tokens
+    // set for themselves: the longest word on the page still fits the
+    // narrowest phone. "Automatizaciones" measures 11.9em in Monument
+    // Extended, and the old floor of 2rem made it 382px against 333px
+    // of content on a 375px screen — it could not wrap (the display
+    // mixin sets overflow-wrap: normal on purpose) so it simply pushed
+    // its column wider than the page.
+    //
+    // The curve below keeps the word under (viewport - 2 gutters) from
+    // ~305px up, while the single column runs the full container.
+    font-size: clamp(1.35rem, 0.85rem + 2.9vw, 3.25rem);
     color: var(--text);
     transition: color $dur-base $ease-out;
+
+    // Insurance, not layout. The two rules above are measured against
+    // Monument Extended's metrics and today's five service names, and
+    // neither is guaranteed: the face can fail to load, and a sixth
+    // service can be named anything. break-word costs nothing while
+    // the word fits — it only ever fires when a word cannot fit on a
+    // line by itself, which is exactly the case that used to take the
+    // page's whole horizontal axis with it.
+    overflow-wrap: break-word;
+
+    // From $bp-lg the text column is a little under half the
+    // container, not the whole of it, so the scale has to restart
+    // against that narrower measure. On the old single curve
+    // "Automatizaciones" ran 41px past the right edge of a 1024px
+    // window and only came back inside around 1300px.
+    @include up($bp-lg) {
+      font-size: clamp(2rem, -0.14rem + 3.63vw, 3.1rem);
+    }
   }
 
   &__item:hover &__item-title {
