@@ -11,7 +11,7 @@ const BACKGROUND = "/images/works/blueprint-grid.webp";
 
 export function Process() {
   return (
-    <section className="process" id="proceso">
+    <section className="process">
       <img
         className="process__bg"
         src={BACKGROUND}
@@ -22,14 +22,10 @@ export function Process() {
         height={1600}
       />
 
-      <div className="process__masthead">
+      <div className="process__masthead" id="proceso">
         <div className="process__inner">
           <div className="process__head">
-            <SectionHeading
-              eyebrow="Cómo trabajamos"
-              title="Proceso"
-              className="process__heading"
-            />
+            <SectionHeading title="Proceso" className="process__heading" />
 
             <Reveal className="process__aside" delay={120}>
               <p className="process__intro">

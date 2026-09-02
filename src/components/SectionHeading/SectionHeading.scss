@@ -6,23 +6,7 @@
   gap: $space-md;
   // Wide enough for display type to keep 2–3 words per line; the
   // intro below is constrained separately for readability.
-  max-width: min(100%, 56rem);
-
-  &__eyebrow {
-    @include eyebrow;
-
-    display: flex;
-    gap: $space-2xs;
-    align-items: center;
-
-    &::before {
-      display: inline-block;
-      width: 22px;
-      height: 2px;
-      content: "";
-      background-color: var(--brand);
-    }
-  }
+  max-width: min(100%, 57rem);
 
   &__title {
     @include display($display-md);
@@ -69,20 +53,12 @@
     align-items: flex-end;
     margin-inline-start: auto;
     text-align: right;
-
-    .section-heading__eyebrow {
-      flex-direction: row-reverse;
-    }
   }
 
   @include down($bp-md) {
     &--right {
       align-items: flex-start;
       text-align: left;
-
-      .section-heading__eyebrow {
-        flex-direction: row;
-      }
     }
   }
 }

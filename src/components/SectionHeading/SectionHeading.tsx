@@ -3,7 +3,6 @@ import { Reveal } from '@/components/Reveal/Reveal'
 import './SectionHeading.scss'
 
 interface SectionHeadingProps {
-  eyebrow?: string
   title: ReactNode
   intro?: ReactNode
   align?: 'left' | 'center' | 'right'
@@ -14,7 +13,6 @@ interface SectionHeadingProps {
 }
 
 export function SectionHeading({
-  eyebrow,
   title,
   intro,
   align = 'left',
@@ -28,7 +26,6 @@ export function SectionHeading({
 
   return (
     <Reveal className={classes}>
-      {eyebrow && <p className="section-heading__eyebrow">{eyebrow}</p>}
       <Tag className="section-heading__title" id={id}>
         {title}
       </Tag>

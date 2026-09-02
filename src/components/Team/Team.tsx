@@ -1,17 +1,16 @@
-import { Reveal } from '@/components/Reveal/Reveal'
-import { SectionHeading } from '@/components/SectionHeading/SectionHeading'
-import teamData from '@/data/team.json'
-import type { TeamMember } from '@/types'
-import './Team.scss'
+import { Reveal } from "@/components/Reveal/Reveal";
+import { SectionHeading } from "@/components/SectionHeading/SectionHeading";
+import teamData from "@/data/team.json";
+import type { TeamMember } from "@/types";
+import "./Team.scss";
 
-const team = teamData as TeamMember[]
+const team = teamData as TeamMember[];
 
 export function Team() {
   return (
     <section className="team" id="equipo">
       <div className="team__inner">
         <SectionHeading
-          eyebrow="Equipo"
           align="center"
           className="team__heading"
           title="Hablás con quien hace el trabajo."
@@ -21,7 +20,12 @@ export function Team() {
 
       <ul className="team__row">
         {team.map((member, index) => (
-          <Reveal as="li" className="team__cell" key={member.id} delay={index * 80}>
+          <Reveal
+            as="li"
+            className="team__cell"
+            key={member.id}
+            delay={index * 80}
+          >
             <article className="member">
               <div className="member__photo">
                 <img
@@ -53,5 +57,5 @@ export function Team() {
         ))}
       </ul>
     </section>
-  )
+  );
 }
