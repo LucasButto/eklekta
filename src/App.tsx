@@ -29,8 +29,8 @@ export default function App() {
         <Services />
         <Projects />
         <Team />
-        <Manifesto />
         <Process />
+        <Manifesto />
         <Contact />
       </main>
 
