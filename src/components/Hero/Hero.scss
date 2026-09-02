@@ -1,38 +1,100 @@
 @use "styles" as *;
 
 // =============================================================
-//  Hero — a full-bleed studio photo with the white wordmark set
-//  large along the floor of the frame, on a wash that rises off
-//  the bottom edge: a brand-violet block (--brand-deep) in light,
-//  the neutral --bg-band in dark (where violet reads as an
-//  intrusion). motion.dev "scroll zoom" exit:
-//  https://examples.motion.dev/react/scroll-zoom-hero
+//  Hero — the masthead layout from the mockup: a grey band across
+//  the top of the screen carrying the wordmark set very large
+//  along its floor in ink, and the full-bleed studio photo filling
+//  the rest of the viewport under it. The nav pill floats over the
+//  band (Navbar is fixed, which is why the band runs to the very
+//  top of the page).
 //
-//  At rest it is one screen: the portrait fills it, the wordmark
-//  sits under her on the wash — no hard masthead, nothing crops
-//  her. Where the browser has scroll-driven animations the
-//  section runs to 200svh, the viewport pins for the first
-//  screen, and across it the photo scales to 1.5 + blurs to 10px
-//  + fades while the wordmark sinks out the bottom and fades —
-//  the moves the Motion example makes, rebuilt as CSS @keyframes
-//  on a view() timeline. The next section climbs over (About.scss:
+//  On top of that layout, the motion.dev "scroll zoom" exit is
+//  kept: https://examples.motion.dev/react/scroll-zoom-hero
+//  Where the browser has scroll-driven animations the section runs
+//  to 200svh, the viewport pins for the first screen, and across it
+//  the photo scales to 1.5 + blurs to 10px + fades while the
+//  wordmark lifts out through the top of the band and fades — the
+//  moves the Motion example makes, rebuilt as CSS @keyframes on a
+//  view() timeline. The band itself stays put so nothing gaps
+//  behind the mark. The next section climbs over (About.scss:
 //  z-index + an opaque bg).
 // =============================================================
 
 .hero {
+  // The split between the two bands. One knob, so the balance can be
+  // dialled in from devtools; the photo takes whatever is left.
+  --hero-band: 46svh;
+  // The mouse hint sits on the photo, so it is keyed to the photo, not
+  // to the theme surface — and the bottom of the frame is her dark
+  // clothing in both themes, so it is white with a shadow rather than
+  // the mockup's ink (which vanishes there).
+  --hero-cue: #{rgba(#ffffff, 0.88)};
+
   position: relative;
 
   &__viewport {
     // `position: relative` is the no-timeline fallback; the @supports
     // block below promotes it to sticky.
     position: relative;
+    display: flex;
+    flex-direction: column;
     height: 100svh;
     overflow: clip;
     // Shows behind the photo while it decodes.
     background-color: var(--bg-band);
   }
 
-  // ---- the photo — motion.dev's `hero-background` ----
+  // ---- the grey masthead band ----
+  // The wordmark centres in the room between the fixed nav pill and the
+  // photo's top edge — a hair low of centre, since the top padding
+  // (which is what holds it clear of the pill, ~4.75rem tall) is the
+  // larger of the two. That lands it where the mockup has it on a
+  // 900-tall window and keeps the balance on every other height.
+  &__band {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    height: var(--hero-band);
+    padding: 5.5rem var(--gutter) 2.5rem;
+    background-color: var(--bg-band);
+  }
+
+  &__title {
+    width: 100%;
+    margin: 0;
+  }
+
+  &__wordmark {
+    --logo-wordmark-size: auto;
+
+    display: block;
+    color: var(--brand);
+    animation: hero-mark-in 800ms $ease-out both;
+
+    svg {
+      // 3724 × 836 viewBox (~4.45:1), run to 60% of the screen from the
+      // gutter — the mockup's proportion.
+      width: min(60vw, 68rem);
+      // Short windows: the band gets small before the width clamp ever
+      // bites, so height is the binding constraint. An <svg> is a
+      // replaced element, so capping the height scales the width with
+      // it and the ratio holds.
+      max-height: calc(var(--hero-band) - 8.5rem);
+    }
+  }
+
+  // ---- the photo, filling what's left of the screen ----
+  &__frame {
+    position: relative;
+    // `min-height: 0` so the flex item is allowed to be shorter than
+    // the image's intrinsic height instead of pushing the band up.
+    flex: 1;
+    min-height: 0;
+    overflow: clip;
+  }
+
   &__photo {
     position: absolute;
     inset: 0;
@@ -48,98 +110,81 @@
 
     img {
       object-fit: cover;
-      // She sits right of centre with the lit studio sweep to her left.
-      // Held a little high so her face reads above the wordmark's band
-      // along the bottom, with the laptop still in frame.
-      object-position: 62% 34%;
+      // The frame is a letterbox (~2.9:1) cut out of a 16:9 frame, so
+      // only about 62% of the source's height survives. Held high:
+      // her head clears the band's edge and the crop lands on the
+      // floor of the set rather than across her face.
+      object-position: 50% 18%;
     }
   }
 
-  // ---- the wordmark block — motion.dev's `hero-content` ----
-  // Anchored to the FLOOR of the frame, not floating in the top corner:
-  // the portrait fills the screen and the mark sits under it on a wash
-  // that rises off the bottom edge. Left-aligned so it starts over the
-  // clean floor rather than across her.
-  &__masthead {
+  // ---- scroll cue ----
+  // The mouse outline, centred on the bottom edge of the photo.
+  &__scroll {
     position: absolute;
-    inset: 0;
+    bottom: clamp(1rem, 0.4rem + 1.6vw, 2rem);
+    left: 50%;
     z-index: 2;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    align-items: flex-start;
-    padding: 0 var(--gutter) clamp(2rem, 1.4rem + 3vh, 4.5rem);
+    width: 1.625rem;
+    height: 2.625rem;
+    // Centred with a negative margin rather than translateX(-50%), so
+    // the scroll-zoom's translateY keyframes have `transform` to
+    // themselves and can't knock the hint off centre.
+    margin-left: -0.8125rem;
+    border: 2px solid var(--hero-cue);
+    border-radius: $radius-pill;
+    // Holds the outline together where the crop lands on a light patch
+    // of the set (a sneaker, the floor) instead of her clothing.
+    filter: drop-shadow(0 1px 3px #{rgba($ink, 0.45)});
 
-    // The masthead itself is the brand colour: a violet block that rises
-    // off the bottom edge, solid the whole way through the wordmark's
-    // band (~bottom third) so the white mark keeps contrast where it
-    // crosses the photo, then gone by ~68% up. `--brand-deep` is the
-    // shade tuned for 5:1 with white text. Behind the wordmark, above
-    // the photo; rides the same sink/fade.
-    &::before {
-      position: absolute;
-      inset: 0;
-      z-index: -1;
-      content: "";
-      background: linear-gradient(
-        to top,
-        var(--brand-deep) 0%,
-        var(--brand-deep) 5%,
-        color-mix(in srgb, var(--brand-deep) 55%, transparent) 30%,
-        color-mix(in srgb, var(--brand-deep) 12%, transparent) 50%,
-        transparent 70%
-      );
+    // A mouse means nothing on a touch device, and a short window has
+    // no floor to spare under the photo.
+    @include down($bp-md) {
+      display: none;
     }
-  }
 
-  &__title {
-    width: 100%;
-    margin: 0;
-  }
+    @media (max-height: 700px) {
+      display: none;
+    }
 
-  &__wordmark {
-    --logo-wordmark-size: auto;
-
-    display: block;
-    // White, on the violet masthead — the same lockup the nav pill uses,
-    // scaled up. `--on-brand` is always #fff, both themes.
-    color: var(--on-brand);
-    animation: hero-mark-in 800ms $ease-out both;
-
-    svg {
-      // 3724 × 836 viewBox (~4.45:1). Near the full width of the frame.
-      width: min(68vw, 74rem);
+    // The wheel.
+    &::after {
+      position: absolute;
+      top: 0.45rem;
+      left: 50%;
+      width: 0.25rem;
+      height: 0.5rem;
+      margin-left: -0.125rem;
+      content: "";
+      background-color: var(--hero-cue);
+      border-radius: $radius-pill;
+      animation: hero-scroll-wheel 1.9s $ease-in-out infinite;
     }
   }
 
   // ---- phone ----
   @include down($bp-md) {
-    &__photo img {
-      // The portrait (2:3) art-directed source — fits a phone with only
-      // the sides trimmed. Nudge up so her face clears the wordmark's
-      // band and the empty studio sweep above her doesn't dominate.
-      object-position: 50% 32%;
-    }
+    // A much shorter band: the mark runs nearly the full width here, so
+    // it is only ~80px tall — at the desktop proportion the band would
+    // be mostly empty grey. Sized so the air above and below it reads
+    // the same as it does on a wide screen, and the portrait gets the
+    // rest.
+    --hero-band: 33svh;
 
-    &__masthead {
-      padding-bottom: clamp(2.25rem, 1.5rem + 4vh, 4rem);
-
-      // Taller violet block than desktop — the mark is larger relative to
-      // the screen and the lower phone crop (her legs, the floor) is busier.
-      &::before {
-        background: linear-gradient(
-          to top,
-          var(--brand-deep) 0%,
-          var(--brand-deep) 32%,
-          color-mix(in srgb, var(--brand-deep) 55%, transparent) 48%,
-          color-mix(in srgb, var(--brand-deep) 12%, transparent) 62%,
-          transparent 72%
-        );
-      }
+    &__band {
+      padding-top: 4.5rem;
+      padding-bottom: 2rem;
     }
 
     &__wordmark svg {
       width: min(92vw, 40rem);
+      max-height: calc(var(--hero-band) - 6.5rem);
+    }
+
+    &__photo img {
+      // The portrait (2:3) art-directed source in a ~0.6:1 box — barely
+      // any crop. Nudged up so her face sits high in the frame.
+      object-position: 50% 30%;
     }
   }
 
@@ -165,8 +210,9 @@
       will-change: transform, opacity, filter;
     }
 
-    .hero__masthead {
-      animation: hero-masthead-out linear both;
+    .hero__title,
+    .hero__scroll {
+      animation: hero-mark-out linear both;
       animation-timeline: --hero-zoom;
       animation-range: contain 0% exit 98%;
       will-change: transform, opacity;
@@ -180,7 +226,8 @@
       }
 
       .hero__photo,
-      .hero__masthead {
+      .hero__title,
+      .hero__scroll {
         animation: none;
       }
     }
@@ -188,6 +235,14 @@
 
   @include reduced-motion {
     &__wordmark {
+      animation: none;
+    }
+
+    // Resting at translate none leaves the wheel at the top of the
+    // mouse, so the hint still reads as a shape rather than an empty
+    // outline.
+    &__scroll::after {
+      transform: none;
       animation: none;
     }
   }
@@ -205,20 +260,42 @@
   }
 }
 
+// The wheel travels the inside of the outline and fades at both ends,
+// so the loop restarts without a jump back to the top.
+@keyframes hero-scroll-wheel {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+
+  25% {
+    opacity: 1;
+  }
+
+  75% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(0.85rem);
+  }
+}
+
 // ---- scroll-zoom keyframes ----
 // View-timeline-scrubbed, so `linear` throughout — the scroll is the
 // timing function. The Motion example move for move, except the mark
-// sits on the floor of the frame here, so it sinks out the bottom
-// rather than drifting up the way centred content does:
+// sits at the top of the frame here, so it lifts out through the top
+// of the band rather than drifting down:
 //   photo scale    [0, 1]        -> [1, 1.5]
 //   photo opacity  [0, .8, 1]    -> [1, 1, 0]
 //   photo blur     [0, 1]        -> [0px, 10px]
-//   mark   y       [0, .5]       -> [0%, +24%]   (of the viewport box)
+//   mark   y       [0, .5]       -> [0%, -28%]
 //   mark   opacity [0, .4]       -> [1, 0]
 
 // The 0%/7% pair holds the rest pose through the first sliver of the
 // range: `contain 0%` lands a percent or two of scroll past the true
-// top, and without the hold the wash sits slightly faded and lifted
+// top, and without the hold the mark sits slightly faded and lifted
 // before the reader has moved. 7% of a 200svh runway is ~1 wheel
 // notch — it just reads as the effect not firing on a twitch.
 
@@ -241,7 +318,7 @@
   }
 }
 
-@keyframes hero-masthead-out {
+@keyframes hero-mark-out {
   0%,
   7% {
     transform: translateY(0);
@@ -253,12 +330,12 @@
   }
 
   52% {
-    transform: translateY(24%);
+    transform: translateY(-28%);
     opacity: 0;
   }
 
   100% {
-    transform: translateY(24%);
+    transform: translateY(-28%);
     opacity: 0;
   }
 }
@@ -270,31 +347,5 @@
   // puts on the parent.
   .hero__photo img {
     filter: brightness(0.92);
-  }
-
-  // The brand-violet block is the light-theme move only. On the dark
-  // page it reads as an intrusion, and white on the near-black
-  // `--bg-band` already carries all the contrast the mark needs — so
-  // dark keeps the neutral wash the hero had before the violet.
-  .hero__masthead::before {
-    background: linear-gradient(
-      to top,
-      var(--bg-band) 0%,
-      var(--bg-band) 24%,
-      color-mix(in srgb, var(--bg-band) 68%, transparent) 40%,
-      color-mix(in srgb, var(--bg-band) 12%, transparent) 55%,
-      transparent 66%
-    );
-
-    @include down($bp-md) {
-      background: linear-gradient(
-        to top,
-        var(--bg-band) 0%,
-        var(--bg-band) 22%,
-        color-mix(in srgb, var(--bg-band) 64%, transparent) 40%,
-        color-mix(in srgb, var(--bg-band) 12%, transparent) 56%,
-        transparent 68%
-      );
-    }
   }
 }
