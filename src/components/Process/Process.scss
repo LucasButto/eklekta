@@ -13,11 +13,10 @@
 //  token below (--text, --text-muted, --brand, --border) is
 //  already correctly tuned per theme with no local overrides.
 //
-//  The four stages step further in one after the other — the
-//  sequence drawn as a movement rather than as a list. Nothing
-//  here repeats Servicios (sticky rail + divided column) or
-//  Proyectos (bento of cards): no cards, no dividers, no media.
-//  The oversized outlined numerals carry the structure alone.
+//  The four stages sit in a 2x2 grid — read as a set, not a
+//  descent. Nothing here repeats Servicios (sticky rail + divided
+//  column) or Proyectos (bento of cards): no cards, no dividers, no
+//  media. The oversized outlined numerals carry the structure alone.
 //
 //  The blueprint-grid texture (see Process.tsx) runs the full
 //  section, head and staircase both — same technique as
@@ -34,18 +33,13 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
+  // min-height: 95svh as a floor only — this section carries the most
+  // content of the four and now runs past one screen on purpose. It
+  // used to fight to fit, and every gap inside it was tightened to the
+  // point of feeling cramped; that's undone below.
   @include full-screen-section;
-  padding-bottom: clamp(1.5rem, 4vh, 7rem);
+  padding-bottom: clamp(2.5rem, 6vh, 7rem);
 
-  // full-screen-section fits the whole staircase to one screen at
-  // $bp-lg and up — this section has the most content of any of the
-  // four that do, so its own chrome tightens hardest there, tightest
-  // first: its padding, then the masthead, then the gap between the
-  // stages, so the stages themselves keep their height. Below $bp-lg
-  // the section is natural-height and keeps the roomier rhythm.
-  @include up($bp-lg) {
-    padding-bottom: clamp(1rem, 2vh, 5rem);
-  }
   background-color: var(--bg-alt);
   transition: background-color $dur-slow $ease-out;
 
@@ -53,8 +47,8 @@
     @include container;
   }
 
-  // Grid texture behind the entire section. Manifiesto above and
-  // Contacto below both sit on the plain --bg (no --bg-alt of their
+  // Grid texture behind the entire section. Equipo above and
+  // Manifiesto below both sit on the plain --bg (no --bg-alt of their
   // own), so .process already meets them at a hard colour edge —
   // that edge is what ends the texture now, the same way every other
   // section boundary on the page is a flat cut with no blending. No
@@ -76,25 +70,28 @@
 
   // ------------------------------------------------ head
   &__masthead {
-    padding-block: clamp(2rem, 6vh, 7rem) clamp(1.5rem, 4vh, 4.5rem);
+    // The bottom step is the gap down to the first stage — it was
+    // clamped to ~20px and read as the "01" crowding the heading.
+    padding-block: clamp(2.5rem, 6vh, 7rem) clamp(3rem, 7vh, 6.5rem);
 
-    // Tighter under full-screen-section, but not so tight the heading
-    // rides up under the mobile pill — this is $bp-lg+ only.
+    // #proceso is on this element. Process fills the screen from the
+    // top — it doesn't centre its content the way Proyectos / Equipo
+    // do — so a nav tap lands the head tight under the bar. This drops
+    // the landing for clearance. ~two scrollbar-arrow clicks.
     @include up($bp-lg) {
-      padding-block: clamp(1.5rem, 3vh, 6rem) clamp(1rem, 2.25vh, 4rem);
+      scroll-margin-top: 5rem;
     }
   }
 
+  // A left-aligned stack — heading, then the blurb, then the actions.
+  // The old two-column head bottom-aligned a one-word title against a
+  // three-line paragraph + buttons, which left the right side reading
+  // as an afterthought dropped into the corner.
   &__head {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: $space-lg;
-
-    @include up($bp-lg) {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      gap: clamp(2rem, 1rem + 4vw, 5rem);
-      align-items: end;
-    }
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: clamp(1.25rem, 0.75rem + 1.4vw, 2rem);
   }
 
   &__aside {
@@ -102,10 +99,6 @@
     flex-direction: column;
     gap: $space-md;
     align-items: flex-start;
-
-    @include up($bp-lg) {
-      gap: $space-sm;
-    }
   }
 
   &__intro {
@@ -120,53 +113,33 @@
     gap: $space-sm;
   }
 
-  // ------------------------------------------------ the descent
+  // ------------------------------------------------ the four stages
   &__stairs {
     display: grid;
-    gap: clamp(1rem, 3vh, 4.5rem);
+    gap: clamp(2rem, 5vw, 3.5rem);
 
-    // vh: with four stages this gap is the single biggest lever for
-    // getting the staircase to fit one screen under full-screen-section.
+    // 2×2 on desktop — the four read as a set rather than a descent.
     @include up($bp-lg) {
-      gap: clamp(0.75rem, 1.6vh, 3.5rem);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: clamp(2.5rem, 1rem + 4vw, 6rem);
+      row-gap: clamp(2.75rem, 6vh, 5rem);
+      align-items: start;
     }
   }
 }
 
 // ------------------------------------------------ one stage
+// The outlined numeral on the left, the title and body filling the
+// column beside it.
 .stage {
-  // How far each stage steps in past the one above it. Zero until
-  // there is width to spend on it.
-  --rise: 0rem;
-
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  column-gap: $space-md;
-  row-gap: $space-xs;
-  align-items: baseline;
-  margin-inline-start: calc(var(--step-index, 0) * var(--rise));
-
-  @include up($bp-lg) {
-    --rise: #{clamp(1.5rem, 0.5rem + 2.2vw, 4rem)};
-
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    column-gap: clamp(1.5rem, 1rem + 2vw, 3rem);
-  }
-
-  // Reveal owns the style attribute for its delay, so the index comes
-  // from position instead of a custom property set in JSX. Eight is
-  // simply more phases than the section will plausibly grow to.
-  @for $i from 1 through 8 {
-    &:nth-child(#{$i}) {
-      --step-index: #{$i - 1};
-    }
-  }
+  column-gap: clamp(1rem, 0.5rem + 1.5vw, 2.25rem);
+  align-items: start;
 
   &__num {
-    grid-row: 1;
-    grid-column: 1;
     font-family: $font-display;
-    font-size: clamp(2.75rem, 1.5rem + 5vw, 6.5rem);
+    font-size: clamp(2.75rem, 1.5rem + 4vw, 5.25rem);
     font-weight: $fw-ultra;
     line-height: 0.8;
     color: var(--brand);
@@ -186,32 +159,10 @@
     }
   }
 
-  &__duration {
-    grid-row: 1;
-    grid-column: 2;
-    justify-self: end;
-    font-size: $text-xs;
-    font-weight: $fw-semibold;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-
-    @include up($bp-lg) {
-      grid-column: 3;
-    }
-  }
-
   &__text {
-    grid-row: 2;
-    grid-column: 1 / -1;
     display: flex;
     flex-direction: column;
     gap: $space-2xs;
-
-    @include up($bp-lg) {
-      grid-row: 1;
-      grid-column: 2;
-    }
   }
 
   &__title {
