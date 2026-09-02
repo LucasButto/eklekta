@@ -68,6 +68,13 @@ $space-4xl: 8rem;
 // Vertical rhythm between page sections.
 $section-y: clamp(2.25rem, 1.5rem + 3vw, 4.5rem);
 
+// Extra air *between* whole sections, laid on top of each section's own
+// block padding (see `.page > section + section` in globals). Kept
+// separate from $section-y so the between-section rhythm can open up
+// without also loosening every section's internal top/bottom padding —
+// several sections fit their content to one screen and cannot spare it.
+$section-gap: clamp(2.5rem, 1.25rem + 4vw, 6rem);
+
 // Gap between a section's heading block and its content. Kept in
 // proportion to $section-y so the space inside a section always reads
 // as tighter than the space between two of them.

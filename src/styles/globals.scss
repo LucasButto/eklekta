@@ -43,6 +43,18 @@
   }
 }
 
+// ---------------------------------------------- page rhythm
+
+// Air between whole sections, on top of each one's own block padding.
+// Skips .about, which is positioned to ride up over the hero as it pins
+// and zooms (see About.scss / Hero.scss) — a top margin there would
+// open a gap in that overlap. Nav jumps land on the section box, so the
+// gap sits above the landing and needs no scroll-padding change; it is
+// plain whitespace, so the auto-hiding navbar has nothing to fight.
+.page > section + section:not(.about) {
+  margin-block-start: var(--section-gap);
+}
+
 // ---------------------------------------------- utilities
 
 .text-brand {
