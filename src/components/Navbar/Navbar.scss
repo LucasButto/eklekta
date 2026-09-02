@@ -10,6 +10,23 @@
   padding-block: $space-xs;
   padding-inline: clamp(0.75rem, 0.4rem + 1.6vw, 2rem);
 
+  // Auto-hide: slides up out of the way on scroll down, back on a nudge
+  // up (state from useHideOnScroll). The extra 0.75rem clears the pill's
+  // drop-shadow so nothing peeks at the top edge. Deliberately unhurried.
+  transition: transform $dur-reveal $ease-out;
+
+  &--hidden {
+    transform: translateY(calc(-100% - 0.75rem));
+  }
+
+  // A keyboard reader tabbing into the nav brings it back — but NOT a
+  // mouse click on the theme toggle or a link, which also leaves focus
+  // inside the header and would otherwise pin it open (:focus-visible is
+  // keyboard-only).
+  &--hidden:has(:focus-visible) {
+    transform: none;
+  }
+
   // ------------------------------------------------ the pill
   &__inner {
     display: flex;
@@ -242,6 +259,8 @@
   }
 
   @include reduced-motion {
+    transition: none;
+
     &__panel-link {
       opacity: 1;
       animation: none;

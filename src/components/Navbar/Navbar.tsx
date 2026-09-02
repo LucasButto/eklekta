@@ -1,8 +1,16 @@
-import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from 'react'
 import { Button } from '@/components/Button/Button'
 import { Logo } from '@/components/Logo/Logo'
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle'
 import { useActiveSection } from '@/hooks/useActiveSection'
+import { useHideOnScroll } from '@/hooks/useHideOnScroll'
 import { useScrolled } from '@/hooks/useScrolled'
 import site from '@/data/site.json'
 import type { SiteData } from '@/types'
@@ -14,10 +22,27 @@ export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const scrolled = useScrolled(32)
 
+  // Auto-hide on scroll down, back on a nudge up. Pinned visible while
+  // the menu is open or a link's smooth-scroll is still running.
+  const [pinned, setPinned] = useState(false)
+  const pinTimer = useRef<number | undefined>(undefined)
+  const hidden = useHideOnScroll({ pinned: pinned || menuOpen })
+
+  const pinBriefly = useCallback(() => {
+    setPinned(true)
+    window.clearTimeout(pinTimer.current)
+    pinTimer.current = window.setTimeout(() => setPinned(false), 1000)
+  }, [])
+  useEffect(() => () => window.clearTimeout(pinTimer.current), [])
+
   const sectionIds = useMemo(() => data.nav.map((item) => item.id), [])
   const active = useActiveSection(sectionIds)
 
   const close = useCallback(() => setMenuOpen(false), [])
+  const closeAndPin = useCallback(() => {
+    setMenuOpen(false)
+    pinBriefly()
+  }, [pinBriefly])
 
   // Escape closes the mobile panel, and the page underneath stays put
   // while it is open.
@@ -39,9 +64,18 @@ export function Navbar() {
   }, [menuOpen, close])
 
   return (
-    <header className={`navbar${scrolled ? ' navbar--scrolled' : ''}`}>
+    <header
+      className={`navbar${scrolled ? ' navbar--scrolled' : ''}${
+        hidden ? ' navbar--hidden' : ''
+      }`}
+    >
       <div className="navbar__inner">
-        <a className="navbar__brand" href="#inicio" aria-label="eklekta, ir al inicio">
+        <a
+          className="navbar__brand"
+          href="#inicio"
+          aria-label="eklekta, ir al inicio"
+          onClick={pinBriefly}
+        >
           <span className="navbar__mark">
             <Logo variant="isotype" title="eklekta" />
           </span>
@@ -56,6 +90,7 @@ export function Navbar() {
                   className="navbar__link"
                   href={item.href}
                   aria-current={active === item.id ? 'true' : undefined}
+                  onClick={pinBriefly}
                 >
                   {item.label}
                 </a>
@@ -66,7 +101,12 @@ export function Navbar() {
 
         <div className="navbar__actions">
           <ThemeToggle />
-          <Button href={data.cta.href} size="sm" className="navbar__cta">
+          <Button
+            href={data.cta.href}
+            size="sm"
+            className="navbar__cta"
+            onClick={pinBriefly}
+          >
             {data.cta.label}
           </Button>
 
@@ -94,7 +134,11 @@ export function Navbar() {
         <ul className="navbar__panel-list">
           {data.nav.map((item, index) => (
             <li key={item.id} style={{ '--i': index } as CSSProperties}>
-              <a className="navbar__panel-link" href={item.href} onClick={close}>
+              <a
+                className="navbar__panel-link"
+                href={item.href}
+                onClick={closeAndPin}
+              >
                 <span className="navbar__panel-index">
                   {String(index + 1).padStart(2, '0')}
                 </span>
@@ -104,7 +148,11 @@ export function Navbar() {
           ))}
         </ul>
 
-        <Button href={data.cta.href} onClick={close} className="navbar__panel-cta">
+        <Button
+          href={data.cta.href}
+          onClick={closeAndPin}
+          className="navbar__panel-cta"
+        >
           {data.cta.label}
         </Button>
       </div>
