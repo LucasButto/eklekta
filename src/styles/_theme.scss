@@ -22,7 +22,7 @@
   --bg: #{$paper};
   --bg-alt: #f1f0f5;
   --bg-band: #e8e7ee;
-  --bg-nav: rgba(255, 255, 255, 0.9);
+  --bg-nav: rgba(255, 255, 255, 0.5);
   --surface: #f4f3f7;
   --surface-2: #e9e8ef;
   --surface-invert: #{$ink};
@@ -45,6 +45,7 @@
   --accent-orange: #{$accent-orange};
   --accent-blue: #{$accent-blue};
   --accent-lime: #{$accent-lime};
+  --accent-cyan: #{$accent-cyan};
 
   // lines & effects
   --border: #{rgba($ink, 0.12)};

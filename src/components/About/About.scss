@@ -3,6 +3,14 @@
 .about {
   @include section-spacing;
 
+  // Rides over the hero as it pins and zooms out — the second half of
+  // the scroll-zoom effect (see Hero.scss). Positioned + above the hero
+  // in the stack, and opaque so the zooming photo never shows through.
+  // Harmless where the hero is a plain static band.
+  position: relative;
+  z-index: 2;
+  background-color: var(--bg);
+
   &__intro {
     @include container;
 

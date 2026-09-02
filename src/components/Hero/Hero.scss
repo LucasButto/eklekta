@@ -1,248 +1,193 @@
 @use "styles" as *;
 
+// =============================================================
+//  Hero — a full-bleed studio photo with the white wordmark set
+//  large along the floor of the frame, on a wash that rises off
+//  the bottom edge: a brand-violet block (--brand-deep) in light,
+//  the neutral --bg-band in dark (where violet reads as an
+//  intrusion). motion.dev "scroll zoom" exit:
+//  https://examples.motion.dev/react/scroll-zoom-hero
+//
+//  At rest it is one screen: the portrait fills it, the wordmark
+//  sits under her on the wash — no hard masthead, nothing crops
+//  her. Where the browser has scroll-driven animations the
+//  section runs to 200svh, the viewport pins for the first
+//  screen, and across it the photo scales to 1.5 + blurs to 10px
+//  + fades while the wordmark sinks out the bottom and fades —
+//  the moves the Motion example makes, rebuilt as CSS @keyframes
+//  on a view() timeline. The next section climbs over (About.scss:
+//  z-index + an opaque bg).
+// =============================================================
+
 .hero {
-  &__band {
+  position: relative;
+
+  &__viewport {
+    // `position: relative` is the no-timeline fallback; the @supports
+    // block below promotes it to sticky.
     position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    // Always the full viewport, on every device — not clamped between
-    // a min and max like a regular content section.
     height: 100svh;
-    overflow: hidden;
-    // Desktop's bottom gap, raising the whole content block well off
-    // the floor rather than just clearing it.
-    padding-block: clamp(5rem, 3.5rem + 6vw, 8rem)
-      clamp(4.5rem, 3rem + 5.5vw, 10rem);
+    overflow: clip;
+    // Shows behind the photo while it decodes.
     background-color: var(--bg-band);
-    transition: background-color $dur-slow $ease-out;
-
-    // Content gets tight on short viewports (landscape phones, small
-    // laptop windows) since height is fixed rather than growing with
-    // content. Trim rhythm in two steps rather than letting anything
-    // overflow the 100svh band.
-    @media (max-height: 700px) {
-      padding-block: clamp(4.5rem, 3.5rem + 4vw, 6rem) 1.5rem;
-    }
-
-    @media (max-height: 480px) {
-      padding-block: 4.5rem 1.25rem;
-    }
-
-    // On a phone the gap is measured from the BOTTOM up: the content
-    // stays bottom-anchored (same as desktop), just with more floor
-    // clearance, so it sits roughly a quarter of the way up the screen
-    // instead of flush against the edge. Only the bottom value is
-    // touched, so the top clearance still comes from whichever rule
-    // above matches the viewport's height.
-    @include down($bp-md) {
-      padding-bottom: 16svh;
-    }
   }
 
-  // ------------------------------------------------ background photo
-  &__bg {
+  // ---- the photo — motion.dev's `hero-background` ----
+  &__photo {
     position: absolute;
     inset: 0;
     z-index: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    // Keeps the laptop screen and the service cards in frame; it's
-    // the part of the photo that actually says what eklekta does.
-    object-position: 42% 32%;
-    filter: brightness(1) saturate(1);
-    transition: filter $dur-slow $ease-out;
-  }
+    transform-origin: center;
 
-  // Fades the photo into the theme background from the top down, so
-  // the text block always lands on a near-solid surface regardless of
-  // what is behind it, while the top of the band still reads as a photo.
-  &__scrim {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    background-image: linear-gradient(
-      to bottom,
-      transparent 0%,
-      color-mix(in srgb, var(--bg) 25%, transparent) 36%,
-      color-mix(in srgb, var(--bg) 80%, transparent) 58%,
-      var(--bg) 80%
-    );
-    transition: background-color $dur-slow $ease-out;
+    picture,
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
 
-    // Mobile content is bottom-anchored too, just closer to the floor
-    // than this (16svh vs desktop's ~6rem max) — the ramp starts later
-    // so more of the photo shows above the text, and stays clear
-    // longer than the desktop curve since the block itself sits lower.
-    @include down($bp-md) {
-      background-image: linear-gradient(
-        to bottom,
-        transparent 0%,
-        color-mix(in srgb, var(--bg) 12%, transparent) 48%,
-        color-mix(in srgb, var(--bg) 80%, transparent) 68%,
-        var(--bg) 86%
-      );
+    img {
+      object-fit: cover;
+      // She sits right of centre with the lit studio sweep to her left.
+      // Held a little high so her face reads above the wordmark's band
+      // along the bottom, with the laptop still in frame.
+      object-position: 62% 34%;
     }
   }
 
-  // ------------------------------------------------ content
-  &__inner {
-    @include container;
-
-    position: relative;
+  // ---- the wordmark block — motion.dev's `hero-content` ----
+  // Anchored to the FLOOR of the frame, not floating in the top corner:
+  // the portrait fills the screen and the mark sits under it on a wash
+  // that rises off the bottom edge. Left-aligned so it starts over the
+  // clean floor rather than across her.
+  &__masthead {
+    position: absolute;
+    inset: 0;
     z-index: 2;
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
-    gap: clamp(1.1rem, 0.8rem + 1.2vw, 1.9rem);
-    text-align: right;
+    justify-content: flex-end;
+    align-items: flex-start;
+    padding: 0 var(--gutter) clamp(2rem, 1.4rem + 3vh, 4.5rem);
 
-    // Pulls the whole right-aligned block off the container's own
-    // edge — extra inset on top of the container gutter, not a
-    // re-alignment, so it stays right-anchored rather than centred.
-    @include up($bp-lg) {
-      padding-inline-end: clamp(2.5rem, 6vw, 8rem);
+    // The masthead itself is the brand colour: a violet block that rises
+    // off the bottom edge, solid the whole way through the wordmark's
+    // band (~bottom third) so the white mark keeps contrast where it
+    // crosses the photo, then gone by ~68% up. `--brand-deep` is the
+    // shade tuned for 5:1 with white text. Behind the wordmark, above
+    // the photo; rides the same sink/fade.
+    &::before {
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      content: "";
+      background: linear-gradient(
+        to top,
+        var(--brand-deep) 0%,
+        var(--brand-deep) 5%,
+        color-mix(in srgb, var(--brand-deep) 55%, transparent) 30%,
+        color-mix(in srgb, var(--brand-deep) 12%, transparent) 50%,
+        transparent 70%
+      );
     }
   }
 
   &__title {
     width: 100%;
+    margin: 0;
   }
 
-  // The mockup keeps the wordmark well short of full width, floating
-  // in the grey band rather than stretching edge to edge — scaled off
-  // the viewport instead of the container so that ratio holds at every
-  // breakpoint. Opts out of Logo's em-based sizing to do it.
   &__wordmark {
     --logo-wordmark-size: auto;
 
     display: block;
-    color: var(--brand);
-    animation: hero-mark-in 900ms $ease-out both;
+    // White, on the violet masthead — the same lockup the nav pill uses,
+    // scaled up. `--on-brand` is always #fff, both themes.
+    color: var(--on-brand);
+    animation: hero-mark-in 800ms $ease-out both;
 
     svg {
-      width: clamp(12.5rem, 8rem + 20vw, 40rem);
-      margin-inline-start: auto;
+      // 3724 × 836 viewBox (~4.45:1). Near the full width of the frame.
+      width: min(68vw, 74rem);
+    }
+  }
+
+  // ---- phone ----
+  @include down($bp-md) {
+    &__photo img {
+      // The portrait (2:3) art-directed source — fits a phone with only
+      // the sides trimmed. Nudge up so her face clears the wordmark's
+      // band and the empty studio sweep above her doesn't dominate.
+      object-position: 50% 32%;
     }
 
-    @media (max-height: 700px) {
-      svg {
-        width: clamp(10rem, 7rem + 16vw, 26rem);
+    &__masthead {
+      padding-bottom: clamp(2.25rem, 1.5rem + 4vh, 4rem);
+
+      // Taller violet block than desktop — the mark is larger relative to
+      // the screen and the lower phone crop (her legs, the floor) is busier.
+      &::before {
+        background: linear-gradient(
+          to top,
+          var(--brand-deep) 0%,
+          var(--brand-deep) 32%,
+          color-mix(in srgb, var(--brand-deep) 55%, transparent) 48%,
+          color-mix(in srgb, var(--brand-deep) 12%, transparent) 62%,
+          transparent 72%
+        );
       }
     }
-  }
 
-  &__lede {
-    max-width: 42ch;
-    font-size: $text-lg;
-    font-weight: $fw-light;
-    line-height: 1.45;
-    color: var(--text);
-    text-wrap: pretty;
-    animation: hero-rise 700ms $ease-out 140ms both;
-
-    @media (max-height: 700px) {
-      font-size: $text-base;
-    }
-
-    @media (max-height: 480px) {
-      display: none;
+    &__wordmark svg {
+      width: min(92vw, 40rem);
     }
   }
 
-  &__actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: $space-md;
-    align-items: center;
-    justify-content: flex-end;
-    animation: hero-rise 700ms $ease-out 260ms both;
-  }
+  // ---- scroll zoom ----
+  // No JS: a view timeline on the 200svh section drives every move.
+  // `contain 0% → exit 98%` maps to the Motion example's scrollYProgress
+  // 0 → 1 (offset ["start start", "end start"]): `contain` is the pinned
+  // screen, `exit` the screen of scroll after it while the hero clears
+  // and the next section arrives.
+  @supports (animation-timeline: view()) {
+    height: 200svh;
+    view-timeline-name: --hero-zoom;
 
-  &__secondary {
-    position: relative;
-    font-size: $text-sm;
-    font-weight: $fw-medium;
-    color: var(--text-muted);
-    transition: color $dur-base $ease-out;
-
-    @include focus-ring;
-
-    &::after {
-      position: absolute;
-      inset-inline: 0;
-      bottom: -3px;
-      height: 1px;
-      content: "";
-      background-color: currentcolor;
-      transform-origin: right;
-      transition: transform $dur-base $ease-out;
+    .hero__viewport {
+      position: sticky;
+      top: 0;
     }
 
-    @include hover {
-      color: var(--text);
+    .hero__photo {
+      animation: hero-photo-zoom linear both;
+      animation-timeline: --hero-zoom;
+      animation-range: contain 0% exit 98%;
+      will-change: transform, opacity, filter;
+    }
 
-      &::after {
-        transform: scaleX(0);
-        transform-origin: left;
+    .hero__masthead {
+      animation: hero-masthead-out linear both;
+      animation-timeline: --hero-zoom;
+      animation-range: contain 0% exit 98%;
+      will-change: transform, opacity;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      height: auto;
+
+      .hero__viewport {
+        position: relative;
       }
-    }
-  }
 
-  // ------------------------------------------------ scroll cue
-  // The mouse outline. Anchored to the band rather than placed in the
-  // flow, so it sits centred on the bottom edge without pushing the
-  // content block off the vertical rhythm it already has.
-  &__scroll {
-    position: absolute;
-    bottom: clamp(1rem, 0.4rem + 1.6vw, 2.25rem);
-    left: 50%;
-    z-index: 2;
-    width: 1.625rem;
-    height: 2.625rem;
-    border: 2px solid var(--text-faint);
-    border-radius: $radius-pill;
-    transform: translateX(-50%);
-
-    // A mouse means nothing on a touch device, and a short window has
-    // no room to spare below the content. Same two cases the previous
-    // hint bowed out of.
-    @include down($bp-md) {
-      display: none;
-    }
-
-    @media (max-height: 700px) {
-      display: none;
-    }
-
-    // The wheel.
-    &::after {
-      position: absolute;
-      top: 0.45rem;
-      left: 50%;
-      width: 0.25rem;
-      height: 0.5rem;
-      margin-left: -0.125rem;
-      content: '';
-      background-color: var(--brand);
-      border-radius: $radius-pill;
-      animation: hero-scroll-wheel 1.9s $ease-in-out infinite;
+      .hero__photo,
+      .hero__masthead {
+        animation: none;
+      }
     }
   }
 
   @include reduced-motion {
-    &__wordmark,
-    &__lede,
-    &__actions {
-      animation: none;
-    }
-
-    // Resting at translate none leaves the wheel at the top of the
-    // mouse, so the hint still reads as a shape rather than an empty
-    // outline.
-    &__scroll::after {
-      transform: none;
+    &__wordmark {
       animation: none;
     }
   }
@@ -251,21 +196,7 @@
 @keyframes hero-mark-in {
   from {
     opacity: 0;
-    transform: translate3d(0, 40px, 0);
-    clip-path: inset(0 0 100% 0);
-  }
-
-  to {
-    opacity: 1;
-    transform: none;
-    clip-path: inset(0 0 -10% 0);
-  }
-}
-
-@keyframes hero-rise {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 20px, 0);
+    transform: translate3d(0, 1.5rem, 0);
   }
 
   to {
@@ -274,30 +205,96 @@
   }
 }
 
-// The wheel travels the inside of the outline and fades at both ends,
-// so the loop restarts without a jump back to the top.
-@keyframes hero-scroll-wheel {
-  0% {
-    opacity: 0;
-    transform: translateY(0);
-  }
+// ---- scroll-zoom keyframes ----
+// View-timeline-scrubbed, so `linear` throughout — the scroll is the
+// timing function. The Motion example move for move, except the mark
+// sits on the floor of the frame here, so it sinks out the bottom
+// rather than drifting up the way centred content does:
+//   photo scale    [0, 1]        -> [1, 1.5]
+//   photo opacity  [0, .8, 1]    -> [1, 1, 0]
+//   photo blur     [0, 1]        -> [0px, 10px]
+//   mark   y       [0, .5]       -> [0%, +24%]   (of the viewport box)
+//   mark   opacity [0, .4]       -> [1, 0]
 
-  25% {
+// The 0%/7% pair holds the rest pose through the first sliver of the
+// range: `contain 0%` lands a percent or two of scroll past the true
+// top, and without the hold the wash sits slightly faded and lifted
+// before the reader has moved. 7% of a 200svh runway is ~1 wheel
+// notch — it just reads as the effect not firing on a twitch.
+
+@keyframes hero-photo-zoom {
+  0%,
+  7% {
+    transform: scale(1);
+    filter: blur(0px);
     opacity: 1;
   }
 
-  75% {
+  82% {
     opacity: 1;
   }
 
   100% {
+    transform: scale(1.5);
+    filter: blur(10px);
     opacity: 0;
-    transform: translateY(0.85rem);
   }
 }
 
-// The source photo is a bright office scene; dimmed to sit comfortably
-// in the dark surface instead of glowing against it.
-:root[data-theme="dark"] .hero__bg {
-  filter: brightness(0.45) saturate(0.85);
+@keyframes hero-masthead-out {
+  0%,
+  7% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  42% {
+    opacity: 0;
+  }
+
+  52% {
+    transform: translateY(24%);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(24%);
+    opacity: 0;
+  }
+}
+
+// Dark theme.
+:root[data-theme="dark"] {
+  // The studio sweep reads bright against the dark page; a small dip
+  // settles it. On the img, so it composes with the blur the animation
+  // puts on the parent.
+  .hero__photo img {
+    filter: brightness(0.92);
+  }
+
+  // The brand-violet block is the light-theme move only. On the dark
+  // page it reads as an intrusion, and white on the near-black
+  // `--bg-band` already carries all the contrast the mark needs — so
+  // dark keeps the neutral wash the hero had before the violet.
+  .hero__masthead::before {
+    background: linear-gradient(
+      to top,
+      var(--bg-band) 0%,
+      var(--bg-band) 24%,
+      color-mix(in srgb, var(--bg-band) 68%, transparent) 40%,
+      color-mix(in srgb, var(--bg-band) 12%, transparent) 55%,
+      transparent 66%
+    );
+
+    @include down($bp-md) {
+      background: linear-gradient(
+        to top,
+        var(--bg-band) 0%,
+        var(--bg-band) 22%,
+        color-mix(in srgb, var(--bg-band) 64%, transparent) 40%,
+        color-mix(in srgb, var(--bg-band) 12%, transparent) 56%,
+        transparent 68%
+      );
+    }
+  }
 }
