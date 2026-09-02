@@ -1,141 +1,246 @@
 @use 'styles' as *;
 
+// =============================================================
+//  Manifiesto — the statement holds dead centre while the three
+//  photographs rise past it one at a time; once they have all gone
+//  "Eso es eklekta." lands under it.
+//
+//  No JS. On desktop the section runs tall, the frame pins
+//  (position: sticky) and a view timeline on the section scrubs
+//  every move. Browsers without scroll-driven animations — and
+//  anyone on reduced motion — get the static collage, which is
+//  already a finished look.
+// =============================================================
+
 .manifesto {
   @include section-spacing;
+  // No overflow here on purpose: __frame goes position: sticky in the
+  // enhancement below, and non-visible overflow on any ancestor between
+  // it and the scroll viewport silently turns the pin back into
+  // position: relative.
+}
 
+.manifesto__frame {
+  @include container;
+
+  position: relative;
+  display: grid;
+  gap: $space-xl;
+  justify-items: center;
+  text-align: center;
+}
+
+// ---------------------------------------------- photographs
+.manifesto__collage {
+  display: grid;
+  gap: $space-md;
+  width: 100%;
+}
+
+.manifesto__figure {
   overflow: hidden;
+  border-radius: $radius-sm;
 
-  &__stage {
-    @include container;
-
-    position: relative;
-    display: grid;
-    gap: $space-md;
-    // Section-spacing already provides the approach; this only needs
-    // to keep the collage photos clear of the text's own line box.
-    padding-block: clamp(0.5rem, 0.25rem + 1.25vw, 1.5rem);
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
-  // ------------------------------------------------ photographs
-  &__figure {
-    overflow: hidden;
-    border-radius: $radius-sm;
-
+  // Stacked in flow on small screens — the collage only works once
+  // there's room for the statement to sit across it.
+  @include down($bp-lg) {
     img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    // Stacked and quiet on small screens; the collage only makes
-    // sense once there is room for the text to sit across it.
-    @include down($bp-lg) {
-      img {
-        height: clamp(12.5rem, 44vw, 20rem);
-      }
-    }
-
-    // Pinned to the outer edges so the statement crosses only the
-    // inner sliver of each picture. That keeps the mockup's collage
-    // without ever putting a full word on top of a dark panel.
-    @include up($bp-lg) {
-      position: absolute;
-      z-index: 0;
-
-      &--lead {
-        top: 0;
-        left: 0;
-        width: clamp(9.375rem, 13vw, 13.4375rem);
-        height: clamp(12.5rem, 17vw, 17.8125rem);
-      }
-
-      &--mid {
-        top: 30%;
-        right: 0;
-        width: clamp(12.5rem, 18vw, 18.75rem);
-        height: clamp(15.625rem, 23vw, 24.375rem);
-      }
-
-      &--trail {
-        bottom: 2%;
-        left: 3%;
-        width: clamp(8.75rem, 12vw, 12.5rem);
-        height: clamp(11.875rem, 16vw, 16.5625rem);
-      }
+      height: clamp(12.5rem, 44vw, 20rem);
     }
   }
+}
 
-  // ------------------------------------------------ the statement
-  // Sits above the photographs, exactly as in the mockup.
-  &__text {
-    @include display($display-md, $fw-ultra);
+// ---------------------------------------------- the statement
+.manifesto__text {
+  @include display($display-md, $fw-ultra);
 
+  // A notch below the section scale: it's a full sentence and
+  // "herramientas." has to clear a 360px viewport on its own line.
+  font-size: clamp(1.7rem, 0.8rem + 4.3vw, 5rem);
+  max-width: 18ch;
+  color: var(--text);
+
+  @include up($bp-lg) {
+    max-width: 15ch;
+  }
+}
+
+.manifesto__closing-line {
+  @include display($display-lg, $fw-ultra);
+
+  color: var(--brand);
+}
+
+// ============================================================
+//  Desktop static layout — the collage sits behind the centred
+//  statement. This is also the base the enhancement builds on.
+// ============================================================
+@include up($bp-lg) {
+  .manifesto__frame {
+    min-height: clamp(32rem, 68vh, 44rem);
+    align-content: center;
+    gap: clamp(1.5rem, 0.5rem + 2vw, 3rem);
+  }
+
+  .manifesto__collage {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .manifesto__text,
+  .manifesto__closing-line {
     position: relative;
-    z-index: 1;
-    // A notch below the section scale: this is a full sentence, and
-    // "herramientas." has to clear a 360px viewport on its own line.
-    font-size: clamp(1.7rem, 0.8rem + 4.3vw, 5rem);
-    max-width: 18ch;
-    margin-inline: auto;
-    text-align: center;
-    text-wrap: balance;
-    color: var(--text);
+    z-index: 2;
 
-    @include up($bp-lg) {
-      max-width: 13ch;
-      // Was up to 7rem a side — mostly bare whitespace stacked on top
-      // of the section's own padding. Trimmed to just enough clearance
-      // for the collage photos pinned to the stage's corners.
-      padding-block: clamp(1.5rem, 0.5rem + 3vw, 3.5rem);
+    // The statement crosses the photographs. A bloom in the page
+    // colour, stacked so the near passes are all but opaque, keeps
+    // every glyph legible over whatever it lands on — and reads as a
+    // glow, not a plate. Tracks the theme through var(--bg).
+    text-shadow:
+      0 0 0.14em var(--bg),
+      0 0 0.14em var(--bg),
+      0 0 0.14em var(--bg),
+      0 0 0.32em var(--bg),
+      0 0 0.32em var(--bg),
+      0 0 0.7em var(--bg);
+  }
+
+  .manifesto__figure {
+    position: absolute;
+
+    &--lead {
+      top: 0;
+      left: clamp(1rem, 6vw, 7rem);
+      width: clamp(13.5rem, 19vw, 20rem);
+      height: clamp(17.5rem, 25vw, 26rem);
+    }
+
+    &--mid {
+      top: 30%;
+      right: clamp(0rem, 1.5vw, 2rem);
+      width: clamp(16.5rem, 23.5vw, 25rem);
+      height: clamp(21rem, 31vw, 33rem);
+    }
+
+    &--trail {
+      bottom: 0;
+      left: clamp(3.5rem, 12vw, 14rem);
+      width: clamp(12.5rem, 17vw, 18rem);
+      height: clamp(16rem, 22vw, 23rem);
     }
   }
+}
 
-  &__closing {
-    @include container;
+// ============================================================
+//  Enhancement — pinned statement; each photo climbs in from below
+//  and settles into its corner of a collage that then holds for the
+//  rest of the scroll, and the closing line rises in under it. A
+//  view timeline on the tall section scrubs it all; fill:both keeps
+//  a photo parked below frame until its slice, then holds it at rest.
+// ============================================================
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    @include up($bp-lg) {
+      .manifesto {
+        // The runway. Longer = the photos climb more slowly. The frame
+        // stays pinned across all of it: the last ~20% is a hold where
+        // the assembled collage just sits before the pin releases.
+        min-height: 400svh;
+        padding-block: 0;
+        view-timeline-name: --manifesto-seq;
+      }
 
-    margin-top: clamp(2rem, 1rem + 4vw, 5rem);
-  }
+      .manifesto__frame {
+        position: sticky;
+        top: 0;
+        height: 100svh;
+        min-height: 0;
+        // clip on the pinned box itself — safe for its own stickiness,
+        // and it's what hides each photo below the frame until it
+        // climbs in.
+        overflow: clip;
+      }
 
-  &__closing-line {
-    @include display($display-lg, $fw-ultra);
+      // Each photo starts fully below the frame and rises to its
+      // resting slot, then holds. Vertical placement is the keyframe's
+      // job now (--rest-y down from the frame top); the horizontal
+      // lane still comes from the static block. `contain` is the
+      // pinned window: frame top at viewport top → section bottom at
+      // viewport bottom.
+      .manifesto__figure {
+        animation: manifesto-rise-in linear both;
+        animation-timeline: --manifesto-seq;
+        will-change: transform;
+      }
 
-    color: var(--brand);
-  }
+      // lead ends up top-left, mid mid-right, trail lower-left. `top`
+      // is flattened per-modifier so it beats the static block's own
+      // --mid { top } / --trail { bottom }.
+      .manifesto__figure--lead {
+        top: 0;
+        --rest-y: 3svh;
+        animation-range: contain 4% contain 34%;
+      }
 
-  // ------------------------------------------------ scroll parallax
-  // Progressive enhancement: browsers without scroll-driven animations
-  // simply get the static collage, which is already the finished look.
-  @supports (animation-timeline: view()) {
-    @media (prefers-reduced-motion: no-preference) {
-      @include up($bp-lg) {
-        &__figure {
-          animation: manifesto-drift linear both;
-          animation-timeline: view();
-          animation-range: entry 0% exit 100%;
-        }
+      .manifesto__figure--mid {
+        top: 0;
+        --rest-y: 38svh;
+        animation-range: contain 21% contain 51%;
+      }
 
-        &__figure--lead {
-          --drift: -46px;
-        }
+      .manifesto__figure--trail {
+        top: 0;
+        bottom: auto;
+        --rest-y: 58svh;
+        animation-range: contain 38% contain 68%;
+      }
 
-        &__figure--mid {
-          --drift: 54px;
-        }
-
-        &__figure--trail {
-          --drift: -30px;
-        }
+      // Out of the centred flow so the statement sits dead centre.
+      // Climbs in from below like the photos once they've settled, and
+      // holds for the last of the scroll.
+      .manifesto__closing-line {
+        position: absolute;
+        top: 50%;
+        margin-top: clamp(14rem, 36vh, 23rem);
+        opacity: 0;
+        animation: manifesto-closing-in linear both;
+        animation-timeline: --manifesto-seq;
+        animation-range: contain 62% contain 84%;
+        will-change: transform, opacity;
       }
     }
   }
 }
 
-@keyframes manifesto-drift {
+@keyframes manifesto-rise-in {
   from {
-    transform: translate3d(0, calc(var(--drift, 0px) * -1), 0);
+    transform: translate3d(0, 112svh, 0);
   }
 
   to {
-    transform: translate3d(0, var(--drift, 0px), 0);
+    transform: translate3d(0, var(--rest-y, 0), 0);
+  }
+}
+
+@keyframes manifesto-closing-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 44svh, 0);
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
   }
 }
