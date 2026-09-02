@@ -28,7 +28,7 @@ export function Services() {
   >(services.length);
 
   return (
-    <section className="services" id="servicios">
+    <section className="services">
       <img
         className="services__bg"
         src={BACKGROUND}
@@ -40,16 +40,15 @@ export function Services() {
       />
 
       <div className="services__masthead">
-        <div className="services__inner">
+        <div className="services__inner" id="servicios">
           <SectionHeading
-            eyebrow="Servicios"
             align="right"
             title={
               <>
                 <p>Nuestros</p> <span className="text-slab">servicios</span>
               </>
             }
-            intro="Cinco disciplinas que casi siempre viajan juntas. Podés tomar una sola, pero el resultado es mejor cuando se diseñan en conjunto."
+            intro="Cuatro disciplinas que casi siempre viajan juntas. Podés tomar una sola, pero el resultado es mejor cuando se diseñan en conjunto."
           />
         </div>
       </div>
@@ -103,7 +102,7 @@ export function Services() {
               whole sequence, so the invitation is on screen no matter
               which service is being read. */}
           <div className="services__rail">
-            {/* All five textures are stacked and cross-faded by opacity
+            {/* All four textures are stacked and cross-faded by opacity
                 rather than swapping one src, so there is no blank frame
                 while the next file decodes. Decorative: the service each
                 one belongs to is named in the text column, so alt stays

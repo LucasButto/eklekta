@@ -8,9 +8,8 @@ export function About() {
     <section className="about" id="nosotros">
       <div className="about__intro">
         <SectionHeading
-          eyebrow="Quiénes somos"
           title="Diseñamos lo que tu negocio necesita para avanzar."
-          intro="Diseño, desarrollo y automatización trabajan en la misma mesa. Por eso la marca, el producto y el proceso terminan contándose la misma historia en lugar de pelearse entre sí."
+          intro="Diseño, desarrollo y automatización trabajan en la misma mesa. Por eso el producto, la interfaz y el proceso terminan contándose la misma historia en lugar de pelearse entre sí."
         />
       </div>
 

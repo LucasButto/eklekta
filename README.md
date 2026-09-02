@@ -1,7 +1,7 @@
 # eklekta — sitio web
 
 Landing de una página para eklekta: automatizaciones, CRM, desarrollo web a
-medida, UX/UI y branding.
+medida y UX/UI.
 
 Stack: **Vite + React 19 + TypeScript + SCSS**. Sin framework de CSS: todo el
 sistema visual vive en `src/styles`.

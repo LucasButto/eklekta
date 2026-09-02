@@ -66,22 +66,5 @@
         1200
       ]
     }
-  },
-  {
-    "id": "branding",
-    "title": "Branding",
-    "description": "Identidad, sistema visual y lineamientos de uso. Una marca que se sostiene en todos los formatos.",
-    "deliverables": [
-      "Identidad",
-      "Sistema visual",
-      "Manual de marca"
-    ],
-    "media": {
-      "src": "/images/services/branding",
-      "widths": [
-        800,
-        1200
-      ]
-    }
   }
 ]
