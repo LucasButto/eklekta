@@ -59,11 +59,24 @@ html {
   //
   // Landing on $section-y instead means the band above the target is
   // never more than the previous section's own bottom padding: the
-  // boundary itself tucks in behind the pill, and the target's eyebrow
+  // boundary itself tucks in behind the pill, and the target's heading
   // is the first thing under it. It tracks the viewport the same way
   // the section rhythm does, so it holds from 320px up.
   @include down($bp-lg) {
     scroll-padding-top: $section-y;
+  }
+}
+
+// Servicios anchors on `.services__inner` — the masthead content, not
+// the `.services` section (which owns a tall pinned rail you would land
+// at the top of). That inner wrapper has no padding of its own, so
+// below $bp-lg, where the header is a floating pill rather than a bar,
+// a nav tap would drop the first heading line straight under it.
+// scroll-margin-top adds to scroll-padding-top above and restores the
+// clearance the section's own top padding gives every other target.
+@include down($bp-lg) {
+  .services__inner {
+    scroll-margin-top: $section-y;
   }
 }
 

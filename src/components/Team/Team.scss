@@ -1,12 +1,28 @@
-@use 'styles' as *;
+@use "styles" as *;
 
 .team {
   @include section-spacing;
+  @include full-screen-section;
 
   // clip, not hidden: with the swipe rail gone there is nothing here
   // that should ever scroll, and `hidden` would still leave the
   // section programmatically scrollable.
   overflow-x: clip;
+
+  // full-screen-section stacks and vertically centres this section on
+  // desktop, which changes what the block padding is for. The top step
+  // becomes the fixed header's own height (5.125rem — the landmark
+  // scroll-padding-top already uses) so the heading clears the bar
+  // when the section is scrolled to fill the screen; the bottom step
+  // shrinks, because the centring holds the row off the edge for free.
+  @include up($bp-lg) {
+    padding-block: 5.125rem $space-sm;
+
+    // A nav tap lands a touch deeper than the header line — the centred
+    // content otherwise sits a long way below the bar. ~one
+    // scrollbar-arrow click.
+    scroll-margin-top: -2.5rem;
+  }
 
   &__inner {
     @include container;
@@ -14,6 +30,24 @@
 
   &__heading {
     margin-bottom: $heading-gap;
+
+    // On desktop the section runs under full-screen-section and has to
+    // seat a five-card row on the same screen, so every block above the
+    // row gives back what it can: a tighter gap down to the row, and
+    // enough width for the display line to hold two lines instead of
+    // three (same type size, ~80px of height back). 68rem, not 64:
+    // once the type reaches its 5.6rem cap (~1535px wide and up) 64rem
+    // tipped it back to three. The intro widens off its default 46ch
+    // to match.
+    @include up($bp-lg) {
+      max-width: min(100%, 68rem);
+      margin-bottom: clamp(0.75rem, 2vh, 1.75rem);
+      gap: $space-xs;
+
+      .section-heading__intro {
+        max-width: 62ch;
+      }
+    }
   }
 
   // ------------------------------------------------ the row
@@ -53,6 +87,9 @@
     // opens a hole in the next line.
     @include up($bp-lg) {
       &:nth-child(even) {
+        // The full mockup drop — the two lowered cards are the move
+        // that gives the row its rhythm, and once the heading dropped
+        // its eyebrow the section has the height to carry it again.
         margin-top: clamp(2rem, 1rem + 4vw, 5.5rem);
       }
     }
@@ -63,6 +100,13 @@
   display: flex;
   flex-direction: column;
   gap: $space-sm;
+
+  // Desktop shares the screen with the heading (full-screen-section);
+  // the photo-to-caption gap tightens a notch so the row keeps more of
+  // that height for the photo itself.
+  @include up($bp-lg) {
+    gap: $space-xs;
+  }
 
   &__photo {
     overflow: hidden;
@@ -84,8 +128,14 @@
 
       // Five across: the columns are narrow and near-equal at every
       // width, so a measured height reads more evenly than a ratio.
+      // Tall portrait again, ~1:1.5 like it was before full-screen-
+      // section. min(vh, vw) so whichever axis is tighter is the one
+      // that sets the height: the vh term keeps the whole section
+      // inside one screen on a short window, and the vw term stops the
+      // photo turning skinny once the five columns get narrow near
+      // $bp-lg. ~330px on a 1280x900 screen, up to the 24rem cap.
       @include up($bp-lg) {
-        height: clamp(16.25rem, 26vw, 25rem);
+        height: clamp(17rem, min(38vh, 26vw), 24rem);
         aspect-ratio: auto;
       }
     }
@@ -106,7 +156,6 @@
     font-size: clamp(1rem, 0.9rem + 0.4vw, 1.2rem);
     font-weight: $fw-ultra;
     line-height: 1.15;
-    letter-spacing: -0.01em;
     color: var(--text);
   }
 

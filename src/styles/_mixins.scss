@@ -1,4 +1,4 @@
-@use 'tokens' as *;
+@use "tokens" as *;
 
 // ---------------------------------------------- media queries
 // Mobile-first: `@include up($bp-md) { ... }`
@@ -58,13 +58,39 @@
   padding-block: $section-y;
 }
 
+// One screen per section, on desktop only. Without this a section's
+// height is whatever its content happens to need, so the same page
+// shows a different amount of "whitespace vs. content" per scroll —
+// and a different scroll distance — on every monitor height. Content
+// shorter than the viewport centres in the room left over instead of
+// stranding it all at the bottom; content that genuinely can't fit
+// still grows past 100svh rather than clipping — min-height, not
+// height, is what makes that safe.
+//
+// Desktop-only ($bp-lg, the breakpoint every section already reflows
+// its own grid at) on purpose: forcing a full screen under content
+// that's already close to it on a phone produces exactly the stretched,
+// mostly-empty screens this exists to avoid.
+//
+// Not for Hero, Services, or Footer — each already owns a taller,
+// deliberately-scrolled height for its own scroll-driven sequence
+// (the hero scrub, the services pinned rail, the footer reveal), and
+// this would fight all three.
+@mixin full-screen-section {
+  @include up($bp-lg) {
+    min-height: 95svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+}
+
 // ---------------------------------------------- typography helpers
 @mixin display($size: $display-md, $weight: $fw-ultra) {
   font-family: $font-display;
   font-weight: $weight;
   font-size: $size;
   line-height: 0.94;
-  letter-spacing: -0.02em;
   text-wrap: balance;
   // Monument is very wide; without this the reset's break-word will
   // split words mid-glyph at display sizes.

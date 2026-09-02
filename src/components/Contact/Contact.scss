@@ -2,6 +2,14 @@
 
 .contact {
   @include section-spacing;
+  @include full-screen-section;
+
+  // A nav tap lands well past the header line — the closing section
+  // centres its content and holds it lower than the rest, so it gets a
+  // bigger nudge than Proyectos / Equipo. ~two scrollbar-arrow clicks.
+  @include up($bp-lg) {
+    scroll-margin-top: -5rem;
+  }
 
   &__inner {
     @include container;
@@ -12,6 +20,14 @@
   &__banner {
     margin-bottom: $heading-gap;
     text-align: right;
+
+    // Last few px of full-screen-section's fit: the grid below (the
+    // form, specifically) is already at its practical floor — form
+    // fields need to stay a real size to click — so this is the one
+    // remaining lever.
+    @include up($bp-lg) {
+      margin-bottom: clamp(1rem, 3vh, 3.5rem);
+    }
   }
 
   &__banner-line {
