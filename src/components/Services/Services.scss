@@ -128,7 +128,7 @@
     position: absolute;
     inset: 0;
     display: block;
-    // Stacked, not swapped: cross-fading between five decoded images
+    // Stacked, not swapped: cross-fading between four decoded images
     // avoids the blank frame a changing src would leave behind.
     opacity: 0;
     transition: opacity $dur-base linear;
@@ -163,8 +163,9 @@
       // Generous rhythm is the whole mechanism: the list has to outrun
       // the pinned panel for the pin to have anything to hold through,
       // and each service needs its own stretch of scroll to be the one
-      // at the reading line.
-      gap: 24vh;
+      // at the reading line. At 24vh a service held the panel for barely
+      // 340px of scroll, which read as a flick rather than a beat.
+      gap: 32vh;
       // Buys the first and last service the room to reach the panel's
       // centre while the rail is still pinned. Measured, not guessed:
       // the first needs (panel height - item height) / 2 of lead-in, and
@@ -176,7 +177,13 @@
       // Without this the first service was already 148px past the
       // panel's centre before the pin even started, and the last one
       // never reached it at all.
-      padding-block: 17rem 28.5rem;
+      //
+      // The run-out carries a further ~6rem beyond that measured
+      // minimum: reaching the panel's centre on the last frame of the
+      // pin is not the same as resting there, and the extra buys the
+      // fifth service a beat at the reading line before the rail
+      // releases into Proyectos.
+      padding-block: 17rem 34.5rem;
     }
   }
 
@@ -219,8 +226,8 @@
     transition: color $dur-base $ease-out;
 
     // Insurance, not layout. The two rules above are measured against
-    // Monument Extended's metrics and today's five service names, and
-    // neither is guaranteed: the face can fail to load, and a sixth
+    // Monument Extended's metrics and today's four service names, and
+    // neither is guaranteed: the face can fail to load, and a fifth
     // service can be named anything. break-word costs nothing while
     // the word fits — it only ever fires when a word cannot fit on a
     // line by itself, which is exactly the case that used to take the
@@ -270,8 +277,8 @@
   &__item-figure {
     width: 100%;
     // Same 4:5 the files are generated at, so nothing is cropped twice.
-    // A short landscape band here would have cut the headline out of
-    // the branding photo, which sits across the top of its frame.
+    // A short landscape band here would crop a subject that a source
+    // photo places across the top of its frame.
     aspect-ratio: 4 / 5;
     margin-top: $space-md;
     overflow: hidden;

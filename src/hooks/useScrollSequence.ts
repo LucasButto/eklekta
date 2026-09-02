@@ -84,7 +84,15 @@ export function useScrollSequence<
           // The first item is already on screen when the section
           // arrives, so it starts solid instead of fading up from zero.
           const fadeIn = index === 0 ? 1 : Math.min(1, progress / 0.3)
-          const fadeOut = 1 - Math.max(0, (progress - 0.7) / 0.3)
+          // The last item gets the mirror of that exemption. Its fade
+          // used to bottom out at zero within a few pixels of the rail
+          // unpinning, so the sequence's closing move was content
+          // dissolving into a blank column exactly as the next section
+          // arrived. It holds instead, and simply scrolls away.
+          const fadeOut =
+            index === items.length - 1
+              ? 1
+              : 1 - Math.max(0, (progress - 0.7) / 0.3)
 
           node.style.setProperty(
             '--seq-opacity',
