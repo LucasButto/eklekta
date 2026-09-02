@@ -1,4 +1,4 @@
-@use 'styles' as *;
+@use "styles" as *;
 
 .ribbon {
   padding-block: clamp(1.25rem, 0.8rem + 2vw, 2.5rem);
@@ -70,7 +70,6 @@
     font-family: $font-display;
     font-size: $text-sm;
     font-weight: $fw-ultra;
-    letter-spacing: -0.01em;
   }
 
   &__tag {

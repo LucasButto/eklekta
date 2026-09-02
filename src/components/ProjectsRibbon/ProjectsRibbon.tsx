@@ -30,7 +30,7 @@ export function ProjectsRibbon() {
               <a className="ribbon__link" href={project.url} target="_blank" rel="noreferrer noopener">
                 <img
                   className="ribbon__image"
-                  src={project.cover}
+                  src={`${project.cover}-800.jpg`}
                   alt={`${project.title} — ${project.categories.join(', ')}`}
                   loading="lazy"
                   decoding="async"
@@ -50,7 +50,7 @@ export function ProjectsRibbon() {
               <span className="ribbon__link ribbon__link--clone">
                 <img
                   className="ribbon__image"
-                  src={project.cover}
+                  src={`${project.cover}-800.jpg`}
                   alt=""
                   loading="lazy"
                   decoding="async"

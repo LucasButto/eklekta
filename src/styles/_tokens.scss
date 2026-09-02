@@ -7,53 +7,60 @@
 // ---------------------------------------------- brand palette
 // Reference values. Components should read the themed custom
 // properties (var(--brand)) instead of these, so dark mode works.
-$brand:          #6d64f1; // primary, straight from the logo
-$brand-deep:     #6259ee; // filled buttons — 5.0:1 with white text
-$brand-press:    #5348e4;
-$brand-lift:     #8f88ff; // dark-mode brand, lifted for contrast
+$brand: #6d64f1; // primary, straight from the logo
+$brand-deep: #6259ee; // filled buttons — 5.0:1 with white text
+$brand-press: #5348e4;
+$brand-lift: #8f88ff; // dark-mode brand, lifted for contrast
 
-$ink:            #0b0b10;
-$paper:          #ffffff;
+$ink: #0b0b10;
+$paper: #ffffff;
 
 // editorial accents, taken from the brand photography
-$accent-orange:  #ff5c1a;
-$accent-blue:    #1f44ff;
-$accent-lime:    #c6f24e;
+$accent-orange: #ff5c1a;
+$accent-blue: #1f44ff;
+$accent-lime: #c6f24e;
+$accent-cyan: #1ac8de; // konekta (the CRM), bright celeste — dark ink on top
 
 // ---------------------------------------------- typography
-$font-display: 'Monument Extended', 'Poppins', 'Arial Black', system-ui, sans-serif;
-$font-body:    'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
+$font-display:
+  "Monument Extended", "Poppins", "Arial Black", system-ui, sans-serif;
+$font-body:
+  "Poppins",
+  system-ui,
+  -apple-system,
+  "Segoe UI",
+  sans-serif;
 
-$fw-light:     300;
-$fw-regular:   400;
-$fw-medium:    500;
-$fw-semibold:  600;
-$fw-bold:      700;
-$fw-ultra:     800;
+$fw-light: 300;
+$fw-regular: 400;
+$fw-medium: 500;
+$fw-semibold: 600;
+$fw-bold: 700;
+$fw-ultra: 800;
 
 // fluid type scale — min / preferred / max
-$text-xs:   clamp(0.72rem, 0.70rem + 0.10vw, 0.78rem);
-$text-sm:   clamp(0.82rem, 0.79rem + 0.14vw, 0.92rem);
-$text-base: clamp(0.95rem, 0.90rem + 0.22vw, 1.08rem);
-$text-md:   clamp(1.05rem, 0.98rem + 0.34vw, 1.28rem);
-$text-lg:   clamp(1.25rem, 1.10rem + 0.70vw, 1.70rem);
+$text-xs: clamp(0.72rem, 0.7rem + 0.1vw, 0.78rem);
+$text-sm: clamp(0.82rem, 0.79rem + 0.14vw, 0.92rem);
+$text-base: clamp(0.95rem, 0.9rem + 0.22vw, 1.08rem);
+$text-md: clamp(1.05rem, 0.98rem + 0.34vw, 1.28rem);
+$text-lg: clamp(1.25rem, 1.1rem + 0.7vw, 1.7rem);
 
 // The display face is very wide, and Spanish has long words
 // ("proveedores", "herramientas"). The lower bounds are set so the
 // longest word on the page still fits a 360px viewport.
-$display-sm: clamp(1.60rem, 0.95rem + 2.90vw, 3.60rem);
-$display-md: clamp(1.95rem, 0.90rem + 4.90vw, 5.60rem);
-$display-lg: clamp(2.20rem, 0.80rem + 6.60vw, 8.00rem);
-$display-xl: clamp(2.50rem, 0.60rem + 9.20vw, 11.5rem);
+$display-sm: clamp(1.6rem, 0.95rem + 2.9vw, 3.6rem);
+$display-md: clamp(1.95rem, 0.9rem + 4.9vw, 5.6rem);
+$display-lg: clamp(2.2rem, 0.8rem + 6.6vw, 7.8rem);
+$display-xl: clamp(2.5rem, 0.6rem + 9.2vw, 11.5rem);
 
 // ---------------------------------------------- spacing
 $space-3xs: 0.25rem;
 $space-2xs: 0.5rem;
-$space-xs:  0.75rem;
-$space-sm:  1rem;
-$space-md:  1.5rem;
-$space-lg:  2rem;
-$space-xl:  3rem;
+$space-xs: 0.75rem;
+$space-sm: 1rem;
+$space-md: 1.5rem;
+$space-lg: 2rem;
+$space-xl: 3rem;
 $space-2xl: 4rem;
 $space-3xl: 6rem;
 $space-4xl: 8rem;
@@ -70,28 +77,29 @@ $heading-gap: clamp(1.75rem, 1.1rem + 2.6vw, 3.5rem);
 // Expressed in rem, not px, so they ride the root font-size ramp in
 // _reset.scss. At the default 16px root these resolve to exactly
 // 1440px / 1180px, so nothing below 1920px viewport width changes.
-$container-max: 90rem;    // 1440px @ 16px root
-$content-max:   73.75rem; // 1180px @ 16px root
-$gutter:        clamp(1.25rem, 0.6rem + 3vw, 4rem);
+$container-max: 90rem; // 1440px @ 16px root
+$content-max: 73.75rem; // 1180px @ 16px root
+$gutter: clamp(1.25rem, 0.6rem + 3vw, 4rem);
 
 // ---------------------------------------------- radii
 // In rem so corners keep their proportion to the card when the root
 // scales up on large displays.
 $radius-xs: 0.375rem; // 6px
 $radius-sm: 0.625rem; // 10px
-$radius-md: 1rem;     // 16px
-$radius-lg: 1.5rem;   // 24px
-$radius-xl: 2rem;     // 32px
+$radius-md: 1rem; // 16px
+$radius-lg: 1.5rem; // 24px
+$radius-xl: 2rem; // 32px
 $radius-pill: 999px;
 
 // ---------------------------------------------- motion
-$ease-out:  cubic-bezier(0.22, 1, 0.36, 1);
+$ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 $ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 $ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
 
-$dur-fast:   140ms;
-$dur-base:   240ms;
-$dur-slow:   420ms;
+$dur-fast: 140ms;
+$dur-base: 240ms;
+$dur-mid: 330ms;
+$dur-slow: 420ms;
 $dur-reveal: 720ms;
 
 // ---------------------------------------------- breakpoints
@@ -102,11 +110,11 @@ $bp-lg: 1024px;
 $bp-xl: 1280px;
 $bp-2xl: 1536px;
 $bp-3xl: 1920px; // where the root font-size ramp starts — 1080p and below are untouched
-$bp-2k:  2560px;  // QHD and up — also catches every 4K/UHD (3840) screen
+$bp-2k: 2560px; // QHD and up — also catches every 4K/UHD (3840) screen
 
 // ---------------------------------------------- z-index
-$z-base:    1;
-$z-sticky:  50;
-$z-header:  100;
+$z-base: 1;
+$z-sticky: 50;
+$z-header: 100;
 $z-overlay: 200;
-$z-modal:   300;
+$z-modal: 300;

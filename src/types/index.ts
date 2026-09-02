@@ -3,6 +3,12 @@ export interface Project {
   title: string
   client: string
   /**
+   * Which filter tab the project sits under — `sitio-web`, `automatizacion`,
+   * `crm`, … Free-form so the data can grow a new kind without a type change;
+   * the Projects filter bar decides which kinds it surfaces.
+   */
+  kind: string
+  /**
    * Optional on purpose: a delivery year is a factual claim about a real
    * client, so a project carries one only once it is confirmed. The card
    * drops the year from its meta line when it is missing rather than
@@ -20,7 +26,19 @@ export interface Project {
   summary: string
   /** The full account of the work. Dialog only. */
   description: string
+  /**
+   * Path stem for the landscape cover — `${cover}-{400,800,1200}.{webp,jpg}`
+   * are the real files (see coverSet in ProjectCard). Shown in the grid
+   * tile and the side-rail mini.
+   */
   cover: string
+  /**
+   * Path stem for the portrait crop shown when the project is opened
+   * large — `${coverLarge}-{440,832}.{webp,jpg}`. Optional: automation
+   * work has no dedicated vertical, so the opened cover falls back to
+   * `cover` (those are already portrait).
+   */
+  coverLarge?: string
   /**
    * Which part of the cover carries the brand. Every cover is a wide
    * screenshot of a live site dropped into a portrait or square tile, so
@@ -31,8 +49,11 @@ export interface Project {
    * about.
    */
   alignImg?: 'left' | 'center' | 'right'
-  /** External link to the case study or the live site. */
-  url: string
+  /**
+   * External link to the live site. Optional: automation and CRM work has
+   * no public URL, so the dialog just drops the "Ver sitio" button.
+   */
+  url?: string
   featured: boolean
 }
 

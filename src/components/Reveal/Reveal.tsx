@@ -8,6 +8,8 @@ interface RevealProps {
   /** Renders as a different element when a div would be invalid markup. */
   as?: ElementType
   className?: string
+  /** Extra inline styles / custom properties, merged after `--reveal-delay`. */
+  style?: CSSProperties
 }
 
 /**
@@ -20,7 +22,13 @@ interface RevealProps {
  * is no frame where the content is painted before it is hidden.
  * Reduced-motion users get everything visible, enforced in CSS.
  */
-export function Reveal({ children, delay = 0, as: Tag = 'div', className }: RevealProps) {
+export function Reveal({
+  children,
+  delay = 0,
+  as: Tag = 'div',
+  className,
+  style,
+}: RevealProps) {
   const ref = useRef<HTMLElement>(null)
 
   useEffect(() => {
@@ -53,7 +61,14 @@ export function Reveal({ children, delay = 0, as: Tag = 'div', className }: Reve
       ref={ref}
       className={className}
       data-reveal="hidden"
-      style={delay ? ({ '--reveal-delay': `${delay}ms` } as CSSProperties) : undefined}
+      style={
+        delay || style
+          ? ({
+              ...(delay ? { '--reveal-delay': `${delay}ms` } : {}),
+              ...style,
+            } as CSSProperties)
+          : undefined
+      }
     >
       {children}
     </Tag>

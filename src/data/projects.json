@@ -3,14 +3,13 @@
     "id": "prosperi",
     "title": "Prosperi",
     "client": "Prosperi SRL",
-    "categories": [
-      "Desarrollo web",
-      "UX/UI"
-    ],
+    "kind": "sitio-web",
+    "categories": ["Desarrollo web", "UX/UI"],
     "subtitle": "Sitio web de constructora",
     "summary": "Sitio institucional para una constructora residencial y comercial de alto estándar en Rosario. Galería de obras filtrable por rubro, formulario de contacto protegido contra spam e imágenes optimizadas on-demand.",
     "description": "Desarrollo de un sitio web institucional para Prosperi, una empresa de construcción residencial y comercial de alto estándar con base en Rosario, Argentina. Construido con React, TypeScript y Vite, con un tema oscuro editorial y tipografía serif/sans, una galería de proyectos filtrable organizada por rubro (Albañilería, Pintura, Revestimientos, Trabajos de Altura) y optimización de imágenes on-demand mediante el CDN de imágenes de Netlify. Incluye una sección de filosofía, un formulario de contacto protegido contra spam e integración con Instagram, totalmente responsive y desplegado en Netlify.",
-    "cover": "/images/projects/Proj16.png",
+    "cover": "/images/projects/proj-1",
+    "coverLarge": "/images/projects/proj-1V",
     "alignImg": "left",
     "url": "https://prosperisrl.com/",
     "featured": true
@@ -19,14 +18,13 @@
     "id": "peisino",
     "title": "Peisino",
     "client": "Arq. Julián Peisino",
-    "categories": [
-      "Desarrollo web",
-      "UX/UI"
-    ],
+    "kind": "sitio-web",
+    "categories": ["Desarrollo web", "UX/UI"],
     "subtitle": "Portfolio de arquitectura",
     "summary": "Portfolio para el estudio de arquitectura de Julián Peisino. Las obras se cargan desde Firebase, así que el estudio suma proyectos nuevos sin tocar una línea de código.",
     "description": "Desarrollo de un sitio web para el arquitecto Julián Peisino usando Next.js en el frontend y Firebase para la gestión de datos en el backend. La plataforma muestra los proyectos de arquitectura de forma dinámica y optimizada, garantizando una navegación fluida y una experiencia de usuario intuitiva.",
-    "cover": "/images/projects/proj11.jpg",
+    "cover": "/images/projects/proj-2",
+    "coverLarge": "/images/projects/proj-2V",
     "alignImg": "left",
     "url": "https://peisino.com.ar/",
     "featured": false
@@ -35,14 +33,13 @@
     "id": "homesteelhome",
     "title": "Home Steel Home",
     "client": "HomeSteelHome",
-    "categories": [
-      "Desarrollo web",
-      "UX/UI"
-    ],
+    "kind": "sitio-web",
+    "categories": ["Desarrollo web", "UX/UI"],
     "subtitle": "Landing de construcción en acero",
     "summary": "Landing comercial para una marca de productos para construcción en acero. HTML, CSS y JavaScript puros, sin frameworks: carrusel en el hero, grilla de productos y un CTA fijo a WhatsApp.",
     "description": "Diseño y desarrollo de una landing page comercial para HomeSteelHome, una marca de productos para construcción en acero con base en Rosario, Argentina. Construida con HTML5 semántico, CSS y JavaScript puros — sin frameworks. Incluye un hero con carrusel de múltiples imágenes con transiciones de opacidad en CSS y rotación automática en JS, una grilla de productos 3×2 responsive con overlays glassmorphism, una curva trapezoidal en SVG en la base del hero, animaciones de aparición al hacer scroll y un CTA fijo de WhatsApp. Totalmente responsive en mobile, tablet, laptop y viewports 2K+, validada con tests de captura en Playwright. Desplegada en Latin Cloud con dominio de NIC Argentina y SSL mediante CloudPanel.",
-    "cover": "/images/projects/proj13.jpg",
+    "cover": "/images/projects/proj-3",
+    "coverLarge": "/images/projects/proj-3V",
     "alignImg": "left",
     "url": "https://homesteelhome.com.ar/",
     "featured": false
@@ -51,16 +48,51 @@
     "id": "amecom",
     "title": "AMECOM",
     "client": "AMECOM Internet",
-    "categories": [
-      "Desarrollo web",
-      "Integraciones"
-    ],
+    "kind": "sitio-web",
+    "categories": ["Desarrollo web", "Integraciones"],
     "subtitle": "Optimización web para un ISP",
     "summary": "Optimización del sitio de un ISP que da servicio a zonas rurales e industriales. Cambiamos el chatbot por WhatsApp directo, reordenamos el contenido y cada consulta quedó medida como conversión en Google Ads.",
     "description": "Proyecto de optimización web para AMECOM Internet, un ISP que brinda servicio en zonas rurales e industriales de Argentina. El trabajo incluyó la instalación del píxel de Google Ads y la configuración del seguimiento de conversiones mediante Insert Headers and Footers, el reemplazo de un chatbot de terceros por un botón de contacto directo por WhatsApp, la reorganización del contenido con el Theme Builder y el panel de estructura de Elementor, y la configuración de botones de consulta por WhatsApp para cada plan de servicio usando plantillas dinámicas de JetEngine. Todas las interacciones se registran como eventos de conversión en Google Ads.",
-    "cover": "/images/projects/proj14.jpg",
+    "cover": "/images/projects/proj-4",
+    "coverLarge": "/images/projects/proj-4V",
     "alignImg": "center",
     "url": "https://amecom.com.ar",
+    "featured": false
+  },
+  {
+    "id": "nodo-reparto",
+    "title": "Nodo",
+    "client": "Nodo Reparto",
+    "kind": "automatizacion",
+    "categories": ["Automatización", "Integraciones"],
+    "subtitle": "Ruteo de pedidos sin planilla",
+    "summary": "Los pedidos entran por WhatsApp y mail y salen asignados a un repartidor con la hoja de ruta armada. El equipo dejó de copiar direcciones a mano y de pelear con la planilla compartida.",
+    "description": "Automatización del ingreso y despacho de pedidos para Nodo Reparto, un servicio de última milla en Rosario. Los pedidos llegan por WhatsApp Business y por un formulario web, se normalizan las direcciones contra una API de geocodificación, se agrupan por zona y se asignan al repartidor con menos carga. Cada repartidor recibe su hoja de ruta del día en Telegram y el cliente un mensaje con el seguimiento. Construido sobre Make y funciones serverless, con el mismo Google Sheets que el equipo ya usaba como tablero de control.",
+    "cover": "/images/projects/granvia-ops",
+    "featured": true
+  },
+  {
+    "id": "cierre-claro",
+    "title": "Claro",
+    "client": "Estudio Claro",
+    "kind": "automatizacion",
+    "categories": ["Automatización"],
+    "subtitle": "Facturación mensual de un estudio contable",
+    "summary": "El estudio emitía 200 facturas a mano cada mes y perseguía los pagos uno por uno por WhatsApp. Ahora las facturas salen solas y los recordatorios se mandan escalonados.",
+    "description": "Automatización del ciclo de facturación mensual para Estudio Claro, un estudio contable con cartera de pymes. A partir de una planilla de honorarios el flujo genera y emite las facturas electrónicas contra el web service de AFIP, las envía por mail con el PDF adjunto y registra el vencimiento. A los cinco y a los quince días manda recordatorios escalonados solo a quien no pagó, y avisa al estudio cuando una cuenta pasa los treinta días. Todo queda anotado en la misma planilla que el equipo revisa cada semana.",
+    "cover": "/images/projects/lumen-studio",
+    "featured": false
+  },
+  {
+    "id": "turnos-vera",
+    "title": "Vera",
+    "client": "Vera Salud",
+    "kind": "automatizacion",
+    "categories": ["Automatización", "Integraciones"],
+    "subtitle": "Recordatorios de turno y lista de espera",
+    "summary": "Un centro de salud con seis consultorios y 40 % de ausentismo. Con recordatorios por WhatsApp y una lista de espera que se llama sola, el ausentismo bajó a la mitad.",
+    "description": "Automatización de la agenda de turnos para Vera Salud, un centro de salud con seis consultorios. El flujo lee la agenda del sistema de gestión, confirma cada turno por WhatsApp 48 y 3 horas antes, y ante una cancelación ofrece el hueco al primero de la lista de espera de esa especialidad. Los turnos sin confirmar se liberan la noche anterior. Recepción sigue todo desde un tablero simple y solo interviene cuando el flujo pide una decisión.",
+    "cover": "/images/projects/sereno-brand",
     "featured": false
   }
 ]

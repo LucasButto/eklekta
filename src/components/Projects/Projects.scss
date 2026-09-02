@@ -1,305 +1,688 @@
-@use 'styles' as *;
+@use "styles" as *;
 
 // =============================================================
-//  Proyectos opts out of the large-display root ramp.
+//  Proyectos — an iOS App Store "Today" grid.
 //
-//  Every other section grows with the ramp and gains from it, but this
-//  one is a fixed bento that is meant to be taken in at a glance. At
-//  2560 the ramp put the root at 18px and pushed the section from
-//  1259px to 1416px, which no longer clears the header on a 1440-tall
-//  screen — the last tile fell off the fold.
+//  Cards sit in a two-up bento that alternates wide / narrow row to
+//  row. Open one and the section becomes a master-detail: the picked
+//  cover grows tall on the left, its readout (title, link, blurb) sits
+//  beside it, and the rest of the set stacks into a rail on the right.
+//  <Projects> plays the reflow as a FLIP (WAAPI), so this file only
+//  describes the two end states.
 //
-//  rem always resolves against the root, so a section cannot cancel the
-//  ramp with font-size. The three values that actually carry the
-//  section's height are therefore pinned in px, which do not ramp. The
-//  card text below stays on the shared rem tokens: it is small enough
-//  that the ramp helps there and costs almost nothing in height.
+//  Like the rest of the section it opts out of the large-display root
+//  ramp — the values that carry the section's height are pinned in px
+//  (or vh), which do not ramp, so the card rows still clear the header
+//  on a tall 2K screen. Card text stays on the rem tokens.
 // =============================================================
+
+$projects-gap: clamp(10px, 6px + 0.9vw, 20px);
+$projects-gap-md: clamp(10px, 6px + 0.9vw, 20px);
+
+$card-h: clamp(220px, 58vw, 340px);
+$card-h-md: clamp(240px, 34vw, 320px);
+$card-h-lg: clamp(210px, 29vh, 420px);
+
+$card-inset: clamp(0.9rem, 0.6rem + 1vw, 1.5rem);
+$card-title: clamp(1.15rem, 0.95rem + 1vw, 1.9rem);
+$card-scrim: linear-gradient(
+  to bottom,
+  rgb(0 0 0 / 52%) 0%,
+  rgb(0 0 0 / 30%) 26%,
+  rgb(0 0 0 / 8%) 46%,
+  rgb(0 0 0 / 0%) 62%
+);
 
 .projects {
-  // $section-y in px — the ramp took this from 72px to 81px a side.
+  // svh + flex, no rem — a screen-height floor that doesn't reintroduce
+  // the ramp this section opts out of. See full-screen-section.
+  @include full-screen-section;
+
   padding-block: clamp(36px, 24px + 3vw, 72px);
+
+  @include up($bp-lg) {
+    padding-block: clamp(20px, 3vh, 56px);
+
+    // A nav tap lands a touch deeper than the header line — the section
+    // centres its content, so the default landmark leaves a wide band
+    // above the heading. ~one scrollbar-arrow click.
+    scroll-margin-top: -2.5rem;
+  }
 
   &__inner {
     @include container;
   }
 
   &__heading {
-    // $heading-gap in px, same reason.
-    margin-bottom: clamp(28px, 17.6px + 2.6vw, 56px);
+    margin-bottom: clamp(16px, 10px + 1.6vw, 32px);
+
+    @include up($bp-lg) {
+      max-width: min(100%, 66rem);
+      margin-bottom: clamp(10px, 1.6vh, 24px);
+    }
   }
 
-  // The display face is what the ramp inflates most: three lines at
-  // 100.8px instead of 89.6px cost the section ~34px on its own.
   .section-heading__title {
-    font-size: clamp(31.2px, 14.4px + 4.9vw, 89.6px);
+    font-size: clamp(30px, 14px + 4.6vw, 84px);
   }
 
-  // ------------------------------------------------ bento grid
-  &__grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: clamp(0.75rem, 0.5rem + 0.9vw, 1.25rem);
+  // ------------------------------------------------ the filter bar
+  // A segmented control: one slot per work type, a brand pill that
+  // slides behind the active label. The buttons are natural width;
+  // <Projects> measures the active one and writes `--marker-x` /
+  // `--marker-w` to this element, so the pill lands exactly on it.
+  &__filters {
+    position: relative;
+    display: flex;
+    width: fit-content;
+    max-width: 100%;
+    margin-bottom: clamp(16px, 10px + 1.6vw, 32px);
+    padding: 4px;
+    overflow-x: auto;
+    background-color: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: $radius-pill;
+    scrollbar-width: none;
 
-    @include up($bp-md) {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+    &::-webkit-scrollbar {
+      display: none;
     }
 
     @include up($bp-lg) {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      // Row height drives the whole bento; tiles span 1 or 2 of these.
-      // Back in px: this is the single biggest term in the section's
-      // height, and the ramp was stretching each row 310px -> 349px.
-      grid-auto-rows: clamp(200px, 21vw, 310px);
+      margin-bottom: clamp(12px, 2vh, 28px);
     }
   }
 
-  // Single column: every tile is the same portrait card.
+  &__filter-marker {
+    position: absolute;
+    inset-block: 4px;
+    left: 0;
+    z-index: 0;
+    width: var(--marker-w, 0);
+    background-color: var(--brand-deep);
+    border-radius: $radius-pill;
+    transform: translateX(var(--marker-x, 4px));
+    // Only the glide is animated — the width snaps to the new label so
+    // the pill is never a wrong size, even if a slide is cut short.
+    transition: transform $dur-base $ease-spring;
+
+    .projects__filters[data-static] & {
+      transition: none;
+    }
+  }
+
+  &__filter {
+    position: relative;
+    z-index: 1;
+    flex: 0 0 auto;
+    padding: 0.5em 1.15em;
+    font-family: inherit;
+    font-size: clamp(0.78rem, 0.72rem + 0.3vw, 0.95rem);
+    font-weight: $fw-medium;
+    line-height: 1.1;
+    color: var(--text-muted);
+    white-space: nowrap;
+    cursor: pointer;
+    background: none;
+    border: 0;
+    border-radius: $radius-pill;
+    transition: color $dur-base $ease-out;
+
+    @include focus-ring;
+
+    &[aria-current="true"] {
+      color: var(--on-brand);
+    }
+
+    @include hover {
+      &:not([aria-current="true"]) {
+        color: var(--text);
+      }
+    }
+  }
+
+  // ------------------------------------------------ stage
+  // Holds one of two layouts. Grid mode is just the bento below;
+  // detail mode is a three-track grid the FLIP reflows into.
+  &__stage {
+    &[data-mode="detail"] {
+      @include up($bp-lg) {
+        // One row, pinned to the height the full bento had, so opening
+        // a project never shortens the section. <Projects> measures the
+        // live grid into --detail-h; the calc is the two-row fallback.
+        // The rail scrolls inside this when its minis overflow it.
+        $detail-h: var(--detail-h, calc(#{$card-h-lg} * 2 + #{$projects-gap}));
+
+        display: grid;
+        grid-template-columns:
+          [lead] minmax(0, 0.92fr)
+          [read] minmax(0, 1fr)
+          [rail] clamp(9rem, 5.5rem + 7vw, 11.75rem);
+        grid-template-rows: $detail-h;
+        gap: clamp(1rem, 0.6rem + 1.6vw, 2.25rem);
+        align-items: stretch;
+        min-height: $detail-h;
+      }
+    }
+  }
+
+  // ------------------------------------------------ the bento grid
+  &__grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $projects-gap;
+    align-content: flex-start;
+
+    // While a filter change is mid-swap the leaving cards run out on a
+    // stagger (index in `--i`, set on the cell). `animation` beats the
+    // Reveal transition, so this is what shows; the incoming set mounts
+    // fresh under a new key and fades back in through Reveal.
+    &[data-swapping] .projects__cell,
+    &[data-swapping] .konekta {
+      animation: projects-card-out $dur-mid $ease-in-out both;
+      animation-delay: calc(var(--i, 0) * 30ms);
+      pointer-events: none;
+    }
+
+    // One column on a phone: every card is the same landscape tile.
+    .projects__cell {
+      flex: 0 0 100%;
+      height: $card-h;
+    }
+
+    // Two equal columns through the tablet band.
+    @include up($bp-md) {
+      .projects__cell {
+        flex: 0 1 calc(50% - #{$projects-gap-md} / 2);
+        height: $card-h-md;
+      }
+    }
+
+    // The real bento: rows alternate wide / narrow. With four projects
+    // that is [wide, narrow] then [narrow, wide]. The wide card shrinks
+    // (`0 1`) so the gap comes out of it; the narrow one is fixed (`0 0`)
+    // so `calc(60% - gap) + 40% + gap` always resolves to a full row.
+    @include up($bp-lg) {
+      .projects__cell {
+        flex: 0 0 40%;
+        height: $card-h-lg;
+      }
+
+      .projects__cell:nth-child(4n + 1),
+      .projects__cell:nth-child(4n + 4) {
+        flex: 0 1 calc(60% - #{$projects-gap});
+      }
+
+      // A filter can land an odd count (three automations). An odd last
+      // cell would otherwise sit alone at 40% with a wide gap beside it,
+      // so it takes the whole row instead — a full-width closer.
+      .projects__cell:last-child:nth-child(odd) {
+        flex-basis: 100%;
+      }
+    }
+  }
+
+  // ------------------------------------------------ the opened cover
   &__cell {
-    aspect-ratio: 4 / 5;
-  }
+    position: relative;
 
-  // Two columns: the hero and the fourth tile go wide.
-  @include up($bp-md) {
-    &__cell:nth-child(1),
-    &__cell:nth-child(4) {
-      grid-column: span 2;
-      aspect-ratio: 16 / 9;
+    &[data-view="lead"] {
+      @include up($bp-lg) {
+        grid-column: lead;
+        // Fills the row, which the stage stretches to --detail-h.
+        height: 100%;
+        min-height: 0;
+      }
+
+      // Stacked layout below $bp-lg: a normal landscape cover on top.
+      @include down($bp-lg) {
+        height: clamp(13rem, 8rem + 30vw, 21rem);
+      }
+
+      .project-card__title {
+        font-size: clamp(1.7rem, 1.1rem + 2.6vw, 3rem);
+      }
+
+      // The cover is the close control; a huge tile lifting on hover
+      // reads wrong, so it just deepens its shadow.
+      .project-card {
+        @include hover {
+          transform: none;
+          box-shadow: var(--shadow-lg);
+        }
+      }
+    }
+
+    // ---------------------------------------------- the rail minis
+    // Small versions of the bento tile — same 4:3 crop, same top-left
+    // head — just a tighter type ramp.
+    &[data-view="rail"] {
+      flex: 0 0 auto;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+
+      @include down($bp-lg) {
+        flex: 0 0 clamp(11rem, 46vw, 14rem);
+        width: auto;
+      }
+
+      .project-card__head {
+        gap: 0.2rem;
+      }
+
+      .project-card__category {
+        font-size: 0.6rem;
+        letter-spacing: 0.12em;
+      }
+
+      .project-card__title {
+        font-size: clamp(0.95rem, 0.82rem + 0.5vw, 1.25rem);
+      }
     }
   }
 
-  // Four columns — the actual bento:
-  //   A A B C
-  //   A A D D
-  //
-  // Every rule below repeats `aspect-ratio: auto` on purpose. The
-  // md rules above use :nth-child, so they outrank a plain
-  // `.projects__cell` reset here and would keep forcing 16/9 even
-  // though this breakpoint sizes tiles from grid-auto-rows instead.
-  @include up($bp-lg) {
-    &__cell:nth-child(1) {
-      grid-column: span 2;
-      grid-row: span 2;
-      aspect-ratio: auto;
+  // ------------------------------------------------ the rail
+  &__rail {
+    @include up($bp-lg) {
+      grid-column: rail;
+      display: flex;
+      flex-direction: column;
+      gap: clamp(0.4rem, 0.3rem + 0.4vw, 0.7rem);
+      min-height: 0;
+      height: 100%;
+      // Not a scroll container: the minis are sized to fit the row, and
+      // a clip here would cut the cards mid-FLIP as they travel in from
+      // the grid on the left.
+      overflow: visible;
+      align-content: flex-start;
     }
 
-    &__cell:nth-child(2),
-    &__cell:nth-child(3) {
-      grid-column: span 1;
-      grid-row: span 1;
-      aspect-ratio: auto;
-    }
+    // A horizontal filmstrip when the layout stacks.
+    @include down($bp-lg) {
+      display: flex;
+      gap: 0.6rem;
+      margin-top: clamp(0.75rem, 2vw, 1.25rem);
+      padding-bottom: 4px;
+      overflow-x: auto;
 
-    &__cell:nth-child(4) {
-      grid-column: span 2;
-      grid-row: span 1;
-      aspect-ratio: auto;
-    }
-
-    // Anything added beyond the four falls back to a plain square,
-    // so a fifth project extends the bento instead of breaking it.
-    &__cell:nth-child(n + 5) {
-      grid-column: span 1;
-      grid-row: span 1;
-      aspect-ratio: auto;
+      @include hide-scrollbar;
     }
   }
 
-  // Square tiles have no room for a summary. It stays in the DOM and
-  // is only hidden visually, so screen readers still read it.
-  @include up($bp-md) {
-    &__cell:not(:nth-child(1)):not(:nth-child(4)) .bento-card__summary {
-      @include visually-hidden;
+  // ------------------------------------------------ the readout
+  &__readout {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: clamp(0.4rem, 0.25rem + 0.5vw, 0.8rem);
+
+    @include up($bp-lg) {
+      grid-column: read;
+      align-self: center;
+      padding-block: clamp(0.5rem, 2vh, 2rem);
     }
+
+    @include down($bp-lg) {
+      margin-top: clamp(1rem, 4vw, 1.75rem);
+    }
+
+    &:focus-visible {
+      outline: none;
+    }
+
+    // Each line eases up on its own, one after another — held hidden
+    // while the cover travels in (420ms), then a 70ms step down the
+    // stack: back link, eyebrow, title, subtitle, blurb, CTA.
+    > * {
+      animation: projects-readout-in $dur-slow $ease-out both;
+      animation-delay: calc(420ms + var(--line, 0) * 70ms);
+    }
+
+    > :nth-child(1) {
+      --line: 0;
+    }
+    > :nth-child(2) {
+      --line: 1;
+    }
+    > :nth-child(3) {
+      --line: 2;
+    }
+    > :nth-child(4) {
+      --line: 3;
+    }
+    > :nth-child(5) {
+      --line: 4;
+    }
+    > :nth-child(6) {
+      --line: 5;
+    }
+  }
+
+  &__back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: clamp(0.15rem, 0.5vw, 0.5rem);
+    padding: 0.3rem 0.15rem;
+    font-family: inherit;
+    font-size: $text-sm;
+    font-weight: $fw-medium;
+    color: var(--text-muted);
+    cursor: pointer;
+    background: none;
+    border: 0;
+    transition: color $dur-base $ease-out;
+
+    @include focus-ring;
+
+    svg {
+      width: 1.05rem;
+      height: 1.05rem;
+    }
+
+    @include hover {
+      color: var(--text);
+    }
+  }
+
+  &__readout-eyebrow {
+    @include eyebrow;
+  }
+
+  &__readout-title {
+    @include display($display-sm, $fw-ultra);
+
+    font-size: clamp(1.9rem, 1.2rem + 3vw, 3.4rem);
+    color: var(--text);
+  }
+
+  &__readout-sub {
+    font-size: $text-sm;
+    font-weight: $fw-medium;
+    letter-spacing: 0.02em;
+    color: var(--text-muted);
+  }
+
+  &__readout-body {
+    @include body-copy;
+
+    max-width: 44ch;
+    font-size: $text-base;
+  }
+
+  &__readout-cta {
+    margin-top: clamp(0.35rem, 0.25rem + 0.5vw, 0.9rem);
+  }
+
+  &__readout-note {
+    margin-top: 0.35rem;
+    font-size: $text-sm;
+    color: var(--text-faint);
   }
 }
 
-// ------------------------------------------------ the tile
-// The whole tile is the control — not a nested one stretched over it
-// with an absolutely-positioned pseudo-element. That approach only
-// ever reached as far as its nearest positioned ancestor, which was
-// &__body (position: relative, needed so the text paints above the
-// photo) rather than the card itself: clicking the photo — most of
-// the tile's area — did nothing, and only the text block at the
-// bottom actually responded.
-//
-// It is a <button>, not a link: it opens the project dialog rather
-// than navigating, and the link out to the live site lives in there.
-.bento-card {
+// ------------------------------------------------ shared cover bits
+// The card paints the cover the same way in every view — same scrim,
+// same title inset — so the FLIP that regrows one box into another
+// never re-frames the image or jumps the text.
+%project-cover {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  // A button is inline-block and centres its text by default, and the
-  // grid cell is what sets the tile's size — so both are reset here.
+  display: block;
   width: 100%;
-  height: 100%;
-  padding: clamp(1rem, 0.7rem + 1vw, 1.75rem);
-  overflow: hidden;
-  text-align: left;
-  background-color: var(--surface-2);
-  border-radius: $radius-lg;
 
-  // Not the shared focus-ring mixin: it hardcodes $radius-xs on the
-  // focused element, which would snap this card's much bigger corner
-  // down to a near-square one for as long as it's focused.
-  &:focus-visible {
-    outline: 2px solid var(--focus);
-    outline-offset: -3px;
+  // The <picture> is just a wrapper for the source switch — the <img>
+  // inside is what's positioned.
+  picture {
+    display: contents;
   }
 
-  &__image {
+  img {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    // Every cover is a ~2:1 screenshot of a live site and every tile in
-    // this bento is portrait or square, so cover crops the width hard —
-    // a 4:5 tile keeps 40% of it. Centring on that 40% is only right
-    // when the page is centre-composed; a lopsided one needs the edge
-    // that actually holds the logo and the headline, or it cuts them
-    // off and leaves an anonymous middle.
     object-position: center;
-    transition: transform $dur-slow $ease-out;
 
-    &[data-align='left'] {
+    &[data-align="left"] {
       object-position: left center;
     }
 
-    &[data-align='right'] {
+    &[data-align="right"] {
       object-position: right center;
     }
   }
+}
 
-  // Stops are in px, measured up from the bottom edge — not in
-  // percentages. Tiles in this bento range from ~200px to ~640px
-  // tall, and with percentage stops the text on a short tile lands
-  // where the gradient is still weak. Fixed offsets put the same dark
-  // band under the text at every tile size, and hold up when real
-  // photos replace the placeholder covers.
-  //
-  // The stops are set from the actual text positions on the real
-  // project photos, not eyeballed: the darkest requirement is the
-  // small, low-opacity meta line — measured against the four live
-  // covers, the tightest case (Peisino's pale driveway shot) needs
-  // ~46% black behind it to clear 4.5:1, so 50% at 80px carries a
-  // margin. The old curve ran a flat 80-88% through that same band —
-  // WCAG only asks for a third of that — which is what made every
-  // tile read as mostly-black instead of a photo with text on it.
-  // It also used to reach fully clear only 440px up, well past the
-  // ~310px a single-row tile actually is, so a short tile's own top
-  // edge never got there either; this one clears by 320px.
+%project-scrim {
+  position: absolute;
+  inset: 0;
+  background-image: $card-scrim;
+}
+
+%project-head {
+  position: absolute;
+  top: $card-inset;
+  left: $card-inset;
+  right: $card-inset;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-width: 24rem;
+}
+
+%project-category {
+  font-size: $text-xs;
+  font-weight: $fw-semibold;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 82%);
+}
+
+%project-title {
+  @include display($display-sm, $fw-ultra);
+
+  font-size: $card-title;
+  color: #fff;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+
+// ------------------------------------------------ one card
+// The whole card is the control. It is a <button>, not a link: in the
+// grid it opens the inline detail, as the opened cover it closes back,
+// and the link out to the live site lives in the readout.
+.project-card {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  overflow: hidden;
+  text-align: left;
+  cursor: pointer;
+  background-color: var(--surface-2);
+  border: 0;
+  border-radius: $radius-sm;
+  isolation: isolate;
+  transition:
+    transform $dur-mid $ease-out,
+    box-shadow $dur-base $ease-out;
+
+  &:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: -3px;
+  }
+
+  &__media {
+    @extend %project-cover;
+
+    height: 100%;
+  }
+
   &__scrim {
-    position: absolute;
-    inset: 0;
-    background-image: linear-gradient(
-      to top,
-      rgb(0 0 0 / 60%) 0,
-      rgb(0 0 0 / 50%) 80px,
-      rgb(0 0 0 / 34%) 200px,
-      rgb(0 0 0 / 6%) 280px,
-      rgb(0 0 0 / 0%) 320px
-    );
+    @extend %project-scrim;
   }
 
-  // ------------------------------------------------ corner chip
-  &__arrow {
-    position: absolute;
-    top: clamp(1rem, 0.7rem + 1vw, 1.75rem);
-    right: clamp(1rem, 0.7rem + 1vw, 1.75rem);
-    z-index: 1;
-    display: grid;
-    place-items: center;
-    width: 40px;
-    height: 40px;
-    color: #fff;
-    background-color: rgb(255 255 255 / 14%);
-    border: 1px solid rgb(255 255 255 / 22%);
-    border-radius: 50%;
-    transition:
-      background-color $dur-base $ease-out,
-      color $dur-base $ease-out,
-      transform $dur-base $ease-spring;
-
-    @supports (backdrop-filter: blur(1px)) {
-      backdrop-filter: blur(10px);
-    }
-
-    svg {
-      width: 19px;
-      height: 19px;
-    }
+  &__head {
+    @extend %project-head;
   }
 
-  // ------------------------------------------------ text
-  &__body {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-    gap: $space-3xs;
-  }
-
-  &__meta {
-    font-size: $text-xs;
-    font-weight: $fw-semibold;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: rgb(255 255 255 / 78%);
+  &__category {
+    @extend %project-category;
   }
 
   &__title {
-    @include display($display-sm, $fw-ultra);
+    @extend %project-title;
+  }
 
-    font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.6rem);
+  // The close glyph on the opened cover.
+  &__close {
+    position: absolute;
+    top: $space-sm;
+    right: $space-sm;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
     color: #fff;
-    // The display mixin sets overflow-wrap: normal, and the two small
-    // bento tiles are only ~264px of content wide against a title that
-    // reaches 40px. A client name is whatever the client is called, so
-    // this is a last resort rather than a wrapping strategy: it only
-    // fires when a single word cannot fit a line by itself, which is
-    // otherwise a silent overflow past the edge of the page.
-    overflow-wrap: break-word;
+    background-color: rgb(0 0 0 / 42%);
+    border-radius: 50%;
+    transition:
+      background-color $dur-base $ease-out,
+      transform $dur-base $ease-spring;
+
+    @supports (backdrop-filter: blur(1px)) {
+      backdrop-filter: blur(6px);
+    }
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+    }
   }
 
-  &__summary {
-    max-width: 46ch;
-    margin-top: $space-3xs;
-    font-size: $text-base;
-    line-height: 1.55;
-    color: rgb(255 255 255 / 82%);
-    // Two lines and an ellipsis, so the tile shows enough to be worth
-    // opening and no more. The -webkit-box trio is what actually does
-    // the work: it is still the only line-count clamp that ships
-    // everywhere, and it is what draws the ellipsis. The unprefixed
-    // line-clamp below is the standard that replaces it and is not yet
-    // implemented anywhere — it is here so this keeps working when the
-    // prefixed version is eventually retired, and is dropped as an
-    // unknown declaration until then.
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    overflow: hidden;
-    // text-wrap: pretty reflows the last lines to even them out, which
-    // is exactly the wrong thing to do to a clamped block: it can pull
-    // a word down past the clamp and leave line two visibly short of
-    // the edge the ellipsis is supposed to sit against.
-    text-wrap: initial;
+  @include hover {
+    z-index: 1;
+    transform: scale(1.03);
+    box-shadow: var(--shadow-md);
+
+    .project-card__close {
+      background-color: var(--brand-deep);
+      transform: rotate(90deg);
+    }
+  }
+}
+
+// ------------------------------------------------ konekta (the CRM tab)
+// The CRM filter isn't a case-study grid — it's one full-width panel for
+// eklekta's own CRM, the wordmark set on a celeste-cyan field the way
+// the hero sets "eklekta." on violet. The whole panel links to contact.
+.konekta {
+  flex: 1 1 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: $card-h;
+  padding: clamp(1.5rem, 1rem + 3vw, 3.5rem);
+  overflow: hidden;
+  color: #0b0b10;
+  text-decoration: none;
+  background-color: var(--accent-cyan);
+  border-radius: $radius-md;
+  isolation: isolate;
+  animation: projects-readout-in $dur-slow $ease-out both;
+  transition:
+    transform $dur-mid $ease-out,
+    box-shadow $dur-base $ease-out;
+
+  @include up($bp-md) {
+    min-height: $card-h-md;
   }
 
-  // ------------------------------------------------ interaction
-  &:hover &__image,
-  &:focus-within &__image {
-    transform: scale(1.05);
+  @include up($bp-lg) {
+    // The height the two bento rows would have had.
+    min-height: calc(#{$card-h-lg} * 2 + #{$projects-gap});
   }
 
-  &:hover &__arrow,
-  &:focus-within &__arrow {
-    color: var(--on-brand);
-    background-color: var(--brand-deep);
-    border-color: transparent;
-    transform: rotate(45deg);
+  &:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+  }
+
+  @include hover {
+    transform: scale(1.01);
+    box-shadow: var(--shadow-md);
+
+    .konekta__link svg {
+      transform: translateX(3px);
+    }
+  }
+
+  &__eyebrow {
+    @include eyebrow;
+
+    margin-bottom: auto;
+    color: rgb(0 0 0 / 55%);
+  }
+
+  &__word {
+    @include display(clamp(2.75rem, 1rem + 9vw, 8rem), $fw-ultra);
+
+    color: inherit;
+    line-height: 0.9;
+  }
+
+  &__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: clamp(0.75rem, 0.5rem + 1vw, 1.5rem);
+    font-size: $text-sm;
+    font-weight: $fw-semibold;
+    letter-spacing: 0.02em;
+
+    svg {
+      width: 1.1rem;
+      height: 1.1rem;
+      transition: transform $dur-base $ease-out;
+    }
+  }
+}
+
+// The leaving set on a filter change: up and out, staggered by the
+// cell's `--i` (see .projects__grid[data-swapping]).
+@keyframes projects-card-out {
+  to {
+    opacity: 0;
+    transform: translate3d(0, -12px, 0) scale(0.97);
+  }
+}
+
+@keyframes projects-readout-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@include reduced-motion {
+  .projects__filter-marker {
+    transition: none;
+  }
+
+  .projects__readout > *,
+  .konekta {
+    animation: none;
+  }
+
+  // No stagger-out — the incoming set just takes over. `both` fill would
+  // otherwise leave the leaving cards stuck transparent for the swap
+  // window, so the animation is dropped entirely here.
+  .projects__grid[data-swapping] .projects__cell,
+  .projects__grid[data-swapping] .konekta {
+    animation: none;
   }
 }
