@@ -2,7 +2,6 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
   type CSSProperties,
 } from 'react'
@@ -22,18 +21,43 @@ export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const scrolled = useScrolled(32)
 
-  // Auto-hide on scroll down, back on a nudge up. Pinned visible while
-  // the menu is open or a link's smooth-scroll is still running.
+  // Auto-hide on a real wheel / trackpad scroll down, back on a nudge
+  // up. Pinned visible while the menu is open, and — the point of the
+  // `navScroll` machinery — for as long as a nav link's smooth-scroll
+  // keeps running, so a jump to a lower section is never mistaken for
+  // the reader scrolling down.
   const [pinned, setPinned] = useState(false)
-  const pinTimer = useRef<number | undefined>(undefined)
+  const [navScroll, setNavScroll] = useState(0)
   const hidden = useHideOnScroll({ pinned: pinned || menuOpen })
 
-  const pinBriefly = useCallback(() => {
+  const pinForNav = useCallback(() => {
     setPinned(true)
-    window.clearTimeout(pinTimer.current)
-    pinTimer.current = window.setTimeout(() => setPinned(false), 1000)
+    setNavScroll((n) => n + 1)
   }, [])
-  useEffect(() => () => window.clearTimeout(pinTimer.current), [])
+
+  // Hold the pin until the jump has settled — no scroll events for a
+  // beat, however long the smooth-scroll took — then release it.
+  // useHideOnScroll re-baselines from wherever the page landed, so the
+  // programmatic travel never counts toward hiding.
+  useEffect(() => {
+    if (navScroll === 0) return
+
+    let timer = window.setTimeout(release, 250)
+    function release() {
+      window.removeEventListener('scroll', bump)
+      setPinned(false)
+    }
+    function bump() {
+      window.clearTimeout(timer)
+      timer = window.setTimeout(release, 150)
+    }
+
+    window.addEventListener('scroll', bump, { passive: true })
+    return () => {
+      window.clearTimeout(timer)
+      window.removeEventListener('scroll', bump)
+    }
+  }, [navScroll])
 
   const sectionIds = useMemo(() => data.nav.map((item) => item.id), [])
   const active = useActiveSection(sectionIds)
@@ -41,8 +65,8 @@ export function Navbar() {
   const close = useCallback(() => setMenuOpen(false), [])
   const closeAndPin = useCallback(() => {
     setMenuOpen(false)
-    pinBriefly()
-  }, [pinBriefly])
+    pinForNav()
+  }, [pinForNav])
 
   // Escape closes the mobile panel, and the page underneath stays put
   // while it is open.
@@ -74,7 +98,7 @@ export function Navbar() {
           className="navbar__brand"
           href="#inicio"
           aria-label="eklekta, ir al inicio"
-          onClick={pinBriefly}
+          onClick={pinForNav}
         >
           <span className="navbar__mark">
             <Logo variant="isotype" title="eklekta" />
@@ -90,7 +114,7 @@ export function Navbar() {
                   className="navbar__link"
                   href={item.href}
                   aria-current={active === item.id ? 'true' : undefined}
-                  onClick={pinBriefly}
+                  onClick={pinForNav}
                 >
                   {item.label}
                 </a>
@@ -105,7 +129,7 @@ export function Navbar() {
             href={data.cta.href}
             size="sm"
             className="navbar__cta"
-            onClick={pinBriefly}
+            onClick={pinForNav}
           >
             {data.cta.label}
           </Button>
