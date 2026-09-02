@@ -270,6 +270,22 @@
     background-color: var(--brand-softer);
     border: 1px solid var(--brand-soft);
     border-radius: $radius-pill;
+    transition:
+      color $dur-base $ease-out,
+      background-color $dur-base $ease-out,
+      border-color $dur-base $ease-out;
+
+    // Not a link — the deliverables are read, not clicked — but the
+    // hover fills solid anyway: brand-deep with white puts it on the
+    // same footing as the <Button> right below it in the rail, and
+    // $brand-deep is the token metered at 5.0:1 with white. The lighter
+    // dark-mode brand can't carry white text, so it swaps to ink on the
+    // lifted brand at the end of the file.
+    @include hover {
+      color: var(--on-brand);
+      background-color: var(--brand-deep);
+      border-color: var(--brand-deep);
+    }
   }
 
   // Each service carries its own photo below $bp-lg, where there is
@@ -325,4 +341,16 @@
 // same visual weight.
 :root[data-theme='dark'] .services__bg {
   opacity: 0.75;
+}
+
+// Dark mode fills the hovered chip with the lifted brand instead — the
+// brighter surface the theme uses everywhere else — and drops the label
+// to ink, the pair that clears contrast there (~6.3:1) where white on
+// the same fill would not.
+:root[data-theme='dark'] .services__chip {
+  @include hover {
+    color: var(--text-invert);
+    background-color: var(--brand);
+    border-color: var(--brand);
+  }
 }
