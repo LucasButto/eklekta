@@ -20,7 +20,9 @@ export default function App() {
 
       <Navbar />
 
-      <main id="contenido">
+      {/* `page` is the curtain half of the footer reveal — it rides
+          over the pinned footer and uncovers it. See Footer.scss. */}
+      <main className="page" id="contenido">
         <Hero />
         {/* <ProjectsRibbon /> */}
         <About />

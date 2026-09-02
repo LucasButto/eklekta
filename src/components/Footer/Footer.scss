@@ -2,6 +2,9 @@
 
 .footer {
   padding-top: clamp(3rem, 2rem + 4vw, 6rem);
+  // Contains the watermark, which is deliberately oversized and bleeds
+  // past the bottom edge. Safe on a sticky element: only a non-visible
+  // overflow on an ANCESTOR would capture the pin, not one on itself.
   overflow: hidden;
   background-color: var(--bg-alt);
   transition: background-color $dur-slow $ease-out;
@@ -143,5 +146,154 @@
       // watermark rather than a second logo
       margin-bottom: -2%;
     }
+  }
+}
+
+// ---------------------------------------------- the reveal
+// Two halves of one effect, so they are written together.
+//
+// The footer is pinned to the bottom of the viewport and .page rides
+// over it as an opaque curtain, drawing back off it on the way past.
+// There is no scroll listener and no JS in this at all — the whole
+// thing is `position: sticky` plus a paint order, which is also why it
+// cannot stutter.
+//
+// The layering is done by lifting the curtain, NOT by pushing the
+// footer behind with a negative z-index. Both paint the same picture:
+// a sticky footer is a positioned box, so it paints with the z-index:
+// auto positioned group, and .page at z-index 1 paints after it. But
+// `z-index: -1` would put the footer underneath any ancestor that turns
+// out to paint a background — and its whole visibility would then rest
+// on body's background propagating to the canvas, which is true here
+// but is exactly the kind of thing a later `background` on #root or a
+// wrapper would silently break, with an invisible footer as the symptom.
+// Lifting the curtain has no such dependency.
+//
+// GATED, and the gate is the load-bearing part. While the footer is
+// pinned its bottom edge is locked to the viewport's, so a footer taller
+// than the viewport has a top edge that can never be scrolled to — the
+// brand block and the link columns would simply be unreachable. At
+// $bp-lg the link grid is two columns and the footer measures ~723px
+// against a 900px viewport; below that breakpoint it stacks and grows to
+// ~1085px. The 700px floor is the same short-viewport line the hero
+// already uses to drop its scroll cue.
+@include up($bp-lg) {
+  @media (min-height: 700px) {
+    .page {
+      position: relative;
+      z-index: 1;
+      // The curtain has to be opaque or the footer reads through the
+      // whole document. Sections paint their own surfaces over this;
+      // it is the backstop for the seams between them, and it is the
+      // colour they already sat on when body was providing it.
+      background-color: var(--bg);
+      transition: background-color $dur-slow $ease-out;
+    }
+
+    .footer {
+      position: sticky;
+      bottom: 0;
+      // The gate above is on viewport HEIGHT, but the footer's height
+      // follows viewport WIDTH — the watermark is `width: 100%`, so a
+      // wide, short window (1920×700) grows the footer past the screen
+      // even though the height gate passed. This is the backstop for
+      // that: the footer can never be taller than what the pin is able
+      // to show. It crops against `overflow: hidden` from the bottom,
+      // and the bottom is the watermark — decorative, aria-hidden, and
+      // already drawn to bleed off that edge. The brand block and the
+      // legal bar sit above it and are never reached.
+      max-height: 100svh;
+    }
+  }
+}
+
+// ---------------------------------------------- the content focus
+// A second, independent scroll-driven animation, layered on top of the
+// reveal above rather than wired into it: as the footer crosses into
+// view its content starts soft and a touch undersized, then sharpens
+// and grows to its resting size by the time it's fully in. Bottom-
+// anchored scaling so it grows up out of the edge it's emerging from,
+// the way https://examples.motion.dev/react/footer-reveal does it with
+// a scroll-linked motion value — `entry` is the CSS timeline
+// equivalent, and needs no JS at all, since unlike the hero's scrub
+// none of this depends on measured geometry, only fixed blur/scale
+// amounts.
+//
+// The timeline is anchored on .footer-anchor, the plain wrapper from
+// Footer.tsx, NOT on .footer itself — that part is load-bearing.
+// .footer is `position: sticky; bottom: 0` and shorter than the
+// viewport, so once it engages, sticky doesn't ease it up from the
+// bottom edge: it snaps the box straight to fully-visible in the same
+// scroll pixel, because "hold the bottom edge at the viewport's bottom"
+// already satisfies "top edge inside the viewport too" the instant it
+// happens. A view-timeline on .footer directly inherits that snap —
+// entry 0% and entry 100% collapse to nearly the same scroll position,
+// so the animation "plays" but resolves before a scroll gesture can
+// render a frame in between. .footer-anchor is a plain block, so it
+// still reserves .footer's normal-flow box (sticky doesn't remove an
+// element from flow) and scrolls into view at the ordinary, gradual
+// rate everything else on the page does — .footer__inner just reads
+// that timeline instead, one level down.
+//
+// Not gated to the curtain's breakpoint above: a phone or a short
+// window never sees the curtain, but the footer still scrolls into
+// view there same as any other section, and it may as well sharpen
+// into focus on the way.
+@supports (animation-timeline: view()) {
+  .footer-anchor {
+    view-timeline-name: --footer-entry;
+  }
+
+  .footer__inner {
+    transform-origin: 50% 100%;
+    will-change: opacity, transform, filter;
+    animation: footer-focus-in linear both;
+    animation-timeline: --footer-entry;
+    // Ends at 55%, not 100%: the full range spans the WHOLE footer,
+    // watermark included, but .footer__mark never blurs — it's
+    // decorative and sits right where .footer__inner ends, no gap
+    // between them. Riding this out to entry 100% left it still
+    // visibly clearing while the (already-sharp) mark was scrolling
+    // in right next to it. Measured at 1440px: .footer__inner's own
+    // bottom edge — exactly where .footer__mark begins — lands at 63%
+    // of entry, so 55% finishes the focus-in with room to spare.
+    // Narrower widths stack the link columns, which makes
+    // .footer__inner taller and pushes that real cutoff later, not
+    // earlier, so the same 55% stays safely ahead of it there too.
+    animation-range: entry 0% entry 55%;
+  }
+}
+
+@keyframes footer-focus-in {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1);
+  }
+}
+
+// The footer holds still while the page travels over it, which is the
+// shape of a parallax however little it moves. Reduced motion puts both
+// halves back in the ordinary flow: the footer arrives by being scrolled
+// to, like every other section.
+@include reduced-motion {
+  .page {
+    position: static;
+    z-index: auto;
+    background-color: transparent;
+  }
+
+  .footer {
+    position: static;
+  }
+
+  .footer__inner {
+    animation: none;
   }
 }
