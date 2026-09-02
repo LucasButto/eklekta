@@ -59,6 +59,19 @@ export function Navbar() {
     }
   }, [navScroll])
 
+  // Mirror the auto-hide state onto the root so CSS outside the navbar
+  // can react to it. The Services pinned rail reads it to close the gap
+  // the vacated pill would otherwise leave above the panel. `hidden` is
+  // already false whenever the bar is pinned or the menu is open, so a
+  // nav jump never flips this.
+  useEffect(() => {
+    const root = document.documentElement
+    root.dataset.navHidden = String(hidden)
+    return () => {
+      delete root.dataset.navHidden
+    }
+  }, [hidden])
+
   const sectionIds = useMemo(() => data.nav.map((item) => item.id), [])
   const active = useActiveSection(sectionIds)
 

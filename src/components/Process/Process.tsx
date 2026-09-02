@@ -49,11 +49,6 @@ export function Process() {
             <Reveal as="li" className="stage" key={step.id} delay={index * 90}>
               <span className="stage__num">{step.step}</span>
 
-              <p className="stage__duration">
-                <span className="sr-only">Duración: </span>
-                {step.duration}
-              </p>
-
               <div className="stage__text">
                 <h3 className="stage__title">{step.title}</h3>
                 <p className="stage__body">{step.description}</p>

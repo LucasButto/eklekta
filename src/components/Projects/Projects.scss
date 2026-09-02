@@ -62,8 +62,13 @@ $card-scrim: linear-gradient(
     }
   }
 
+  // The one piece of section chrome that was pinned in px (the card
+  // grid's height math is; a heading is not) and so sat out the root
+  // step-down the rest of the page took. Back on rem, and pulled in a
+  // further notch — it is the longest heading string on the site and
+  // was the only one still landing three lines.
   .section-heading__title {
-    font-size: clamp(30px, 14px + 4.6vw, 84px);
+    font-size: clamp(1.85rem, 0.7rem + 3.5vw, 4.45rem);
   }
 
   // ------------------------------------------------ the filter bar

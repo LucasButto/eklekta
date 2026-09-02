@@ -17,6 +17,9 @@
     var(--gutter),
     calc((100vw - var(--container-max)) / 2 + var(--gutter))
   );
+  // Air between whole sections — a custom property so it can be dialled
+  // in from devtools while tuning. Consumed in globals.
+  --section-gap: #{$section-gap};
 
   // surfaces
   --bg: #{$paper};

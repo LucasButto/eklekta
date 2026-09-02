@@ -85,7 +85,21 @@
       grid-column: 1;
       grid-row: 1;
       position: sticky;
-      top: 7.5rem;
+
+      // Keeps the pinned rail centred in the space actually available
+      // to it: while the bar is up that space runs from the bar's
+      // bottom edge (5.125rem — the header height scroll-padding-top
+      // uses) to the foot of the screen, so the rail sits 5.125rem
+      // down plus half of what's left over. 60rem is the rail's own
+      // content height, near-constant in rem since it hugs content.
+      // The 7.5rem floor holds it near the top on a screen too short
+      // to centre a rail this tall under the bar.
+      --rail-top: max(
+        7.5rem,
+        calc(5.125rem + (100svh - 5.125rem - 60rem) / 2)
+      );
+      top: var(--rail-top);
+
       // `start`, not the grid default `stretch`: a stretched item fills
       // the whole row, which leaves sticky nothing to travel inside and
       // silently turns the pin into a static box.
@@ -97,7 +111,21 @@
       // Hugging keeps panel height, rail height and item height all
       // rem-proportional, which is why the list padding below can be a
       // single rem value that holds at every viewport.
-      max-height: calc(100svh - 7.5rem - 2rem);
+      max-height: calc(100svh - var(--rail-top) - 2rem);
+      transition:
+        top $dur-reveal $ease-out,
+        max-height $dur-reveal $ease-out;
+
+      // With the bar gone the available space is the whole screen, so
+      // the rail centres edge to edge — half of (100svh - its height).
+      // The rail rises by ~half the bar's height as the bar leaves.
+      :root[data-nav-hidden='true'] & {
+        --rail-top: max(#{$space-2xl}, calc((100svh - 60rem) / 2));
+      }
+
+      @include reduced-motion {
+        transition: none;
+      }
     }
   }
 
@@ -270,6 +298,22 @@
     background-color: var(--brand-softer);
     border: 1px solid var(--brand-soft);
     border-radius: $radius-pill;
+    transition:
+      color $dur-base $ease-out,
+      background-color $dur-base $ease-out,
+      border-color $dur-base $ease-out;
+
+    // Not a link — the deliverables are read, not clicked — but the
+    // hover fills solid anyway: brand-deep with white puts it on the
+    // same footing as the <Button> right below it in the rail, and
+    // $brand-deep is the token metered at 5.0:1 with white. The lighter
+    // dark-mode brand can't carry white text, so it swaps to ink on the
+    // lifted brand at the end of the file.
+    @include hover {
+      color: var(--on-brand);
+      background-color: var(--brand-deep);
+      border-color: var(--brand-deep);
+    }
   }
 
   // Each service carries its own photo below $bp-lg, where there is
@@ -325,4 +369,16 @@
 // same visual weight.
 :root[data-theme='dark'] .services__bg {
   opacity: 0.75;
+}
+
+// Dark mode fills the hovered chip with the lifted brand instead — the
+// brighter surface the theme uses everywhere else — and drops the label
+// to ink, the pair that clears contrast there (~6.3:1) where white on
+// the same fill would not.
+:root[data-theme='dark'] .services__chip {
+  @include hover {
+    color: var(--text-invert);
+    background-color: var(--brand);
+    border-color: var(--brand);
+  }
 }
