@@ -1,11 +1,11 @@
 // =============================================================
 //  Global entry — imported once from main.tsx
 // =============================================================
-@use 'tokens' as *;
-@use 'mixins' as *;
-@use 'fonts';
-@use 'theme';
-@use 'reset';
+@use "tokens" as *;
+@use "mixins" as *;
+@use "fonts";
+@use "theme";
+@use "reset";
 
 // ---------------------------------------------- shared primitives
 
@@ -75,15 +75,15 @@
   // fall on a dark background and disappear.
   &::before {
     position: absolute;
-    inset: 0.20em -0.08em 0.14em;
+    inset: 0.05em -0.08em 0.14em;
     z-index: -1;
-    content: '';
+    content: "";
     background-color: var(--brand);
   }
 }
 
 // Dark text on the violet slab keeps the contrast the mockup has,
 // in both themes.
-:root[data-theme='dark'] .text-slab {
+:root[data-theme="dark"] .text-slab {
   color: var(--text-invert);
 }
