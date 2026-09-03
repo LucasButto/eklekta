@@ -1,5 +1,4 @@
 import type { ReactElement } from 'react'
-import { Button } from '@/components/Button/Button'
 import { ContactForm } from '@/components/ContactForm/ContactForm'
 import { Reveal } from '@/components/Reveal/Reveal'
 import site from '@/data/site.json'
@@ -53,6 +52,26 @@ const SOCIAL_ICON: Record<string, () => ReactElement> = {
   linkedin: LinkedinIcon,
 }
 
+// Same arrow KonektaCard draws for its own text link — a plain link's
+// mark, not Button's pill. "Escribinos" used to render as a <Button>,
+// but sitting right next to the round social icons it read as a third
+// "social button" despite doing something unrelated (opening mail), so
+// it dropped the button chrome for this instead.
+function ArrowIcon() {
+  return (
+    <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+      <path
+        d="M4 10h11M11 5.5 15.5 10 11 14.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
 export function Contact() {
   return (
     <section className="contact" id="contacto">
@@ -94,7 +113,10 @@ export function Contact() {
             </dl>
 
             <div className="contact__actions">
-              <Button href={`mailto:${data.contact.email}`}>Escribinos</Button>
+              <a className="contact__write" href={`mailto:${data.contact.email}`}>
+                Escribinos
+                <ArrowIcon />
+              </a>
               <ul className="contact__socials">
                 {data.socials.map((social) => {
                   const Icon = SOCIAL_ICON[social.id]

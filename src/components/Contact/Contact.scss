@@ -175,6 +175,37 @@
     align-items: center;
   }
 
+  // A plain link, not a <Button> pill: sitting right beside the round
+  // social icons, a filled button read as a third "social button" even
+  // though it does something else entirely (opens mail). Styled like
+  // .konekta__link — text + a nudging arrow, no fill or border-radius —
+  // so it's clearly a link among links rather than a button.
+  &__write {
+    display: inline-flex;
+    align-items: center;
+    gap: $space-2xs;
+    font-size: $text-sm;
+    font-weight: $fw-semibold;
+    color: var(--brand);
+    transition: color $dur-base $ease-out;
+
+    @include focus-ring;
+
+    svg {
+      width: 1.1rem;
+      height: 1.1rem;
+      transition: transform $dur-base $ease-out;
+    }
+
+    @include hover {
+      color: var(--brand-press);
+
+      svg {
+        transform: translateX(3px);
+      }
+    }
+  }
+
   &__socials {
     display: flex;
     flex-wrap: wrap;
