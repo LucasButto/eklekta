@@ -30,10 +30,60 @@
     }
   }
 
+  // The brand block from .text-slab (globals.scss — see "servicios"),
+  // widened from a snug text-hugging highlight into a full banner. That
+  // utility sizes its ::before to an inline <span>'s own box, just wide
+  // enough for the word; this is a block-level <p>, so the exact same
+  // inset:0 trick sizes the ::before to the whole line instead — even
+  // with the LEFT edge then pushed further out (see the ::before's own
+  // comment), the right edge still lines up with .contact__grid below.
+  // Text stays right-aligned (inherited from .contact__banner), so the
+  // slab reads as a bar with the word flush to its right edge.
   &__banner-line {
     @include display($display-lg, $fw-ultra);
 
-    color: var(--text);
+    position: relative;
+    z-index: 0;
+    // Tighter than the display mixin's own 0.94 — this one line is the
+    // whole point of the banner, so it can sit closer than a multi-line
+    // heading would want to. (The ascent/descent gap this creates from
+    // the line box's own edges is a fixed function of the font's
+    // metrics vs. line-height — see the padding note below — so
+    // lowering it doesn't fight the centring, it just tightens the
+    // whole block further.)
+    line-height: 0.8;
+    // Top-heavy on purpose, not a typo: Monument Extended carries a huge
+    // reserved descender (measured via canvas — ~29% of the font size,
+    // for glyphs like g/p/q/y) that "Hablemos." never uses, so the
+    // line box's own empty space already sits mostly below the ink
+    // before any padding is added. Even padding stacks that on top and
+    // reads as the word floating near the roof of the slab. This split
+    // cancels it back out to visually centered — verified by rendering
+    // the same font/size in isolation and comparing padding ratios. The
+    // 0.2em gap between the two is what keeps it centred, independent
+    // of line-height (the two share a half-leading term that cancels
+    // out of the difference) — trimmed both down together (was
+    // 0.3/0.1) to hug the word tighter without re-introducing the
+    // imbalance.
+    padding: 0.25em 0.22em 0.05em;
+    color: var(--on-brand);
+
+    &::before {
+      position: absolute;
+      inset: 0;
+      // Overruns the left edge of .contact__grid rather than stopping
+      // flush with it. Not tied to a spacing token — the user tuned
+      // this by eye in a mockup and landed on 180px; `--edge` (full
+      // viewport-edge bleed) and `--gutter` (~50-64px here) were tried
+      // first and read as too little or too much in between. Right/
+      // top/bottom stay put (the `inset: 0` above), so only this one
+      // side overruns; the word itself doesn't move, it's still
+      // right-aligned inside .contact__banner-line same as before.
+      inset-inline-start: -280px;
+      z-index: -1;
+      content: "";
+      background-color: var(--brand);
+    }
   }
 
   &__grid {
@@ -201,5 +251,15 @@
   // on the same line without one.
   &__form {
     width: 100%;
+  }
+}
+
+// Dark theme: the same swap .text-slab makes — dark's --brand is the
+// lighter brand-lift, so on-brand white loses too much contrast against
+// it. Dark ink (--text-invert) reads the way white does on light's
+// deeper violet.
+:root[data-theme="dark"] {
+  .contact__banner-line {
+    color: var(--text-invert);
   }
 }
