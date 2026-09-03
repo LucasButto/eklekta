@@ -63,7 +63,6 @@ export function Contact() {
 
         <div className="contact__grid">
           <Reveal className="contact__panel">
-            <p className="contact__eyebrow">Contacto</p>
             <h2 className="contact__title">
               Contanos qué te está costando más de lo que debería.
             </h2>
