@@ -202,8 +202,8 @@
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
-    width: 2rem;
-    height: 2rem;
+    width: 2.25rem;
+    height: 2.25rem;
     color: var(--text-muted);
     background-color: var(--surface);
     border: 1px solid var(--border);
@@ -214,8 +214,8 @@
       background-color $dur-base $ease-out;
 
     svg {
-      width: 1.1rem;
-      height: 1.1rem;
+      width: 1.3rem;
+      height: 1.3rem;
     }
 
     // Follows the link's own hover, not a rule of its own — one state
@@ -233,16 +233,16 @@
     }
   }
 
-  &__social-text {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-  }
-
+  // The network name (Instagram/LinkedIn) no longer shows — just the
+  // handle, in the same ink as the rest of the page's type rather than
+  // the muted grey it used as a caption under the (now-gone) label. It
+  // carried $text-xs as a caption's size; now that it's the only line,
+  // that read as too small, so it steps up to match its parent's
+  // $text-sm instead of trailing behind it.
   &__social-handle {
-    font-size: $text-xs;
+    font-size: $text-sm;
     font-weight: $fw-regular;
-    color: var(--text-faint);
+    color: var(--text);
   }
 
   // ------------------------------------------------ form column

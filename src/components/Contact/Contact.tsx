@@ -105,16 +105,18 @@ export function Contact() {
                         href={social.href}
                         target="_blank"
                         rel="noreferrer noopener"
+                        // The network name is gone from the visible text
+                        // (design call: only the handle shows), so it
+                        // moves here — otherwise a screen reader has no
+                        // way to tell "@eklekta.estudio" is Instagram.
+                        aria-label={`${social.label}: ${social.handle}`}
                       >
                         {Icon && (
                           <span className="contact__social-icon">
                             <Icon />
                           </span>
                         )}
-                        <span className="contact__social-text">
-                          {social.label}
-                          <span className="contact__social-handle">{social.handle}</span>
-                        </span>
+                        <span className="contact__social-handle">{social.handle}</span>
                       </a>
                     </li>
                   )
