@@ -10,14 +10,21 @@
 //
 //  On top of that layout, the motion.dev "scroll zoom" exit is
 //  kept: https://examples.motion.dev/react/scroll-zoom-hero
-//  Where the browser has scroll-driven animations the section runs
-//  to 200svh, the viewport pins for the first screen, and across it
-//  the photo scales to 1.5 + blurs to 10px + fades while the
-//  wordmark lifts out through the top of the band and fades — the
-//  moves the Motion example makes, rebuilt as CSS @keyframes on a
-//  view() timeline. The band itself stays put so nothing gaps
-//  behind the mark. The next section climbs over (About.scss:
-//  z-index + an opaque bg).
+//  Where the browser has scroll-driven animations the section is a
+//  little over one screen tall (120svh — see the height comment
+//  below), so there's a short pinned hold before the scrub starts:
+//  scrolling zooms the photo to 1.5 + blurs it to 10px + fades it out
+//  while the wordmark lifts through the top of the band and fades —
+//  the moves the Motion example makes, rebuilt as CSS @keyframes on a
+//  view() timeline. The band itself stays put so nothing gaps behind
+//  the mark. The next section climbs over (About.scss: z-index + an
+//  opaque bg).
+//
+//  120svh is the user's own call, made across three passes: 200svh
+//  read as sluggish; 101svh (exactly double the original's scrub
+//  speed) read as too fast; 120svh lands a middle ground that leans
+//  toward the faster end rather than splitting the difference evenly.
+//  The math for that lives at the `height` declaration below.
 // =============================================================
 
 .hero {
@@ -195,13 +202,29 @@
   }
 
   // ---- scroll zoom ----
-  // No JS: a view timeline on the 200svh section drives every move.
-  // `contain 0% → exit 98%` maps to the Motion example's scrollYProgress
-  // 0 → 1 (offset ["start start", "end start"]): `contain` is the pinned
-  // screen, `exit` the screen of scroll after it while the hero clears
-  // and the next section arrives.
+  // No JS: a view timeline on the section drives every move. For a
+  // subject taller than the scrollport that starts flush at the very
+  // top of the page (true here — Hero is the first thing on it), the
+  // spec's named ranges work out to fixed distances in svh:
+  //   contain = max(0, H - 100)     (H = this section's height, in svh)
+  //   exit    = min(H, 100) = 100   (as long as H ≥ 100svh)
+  // `animation-range: contain 0% exit 98%` scrubs from the very start
+  // of `contain` to 98% through `exit`, i.e. across a run of
+  // `(H - 100) + 0.98·100` = `H - 2` svh of scrolling.
+  //
+  // The original H=200svh gave a 198svh scrub. Doubling the speed
+  // (H - 2 = 198 ÷ 2 = 99, so H = 101svh) then read as too fast —
+  // `contain`'s share of that height (H - 100 = 1svh) was almost
+  // nothing, so scrolling started the zoom the instant the reader
+  // touched the wheel, with no pinned beat first. Asked for a middle
+  // ground leaning toward that faster cut rather than an even split
+  // (the even split would be H = (200 + 101) ÷ 2 = 150.5svh — already
+  // tried in effect and still too slow): H = 120svh sits well on the
+  // fast side of it instead — an 118svh scrub, ~1.68× the original
+  // speed rather than exactly 2× — while `contain`'s 20svh restores a
+  // short, real hold before the scrub takes over.
   @supports (animation-timeline: view()) {
-    height: 200svh;
+    height: 120svh;
     view-timeline-name: --hero-zoom;
 
     .hero__viewport {
@@ -302,8 +325,9 @@
 // The 0%/7% pair holds the rest pose through the first sliver of the
 // range: `contain 0%` lands a percent or two of scroll past the true
 // top, and without the hold the mark sits slightly faded and lifted
-// before the reader has moved. 7% of a 200svh runway is ~1 wheel
-// notch — it just reads as the effect not firing on a twitch.
+// before the reader has moved. At the current 118svh scrub (see the
+// `height` comment above), 7% is ~8svh — still roughly a wheel notch,
+// so it reads as a deliberate beat rather than the effect glitching.
 
 @keyframes hero-photo-zoom {
   0%,
