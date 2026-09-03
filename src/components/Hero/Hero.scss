@@ -45,17 +45,16 @@
   }
 
   // ---- the grey masthead band ----
-  // The wordmark centres in the room between the fixed nav pill and the
-  // photo's top edge — a hair low of centre, since the top padding
-  // (which is what holds it clear of the pill, ~4.75rem tall) is the
-  // larger of the two. That lands it where the mockup has it on a
-  // 900-tall window and keeps the balance on every other height.
+  // Bottom-aligned: the wordmark sits low in the band, close to the
+  // photo's top edge, with only the 2.5rem bottom padding under it. The
+  // 5.5rem top padding does the opposite job — it's clearance for the
+  // fixed nav pill (~4.75rem tall), not room for the mark.
   &__band {
     position: relative;
     z-index: 2;
     display: flex;
     flex-shrink: 0;
-    align-items: center;
+    align-items: flex-end;
     height: var(--hero-band);
     padding: 5.5rem var(--gutter) 2.5rem;
     background-color: var(--bg-band);
@@ -74,9 +73,16 @@
     animation: hero-mark-in 800ms $ease-out both;
 
     svg {
-      // 3724 × 836 viewBox (~4.45:1), run to 60% of the screen from the
-      // gutter — the mockup's proportion.
-      width: min(60vw, 68rem);
+      // 3724 × 836 viewBox (~4.45:1), run to 80% of the screen from the
+      // gutter, filling the band edge to edge rather than sitting
+      // mid-width. The 84rem a first pass capped this at was too tight
+      // a ceiling — it bound before 80vw did on anything past a ~1500px
+      // window, so the mark stopped scaling up right where wide desktop
+      // monitors start. 104rem clears that: even on a 3840 4K panel
+      // (root font-size ~22px there, see _reset.scss) it caps at
+      // ~2288px, still short of 80vw (~3072px), so the mark keeps
+      // growing with the screen instead of plateauing early.
+      width: min(80vw, 104rem);
       // Short windows: the band gets small before the width clamp ever
       // bites, so height is the binding constraint. An <svg> is a
       // replaced element, so capping the height scales the width with
