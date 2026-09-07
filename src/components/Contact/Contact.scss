@@ -9,6 +9,15 @@
   // bigger nudge than Proyectos / Equipo. ~two scrollbar-arrow clicks.
   @include up($bp-lg) {
     scroll-margin-top: -5rem;
+
+    // Overrides section-spacing's own $section-y (up to 4.5rem a side,
+    // ~130px total here) with a vh-aware value instead. $section-y is
+    // shared by other sections that fit their screen comfortably as
+    // is, so this stays local to Contact rather than changing the
+    // token — this is the section whose own content (banner, form)
+    // was already pushing 95svh, so the same fixed padding every
+    // other section carries was the last thing tipping it over.
+    padding-block: clamp(1.25rem, 0.75rem + 3.2vh, 3rem);
   }
 
   &__inner {
@@ -26,7 +35,7 @@
     // fields need to stay a real size to click — so this is the one
     // remaining lever.
     @include up($bp-lg) {
-      margin-bottom: clamp(1rem, 3vh, 3.5rem);
+      margin-bottom: clamp(0.75rem, 2vh, 2.5rem);
     }
   }
 
@@ -42,6 +51,20 @@
   &__banner-line {
     @include display($display-lg, $fw-ultra);
 
+    // Not $display-lg's own 7.8rem: at that size (which it hit on any
+    // notebook-width screen) the slab alone measured ~124px tall and
+    // was the single biggest thing pushing this section past one
+    // screen. The slab's own padding is in em, so trimming the font
+    // shrinks the whole banner block with it, not just the glyphs.
+    //
+    // min(vw, vh) rather than plain vw: a vw-only value holds flat
+    // across window HEIGHT, so a short-but-wide notebook window (real
+    // browser chrome eating into 100svh — 650px tall reads a full
+    // 72px banner just the same as a spacious 900px one) got no
+    // smaller and the section overflowed one screen again anyway. The
+    // vh term is what actually shrinks it once height, not width, is
+    // the tight axis.
+    font-size: clamp(2rem, 0.78rem + min(5.2vw, 8.4vh), 5.6rem);
     position: relative;
     z-index: 0;
     // Tighter than the display mixin's own 0.94 — this one line is the
@@ -108,7 +131,7 @@
   }
 
   &__title {
-    font-size: clamp(1.5rem, 1.1rem + 1.8vw, 2.5rem);
+    font-size: clamp(1.3rem, 1rem + min(1.4vw, 2.2vh), 2.1rem);
     font-weight: $fw-semibold;
     line-height: 1.2;
     color: var(--text);
