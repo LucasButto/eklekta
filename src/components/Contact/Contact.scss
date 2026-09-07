@@ -6,9 +6,11 @@
 
   // A nav tap lands well past the header line — the closing section
   // centres its content and holds it lower than the rest, so it gets a
-  // bigger nudge than Proyectos / Equipo. ~two scrollbar-arrow clicks.
+  // bigger nudge than Proyectos / Equipo. Was -5rem, then -7.5rem
+  // (one click further up) — reversed per feedback, one click back
+  // down from the original instead.
   @include up($bp-lg) {
-    scroll-margin-top: -5rem;
+    scroll-margin-top: -2.5rem;
 
     // Overrides section-spacing's own $section-y (up to 4.5rem a side,
     // ~130px total here) with a vh-aware value instead. $section-y is

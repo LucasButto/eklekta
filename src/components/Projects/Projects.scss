@@ -61,10 +61,9 @@ $card-scrim: linear-gradient(
   @include up($bp-lg) {
     padding-block: clamp(100px, 60px + 6vh, 160px) clamp(20px, 3vh, 56px);
 
-    // A nav tap lands a touch deeper than the header line — the section
-    // centres its content, so the default landmark leaves a wide band
-    // above the heading. ~one scrollbar-arrow click.
-    scroll-margin-top: -2.5rem;
+    // Was -2.5rem, then 0rem (one click down) — reversed per feedback,
+    // one click further up from the original instead.
+    scroll-margin-top: -5rem;
   }
 
   &__inner {
