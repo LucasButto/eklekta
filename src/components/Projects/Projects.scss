@@ -25,23 +25,41 @@ $card-h-lg: clamp(210px, 29vh, 420px);
 
 $card-inset: clamp(0.9rem, 0.6rem + 1vw, 1.5rem);
 $card-title: clamp(1.15rem, 0.95rem + 1vw, 1.9rem);
+// Deepened from the original 52/30/8/0 — 4 of the 5 covers here are
+// full-page screenshots of the client's own site, so the "photo" is
+// often itself dense with a hero heading, logo, or product copy sitting
+// exactly where the card's own title goes. The old scrim faded to
+// transparent by 46-62% and left our white title fighting the source
+// page's own text (worst on Peisino and Home Steel Home, whose hero
+// headings sit top-left same as ours). AMECOM's cover keeps its busy
+// text off to the right, which is why it read fine before — that stays
+// true here too, so darkening the top-left plateau doesn't cost it
+// anything.
 $card-scrim: linear-gradient(
   to bottom,
-  rgb(0 0 0 / 52%) 0%,
-  rgb(0 0 0 / 30%) 26%,
-  rgb(0 0 0 / 8%) 46%,
-  rgb(0 0 0 / 0%) 62%
+  rgb(0 0 0 / 78%) 0%,
+  rgb(0 0 0 / 58%) 22%,
+  rgb(0 0 0 / 30%) 42%,
+  rgb(0 0 0 / 10%) 58%,
+  rgb(0 0 0 / 0%) 70%
 );
 
 .projects {
-  // svh + flex, no rem — a screen-height floor that doesn't reintroduce
-  // the ramp this section opts out of. See full-screen-section.
-  @include full-screen-section;
-
-  padding-block: clamp(36px, 24px + 3vw, 72px);
+  // Top and bottom split on purpose (not one padding-block value): the
+  // fixed, blurred navbar only eats into the top, so only the top needs
+  // to clear it. It measures ~82px on a phone (16px root) and ~74px
+  // from $bp-lg up (90% root — see _reset.scss), and a reader gets here
+  // two ways: the nav's own scroll-padding-top landing, and just
+  // scrolling down normally past Servicios. The old symmetric padding
+  // (max 72px / 56px) covered neither — measured, a plain scroll-to
+  // arrival had the heading 35–46px behind the bar, and even the nav
+  // link's own landing spot cleared it by only ~10px, a sliver of the
+  // first line still clipped. These floors put ~20px of daylight under
+  // the bar at that plain-scroll arrival, the tighter of the two.
+  padding-block: clamp(104px, 88px + 3vw, 140px) clamp(36px, 24px + 3vw, 72px);
 
   @include up($bp-lg) {
-    padding-block: clamp(20px, 3vh, 56px);
+    padding-block: clamp(100px, 60px + 6vh, 160px) clamp(20px, 3vh, 56px);
 
     // A nav tap lands a touch deeper than the header line — the section
     // centres its content, so the default landmark leaves a wide band
