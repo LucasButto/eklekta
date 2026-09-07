@@ -63,6 +63,17 @@ function placeMarker(bar: HTMLElement) {
   bar.style.setProperty('--marker-w', `${active.offsetWidth}px`)
 }
 
+/**
+ * Groups the grid into the bento's rows of two. A trailing odd project
+ * lands alone in the last row — see .projects__cell:only-child, which
+ * gives it the full row width instead of the wide/narrow split below.
+ */
+function chunkPairs<T>(items: readonly T[]): T[][] {
+  const rows: T[][] = []
+  for (let i = 0; i < items.length; i += 2) rows.push(items.slice(i, i + 2))
+  return rows
+}
+
 export function Projects() {
   // `filter` is the tab the reader picked; `shown` is the set actually
   // on screen and lags it — held through the exit so the leaving cards
@@ -375,25 +386,26 @@ export function Projects() {
           className="projects__heading"
         />
 
-        <div
-          className="projects__filters"
-          role="group"
-          aria-label="Filtrar proyectos por tipo de trabajo"
-          ref={barRef}
-        >
-          <span className="projects__filter-marker" aria-hidden="true" />
-          {FILTERS.map((f) => (
-            <button
-              key={f.id}
-              type="button"
-              className="projects__filter"
-              aria-current={f.id === filter ? 'true' : undefined}
-              onClick={() => selectFilter(f.id)}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
+        <div className="projects__body">
+          <div
+            className="projects__filters"
+            role="group"
+            aria-label="Filtrar proyectos por tipo de trabajo"
+            ref={barRef}
+          >
+            <span className="projects__filter-marker" aria-hidden="true" />
+            {FILTERS.map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                className="projects__filter"
+                aria-current={f.id === filter ? 'true' : undefined}
+                onClick={() => selectFilter(f.id)}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
 
         <div className="projects__stage" data-mode={mode} ref={stageRef}>
           {leadProject && (
@@ -465,20 +477,58 @@ export function Projects() {
           >
             {shown === 'crm' ? (
               <KonektaCard />
-            ) : (
+            ) : mode === 'detail' ? (
               railProjects.map((project, index) => (
                 <ProjectCard
                   key={project.id}
                   project={project}
                   index={index}
-                  view={mode === 'detail' ? 'rail' : 'grid'}
+                  view="rail"
                   onSelect={select}
                   registerRef={registerRef}
                   noReveal={openedOnce.has(project.id)}
                 />
               ))
+            ) : (
+              // Each row is its own flex container (see .projects__row) so
+              // the grid's rows can share the section's remaining height
+              // evenly, growing or shrinking together with the viewport.
+              // Below $bp-lg .projects__row just wraps its (already
+              // full-width or 50%-width) cells, so the phone/tablet wrap
+              // is untouched.
+              chunkPairs(railProjects).map((row, rowIndex) => (
+                <div
+                  className="projects__row"
+                  role="presentation"
+                  key={row[0].id}
+                >
+                  {row.map((project, i) => (
+                    <ProjectCard
+                      key={project.id}
+                      project={project}
+                      index={rowIndex * 2 + i}
+                      view="grid"
+                      span={
+                        row.length === 2
+                          ? rowIndex % 2 === 0
+                            ? i === 0
+                              ? 'wide'
+                              : 'narrow'
+                            : i === 0
+                              ? 'narrow'
+                              : 'wide'
+                          : undefined
+                      }
+                      onSelect={select}
+                      registerRef={registerRef}
+                      noReveal={openedOnce.has(project.id)}
+                    />
+                  ))}
+                </div>
+              ))
             )}
           </div>
+        </div>
         </div>
       </div>
     </section>
