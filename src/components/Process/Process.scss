@@ -77,9 +77,11 @@
     // #proceso is on this element. Process fills the screen from the
     // top — it doesn't centre its content the way Proyectos / Equipo
     // do — so a nav tap lands the head tight under the bar. This drops
-    // the landing for clearance. ~two scrollbar-arrow clicks.
+    // the landing for clearance. Was 5rem, then 12.5rem (three clicks
+    // further down) — reversed per feedback, three clicks up from the
+    // original instead.
     @include up($bp-lg) {
-      scroll-margin-top: 5rem;
+      scroll-margin-top: -2.5rem;
     }
   }
 

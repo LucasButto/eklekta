@@ -1,4 +1,4 @@
-@use 'styles' as *;
+@use "styles" as *;
 
 // =============================================================
 //  Manifiesto — the statement holds dead centre while the three
@@ -60,20 +60,31 @@
 .manifesto__text {
   @include display($display-md, $fw-ultra);
 
-  // A notch below the section scale: it's a full sentence and
-  // "herramientas." has to clear a 360px viewport on its own line.
-  font-size: clamp(1.7rem, 0.8rem + 4.3vw, 5rem);
+  // A full sentence, not a heading — $display-md's own scale (let alone
+  // $display-lg) read as shouting here, wrapping to 6-7 lines and
+  // running into the collage above and below it. This caps at roughly
+  // half that.
+  font-size: clamp(1.3rem, 0.6rem + 3.6vw, 4rem);
   max-width: 18ch;
   color: var(--text);
 
+  // ch scales with this element's own font-size, so shrinking the font
+  // above shrinks the column by the same ratio and leaves the line
+  // count untouched — 15ch was tuned against the old, much larger
+  // scale and was wrapping this sentence to 7 lines even after the
+  // font-size cut. Wider now that there's a smaller font to carry.
   @include up($bp-lg) {
-    max-width: 15ch;
+    max-width: 20ch;
   }
 }
 
 .manifesto__closing-line {
   @include display($display-lg, $fw-ultra);
 
+  // Still the loudest line in the section (it's the punchline), just
+  // not $display-lg's full 7.8rem — that overran the frame at anything
+  // above ~1400px wide.
+  font-size: clamp(2.4rem, 1rem + 6vw, 7rem);
   color: var(--brand);
 }
 
@@ -207,7 +218,7 @@
       // holds for the last of the scroll.
       .manifesto__closing-line {
         position: absolute;
-        top: 50%;
+        top: 42%;
         margin-top: clamp(14rem, 36vh, 23rem);
         opacity: 0;
         animation: manifesto-closing-in linear both;

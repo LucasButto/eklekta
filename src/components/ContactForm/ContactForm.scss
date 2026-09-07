@@ -28,6 +28,12 @@
   // 1.8:1, both under what a control's boundary owes.
   --panel-line: #{rgba($ink, 0.46)};
   --panel-line-hover: #{rgba($ink, 0.62)};
+  // Its own token, not --panel-muted: that one is legible body copy
+  // (labels, the status line) and reads as real text at full strength —
+  // exactly what a placeholder shouldn't. Faded further than the
+  // border's own 0.46 so an empty field's "hint" is visibly a hint
+  // instead of parsing as an answer already typed in.
+  --panel-placeholder: #{rgba($ink, 0.5)};
   --panel-accent: var(--brand-deep);
   --panel-pop: #{$paper};
   --panel-shadow: var(--shadow-md);
@@ -37,9 +43,12 @@
 
   display: flex;
   flex-direction: column;
-  gap: $space-md;
+  gap: $space-sm;
   width: 100%;
-  padding: clamp(1.5rem, 1rem + 1.8vw, 2.5rem);
+  // min(vw, vh): a vw-only value doesn't respond to a short-but-wide
+  // notebook window, only a narrow one — see the same note on
+  // .contact__banner-line in Contact.scss.
+  padding: clamp(1.25rem, 0.85rem + min(1.4vw, 2.4vh), 2rem);
   color: var(--panel-text);
   background-color: var(--panel);
   border: 1px solid var(--panel-edge);
@@ -78,9 +87,7 @@
     transition: border-color $dur-base $ease-out;
 
     &::placeholder {
-      // --panel-muted, not --text-faint: faint is 3.4:1 on white, and
-      // placeholder text owes the same 4.5:1 as any other text.
-      color: var(--panel-muted);
+      color: var(--panel-placeholder);
     }
 
     &:hover {
@@ -96,7 +103,7 @@
   }
 
   textarea {
-    min-height: 7rem;
+    min-height: 5.5rem;
     resize: vertical;
   }
 
@@ -196,7 +203,7 @@
 
     // Still the prompt, not an answer already given.
     &[data-placeholder] {
-      color: var(--panel-muted);
+      color: var(--panel-placeholder);
     }
   }
 
@@ -261,6 +268,9 @@
   --panel-fill: #{rgba($paper, 0.06)};
   --panel-line: #{rgba($paper, 0.36)};
   --panel-line-hover: #{rgba($paper, 0.52)};
+  // Faded further than --panel-muted's 0.78, same reasoning as the
+  // light theme's own token above.
+  --panel-placeholder: #{rgba($paper, 0.42)};
   // Lifted off --brand-lift for this dark panel. --brand-deep would be
   // 3.4:1 here and unreadable as a highlight.
   --panel-accent: #b3acff;

@@ -25,28 +25,45 @@ $card-h-lg: clamp(210px, 29vh, 420px);
 
 $card-inset: clamp(0.9rem, 0.6rem + 1vw, 1.5rem);
 $card-title: clamp(1.15rem, 0.95rem + 1vw, 1.9rem);
+// Deepened from the original 52/30/8/0 — 4 of the 5 covers here are
+// full-page screenshots of the client's own site, so the "photo" is
+// often itself dense with a hero heading, logo, or product copy sitting
+// exactly where the card's own title goes. The old scrim faded to
+// transparent by 46-62% and left our white title fighting the source
+// page's own text (worst on Peisino and Home Steel Home, whose hero
+// headings sit top-left same as ours). AMECOM's cover keeps its busy
+// text off to the right, which is why it read fine before — that stays
+// true here too, so darkening the top-left plateau doesn't cost it
+// anything.
 $card-scrim: linear-gradient(
   to bottom,
-  rgb(0 0 0 / 52%) 0%,
-  rgb(0 0 0 / 30%) 26%,
-  rgb(0 0 0 / 8%) 46%,
-  rgb(0 0 0 / 0%) 62%
+  rgb(0 0 0 / 78%) 0%,
+  rgb(0 0 0 / 58%) 22%,
+  rgb(0 0 0 / 30%) 42%,
+  rgb(0 0 0 / 10%) 58%,
+  rgb(0 0 0 / 0%) 70%
 );
 
 .projects {
-  // svh + flex, no rem — a screen-height floor that doesn't reintroduce
-  // the ramp this section opts out of. See full-screen-section.
-  @include full-screen-section;
-
-  padding-block: clamp(36px, 24px + 3vw, 72px);
+  // Top and bottom split on purpose (not one padding-block value): the
+  // fixed, blurred navbar only eats into the top, so only the top needs
+  // to clear it. It measures ~82px on a phone (16px root) and ~74px
+  // from $bp-lg up (90% root — see _reset.scss), and a reader gets here
+  // two ways: the nav's own scroll-padding-top landing, and just
+  // scrolling down normally past Servicios. The old symmetric padding
+  // (max 72px / 56px) covered neither — measured, a plain scroll-to
+  // arrival had the heading 35–46px behind the bar, and even the nav
+  // link's own landing spot cleared it by only ~10px, a sliver of the
+  // first line still clipped. These floors put ~20px of daylight under
+  // the bar at that plain-scroll arrival, the tighter of the two.
+  padding-block: clamp(104px, 88px + 3vw, 140px) clamp(36px, 24px + 3vw, 72px);
 
   @include up($bp-lg) {
-    padding-block: clamp(20px, 3vh, 56px);
+    padding-block: clamp(100px, 60px + 6vh, 160px) clamp(20px, 3vh, 56px);
 
-    // A nav tap lands a touch deeper than the header line — the section
-    // centres its content, so the default landmark leaves a wide band
-    // above the heading. ~one scrollbar-arrow click.
-    scroll-margin-top: -2.5rem;
+    // Was -2.5rem, then 0rem (one click down) — reversed per feedback,
+    // one click further up from the original instead.
+    scroll-margin-top: -5rem;
   }
 
   &__inner {
@@ -59,6 +76,27 @@ $card-scrim: linear-gradient(
     @include up($bp-lg) {
       max-width: min(100%, 66rem);
       margin-bottom: clamp(10px, 1.6vh, 24px);
+    }
+  }
+
+  // Everything below the heading, as its own block — same split
+  // Servicios has between its masthead and .services__body. The
+  // heading scrolls by at its own natural height; this is what
+  // actually occupies one full screen, filters at their natural size
+  // and the grid growing/shrinking to fill whatever that leaves (see
+  // .projects__stage and .projects__grid).
+  &__body {
+    @include up($bp-lg) {
+      display: flex;
+      flex-direction: column;
+      height: 100svh;
+      // A literal 100svh left the last row flush against the very foot
+      // of the screen with nothing under it — the grid reads as
+      // overflowing even though it technically isn't. box-sizing:
+      // border-box (the site-wide default) means this comes straight
+      // out of the grid's share, so cards shrink by exactly this much
+      // rather than the section growing past one screen.
+      padding-bottom: clamp(32px, 6vh, 64px);
     }
   }
 
@@ -150,8 +188,18 @@ $card-scrim: linear-gradient(
   // Holds one of two layouts. Grid mode is just the bento below;
   // detail mode is a three-track grid the FLIP reflows into.
   &__stage {
-    &[data-mode="detail"] {
-      @include up($bp-lg) {
+    @include up($bp-lg) {
+      // Grid mode only: passes .projects__inner's leftover height on
+      // down to .projects__grid. Detail mode pins its own height via
+      // --detail-h below and does not need to grow into anything.
+      &[data-mode="grid"] {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: 0;
+      }
+
+      &[data-mode="detail"] {
         // One row, pinned to the height the full bento had, so opening
         // a project never shortens the section. <Projects> measures the
         // live grid into --detail-h; the calc is the two-row fallback.
@@ -203,27 +251,80 @@ $card-scrim: linear-gradient(
       }
     }
 
-    // The real bento: rows alternate wide / narrow. With four projects
-    // that is [wide, narrow] then [narrow, wide]. The wide card shrinks
-    // (`0 1`) so the gap comes out of it; the narrow one is fixed (`0 0`)
-    // so `calc(60% - gap) + 40% + gap` always resolves to a full row.
+    // The real bento, from here down a column of .projects__row items
+    // (see below) rather than a wrapped flex-row — that's what lets the
+    // rows share the section's remaining height instead of each reading
+    // a height off $card-h-lg (still around, but now only a detail-mode
+    // fallback — see .projects__stage). That was this same "how tall
+    // should a row be" question, answered with a guess at the available
+    // space instead of the space itself, and it went stale the same way
+    // the hero wordmark's and the services rail's own guesses did
+    // earlier in this project — measured against one viewport, wrong on
+    // the next. A row now simply is whatever height is left.
     @include up($bp-lg) {
+      display: flex;
+      flex-direction: column;
+      // Reset from the base rule above: left as `wrap`, a column-direction
+      // flex container with un-stretched cross-axis (width) items each
+      // treats itself as a fresh line packed to the start instead of one
+      // column filling the full width — .projects__row and .konekta both
+      // collapsed to a content-based width until this was reset.
+      flex-wrap: nowrap;
+      gap: $projects-gap;
+      flex: 1 1 auto;
+      min-height: 0;
+
       .projects__cell {
-        flex: 0 0 40%;
-        height: $card-h-lg;
+        height: 100%;
       }
 
-      .projects__cell:nth-child(4n + 1),
-      .projects__cell:nth-child(4n + 4) {
+      // Rows alternate wide / narrow. With four projects that is
+      // [wide, narrow] then [narrow, wide]. Which cell in a row is which
+      // comes from <Projects> (the `span` prop, computed from the row's
+      // own index) rather than an nth-child count here — nth-child would
+      // count position within the row wrapper now, not the flat list, so
+      // it can't tell a row-1 opener from a row-2 one the way it used to.
+      // The wide card shrinks (`0 1`) so the gap comes out of it; the
+      // narrow one is fixed (`0 0`) so `calc(60% - gap) + 40% + gap`
+      // always resolves to a full row.
+      .projects__cell--narrow {
+        flex: 0 0 40%;
+      }
+
+      .projects__cell--wide {
         flex: 0 1 calc(60% - #{$projects-gap});
       }
 
-      // A filter can land an odd count (three automations). An odd last
-      // cell would otherwise sit alone at 40% with a wide gap beside it,
-      // so it takes the whole row instead — a full-width closer.
-      .projects__cell:last-child:nth-child(odd) {
+      // A filter can land an odd count (three automations): the last
+      // row then holds a single, span-less cell. Full width instead of
+      // sitting at a bare/narrow's 40% with a wide gap beside it.
+      .projects__cell:only-child {
         flex-basis: 100%;
       }
+    }
+  }
+
+  // One bento row. width:100% is explicit rather than left to cross-axis
+  // stretch inside .projects__grid's column — relying on stretch here
+  // left the row collapsed to its flex-basis (0) instead of filling the
+  // grid's width. Below $bp-lg it just wraps its (already full-width or
+  // 50%-width) cells exactly as .projects__grid used to; it only takes
+  // over the actual row-splitting job at $bp-lg.
+  &__row {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    gap: $projects-gap;
+
+    @include up($bp-md) {
+      gap: $projects-gap-md;
+    }
+
+    @include up($bp-lg) {
+      flex-wrap: nowrap;
+      gap: $projects-gap;
+      flex: 1 1 0;
+      min-height: 0;
     }
   }
 
@@ -608,8 +709,16 @@ $card-scrim: linear-gradient(
   }
 
   @include up($bp-lg) {
-    // The height the two bento rows would have had.
-    min-height: calc(#{$card-h-lg} * 2 + #{$projects-gap});
+    // konekta is .projects__grid's only child on this tab, and the grid
+    // is a flex column now (see .projects__grid) — so it grows to fill
+    // the same leftover height a row of cards would, rather than
+    // guessing at the two-row height those rows used to have. width is
+    // explicit for the same reason .projects__row's is: a column-flex
+    // child's cross-axis stretch left it at a content-based width
+    // instead of filling the grid.
+    width: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
   }
 
   &:focus-visible {

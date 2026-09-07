@@ -22,7 +22,11 @@
   --section-gap: #{$section-gap};
 
   // surfaces
-  --bg: #{$paper};
+  // The page ground is a hair off pure white — sits one step lighter
+  // than --bg-alt/--bg-band in the same neutral-lavender family, not
+  // $paper (kept pure white for --on-brand / --text-invert, where the
+  // page's own tint doesn't apply).
+  --bg: #eeedf7;
   --bg-alt: #f1f0f5;
   --bg-band: #e8e7ee;
   --bg-nav: rgba(255, 255, 255, 0.5);
@@ -31,7 +35,16 @@
   --surface-invert: #{$ink};
 
   // text
-  --text: #{$ink};
+  // Headings/body copy get the designer's ink (#0C0854, a near-black
+  // indigo) rather than $ink's neutral near-black — it reads as "black"
+  // at a glance but ties every heading and paragraph back to the brand
+  // hue instead of a flat neutral. Decoupled from $ink on purpose:
+  // $ink still drives --border/--shadow-*/--surface-invert as plain
+  // neutral chrome, which shouldn't also tint blue. --text-muted/
+  // --text-faint stay neutral grey too — secondary copy is meant to
+  // recede, not compete with the tint. (15.3:1 contrast against the
+  // new --bg, comfortably past AAA.)
+  --text: #0c0854;
   --text-muted: #56565f;
   --text-faint: #8b8b95;
   --text-invert: #{$paper};

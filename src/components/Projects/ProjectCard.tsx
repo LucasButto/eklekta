@@ -10,6 +10,12 @@ interface ProjectCardProps {
   index: number
   /** Where this card sits: the bento, the opened cover, or the side rail. */
   view: CardView
+  /**
+   * The bento's wide/narrow alternation, in `view="grid"` only. Undefined
+   * for a row's lone card (an odd-count filter's closer), which takes the
+   * row's full width instead — see .projects__cell:only-child.
+   */
+  span?: 'wide' | 'narrow'
   /** grid / rail → open this project; lead → close back to the grid. */
   onSelect: (id: string | null) => void
   /** Hands the cell element up so <Projects> can FLIP it between layouts. */
@@ -40,6 +46,7 @@ export function ProjectCard({
   project,
   index,
   view,
+  span,
   onSelect,
   registerRef,
   noReveal = false,
@@ -111,10 +118,14 @@ export function ProjectCard({
     return () => observer.disconnect()
   }, [settled])
 
+  const cellClass = span
+    ? `projects__cell projects__cell--${span}`
+    : 'projects__cell'
+
   return (
     <div
       ref={setCell}
-      className="projects__cell"
+      className={cellClass}
       data-view={view}
       data-reveal={settled ? 'shown' : 'hidden'}
       role="listitem"
