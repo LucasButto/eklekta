@@ -1,4 +1,4 @@
-@use 'styles' as *;
+@use "styles" as *;
 
 .services {
   // .services is the texture's containing block, same move as
@@ -86,41 +86,46 @@
       grid-row: 1;
       position: sticky;
 
-      // Keeps the pinned rail centred in the space actually available
-      // to it: while the bar is up that space runs from the bar's
-      // bottom edge (5.125rem — the header height scroll-padding-top
-      // uses) to the foot of the screen, so the rail sits 5.125rem
-      // down plus half of what's left over. 60rem is the rail's own
-      // content height, near-constant in rem since it hugs content.
-      // The 7.5rem floor holds it near the top on a screen too short
-      // to centre a rail this tall under the bar.
-      --rail-top: max(
-        7.5rem,
-        calc(5.125rem + (100svh - 5.125rem - 60rem) / 2)
-      );
-      top: var(--rail-top);
+      // The rail's own box spans *exactly* the region it should be
+      // centred in — the bar's bottom edge (5.125rem, the same header
+      // height scroll-padding-top uses) down to the foot of the screen
+      // — and centres its actual children inside that box with
+      // justify-content. Real flex centring, not a guessed offset: an
+      // earlier version computed a fixed `top` from an assumed rail
+      // content height in rem, and that assumption went stale (throwing
+      // the centring off, more air on one side than the other) every
+      // time the media panel's width changed, since the panel's
+      // aspect-ratio height is most of the rail's height. This can't go
+      // stale the same way — it centres whatever height the content
+      // actually turns out to be, including the panel shrinking on a
+      // short window.
+      //
+      // The 2rem edge cushion is padding, NOT a slice off the height:
+      // taking it off the bottom only (as a shorter box did) moves the
+      // box's centre 1rem up, which reads as a good 2rem more air below
+      // the content than above it. As symmetric padding it keeps the
+      // content off both edges when it has to shrink to fit, while the
+      // border box still spans the true region, so the centre stays the
+      // region's true centre.
+      top: 5.125rem;
+      height: calc(100svh - 5.125rem);
+      padding-block: 2rem;
+      justify-content: center;
 
       // `start`, not the grid default `stretch`: a stretched item fills
       // the whole row, which leaves sticky nothing to travel inside and
       // silently turns the pin into a static box.
       align-self: start;
-      // max-height, so the rail hugs its content and only the window
-      // caps it. A fixed height looked tidier but made the box 1951px
-      // at 4K against 1299px of content, and the pin then ended far too
-      // early for the last service to ever reach the panel's centre.
-      // Hugging keeps panel height, rail height and item height all
-      // rem-proportional, which is why the list padding below can be a
-      // single rem value that holds at every viewport.
-      max-height: calc(100svh - var(--rail-top) - 2rem);
       transition:
         top $dur-reveal $ease-out,
-        max-height $dur-reveal $ease-out;
+        height $dur-reveal $ease-out;
 
       // With the bar gone the available space is the whole screen, so
-      // the rail centres edge to edge — half of (100svh - its height).
-      // The rail rises by ~half the bar's height as the bar leaves.
-      :root[data-nav-hidden='true'] & {
-        --rail-top: max(#{$space-2xl}, calc((100svh - 60rem) / 2));
+      // the rail's box runs edge to edge and the centring shifts down
+      // by ~half the bar's height as it does.
+      :root[data-nav-hidden="true"] & {
+        top: 0;
+        height: 100svh;
       }
 
       @include reduced-motion {
@@ -140,6 +145,14 @@
 
     @include up($bp-lg) {
       display: block;
+      // Narrower than the full column: at 100% width the panel's 4:5
+      // ratio needed more height than a short laptop window (real
+      // browser chrome eating into 100svh) has to give it, so it got
+      // shrunk into a near-landscape box instead of the intended
+      // portrait one. Capping the width means less height is needed to
+      // hold the ratio, so the shrink below has less (ideally nothing)
+      // left to do.
+      max-width: 70%;
       aspect-ratio: 4 / 5;
       // The panel is the only part that gives ground when the window is
       // short: grow:0 keeps its aspect-ratio height when there's room,
@@ -161,7 +174,7 @@
     opacity: 0;
     transition: opacity $dur-base linear;
 
-    &[data-active='true'] {
+    &[data-active="true"] {
       opacity: 1;
     }
 
@@ -195,23 +208,29 @@
       // 340px of scroll, which read as a flick rather than a beat.
       gap: 32vh;
       // Buys the first and last service the room to reach the panel's
-      // centre while the rail is still pinned. Measured, not guessed:
-      // the first needs (panel height - item height) / 2 of lead-in, and
-      // the last needs rail height - panel height/2 - item height/2 of
-      // run-out. Both come out constant in rem — ~16.5 and ~27.5 at both
-      // 1920 and 4K — because the rail hugs content, so every term in
-      // them scales together. The values below add a little slack.
+      // centre while the rail is still pinned. Without it the first
+      // service was already 148px past the panel's centre before the pin
+      // even started, and the last one never reached it at all.
       //
-      // Without this the first service was already 148px past the
-      // panel's centre before the pin even started, and the last one
-      // never reached it at all.
+      // The run-out is in vh, not rem, because the two ends of the run
+      // it has to cover scale differently. The pin releases when the
+      // rail's bottom meets the bottom of its column, and the rail is
+      // now a viewport-tall box, so the release point moves with the
+      // window height — while a rem run-out does not. Measured, that
+      // left the last service resting a different distance past the
+      // reading line on every window: 196px above it at 700px tall,
+      // 112px at 864px, and past 1080px or so it never reached the line
+      // at all before the pin let go. The drift came out linear in the
+      // window height (~554 - 0.51vh with the old 34.5rem), so a
+      // run-out of ~0.51vh cancels the vh term and leaves the same
+      // closing beat — about 60px past the line — at every height.
       //
-      // The run-out carries a further ~6rem beyond that measured
-      // minimum: reaching the panel's centre on the last frame of the
-      // pin is not the same as resting there, and the extra buys the
-      // fifth service a beat at the reading line before the rail
-      // releases into Proyectos.
-      padding-block: 17rem 34.5rem;
+      // That beat is deliberate: reaching the panel's centre on the last
+      // frame of the pin is not the same as resting there, and the extra
+      // buys the last service a moment at the reading line before the
+      // rail releases into Proyectos. Lower the 51vh to end the sequence
+      // sooner, raise it to hold the last service longer.
+      padding-block: 17rem 51vh;
     }
   }
 
@@ -367,7 +386,7 @@
 // Violet on near-black has far less contrast than violet on light grey,
 // so the texture needs more opacity in dark mode, not less, to hold the
 // same visual weight.
-:root[data-theme='dark'] .services__bg {
+:root[data-theme="dark"] .services__bg {
   opacity: 0.75;
 }
 
@@ -375,7 +394,7 @@
 // brighter surface the theme uses everywhere else — and drops the label
 // to ink, the pair that clears contrast there (~6.3:1) where white on
 // the same fill would not.
-:root[data-theme='dark'] .services__chip {
+:root[data-theme="dark"] .services__chip {
   @include hover {
     color: var(--text-invert);
     background-color: var(--brand);
