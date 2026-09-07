@@ -89,12 +89,20 @@
       // (root font-size ~22px there, see _reset.scss) it caps at
       // ~2288px, still short of 80vw (~3072px), so the mark keeps
       // growing with the screen instead of plateauing early.
-      width: min(80vw, 104rem);
+      //
       // Short windows: the band gets small before the width clamp ever
-      // bites, so height is the binding constraint. An <svg> is a
-      // replaced element, so capping the height scales the width with
-      // it and the ratio holds.
-      max-height: calc(var(--hero-band) - 8.5rem);
+      // bites, so height becomes the binding constraint instead. That
+      // used to be a separate `max-height`, on the assumption that
+      // capping height on a replaced element scales width with it to
+      // match — it doesn't when width is already a definite value, so
+      // the SVG's box stopped matching its own aspect ratio and
+      // preserveAspectRatio="meet" shrank+centred the artwork inside
+      // it, leaving equal dead space on both sides (invisible in a
+      // tall emulator viewport, glaring once real browser chrome eats
+      // into the window's actual height). Converting the height cap to
+      // its equivalent width up front keeps width the only constraint
+      // that ever binds, so the box always matches the artwork.
+      width: min(80vw, 104rem, calc((var(--hero-band) - 8.5rem) * 3724 / 836));
     }
   }
 
@@ -190,8 +198,10 @@
     }
 
     &__wordmark svg {
-      width: min(92vw, 40rem);
-      max-height: calc(var(--hero-band) - 6.5rem);
+      // Same width-only formula as the desktop rule above — see its
+      // comment for why the height cap is folded in rather than kept
+      // as a separate max-height.
+      width: min(92vw, 40rem, calc((var(--hero-band) - 6.5rem) * 3724 / 836));
     }
 
     &__photo img {
