@@ -1,20 +1,29 @@
 @use "styles" as *;
 
+// The photo's own height (all five cards) and how much of it the
+// staggered (2nd/4th) cards give up from the top instead of the
+// bottom — see .member__photo img and .team__cell:nth-child(even).
+$member-photo-h: clamp(16rem, min(48vh, 26vw), 26rem);
+$member-photo-crop: clamp(1rem, 0.5rem + 1.2vw, 2rem);
+
 .team {
   @include section-spacing;
-  @include full-screen-section;
+
+  // No full-screen-section here any more: that centred the heading and
+  // the row together as one block, so a tall heading ate into the
+  // row's share. Now .team__row owns its own full screen on its own
+  // (below) and .team__inner (the heading) just sits above it at its
+  // natural height — the same split Proyectos uses between its heading
+  // and .projects__body.
 
   // clip, not hidden: with the swipe rail gone there is nothing here
   // that should ever scroll, and `hidden` would still leave the
   // section programmatically scrollable.
   overflow-x: clip;
 
-  // full-screen-section stacks and vertically centres this section on
-  // desktop, which changes what the block padding is for. The top step
-  // becomes the fixed header's own height (5.125rem — the landmark
-  // scroll-padding-top already uses) so the heading clears the bar
-  // when the section is scrolled to fill the screen; the bottom step
-  // shrinks, because the centring holds the row off the edge for free.
+  // The top step is the fixed header's own height (5.125rem — the
+  // landmark scroll-padding-top already uses) so the heading clears
+  // the bar; the bottom step is just the section's own closing rhythm.
   @include up($bp-lg) {
     padding-block: 5.125rem $space-sm;
 
@@ -78,6 +87,13 @@
       grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: clamp(0.75rem, 0.4rem + 1.2vw, 1.5rem);
       align-items: start;
+      // The row's own full screen, decoupled from the heading above it
+      // (see the note on .team at the top of this file). align-content
+      // centres the single row of cards inside that height the same
+      // way full-screen-section used to centre heading+row together —
+      // just scoped to the row alone now.
+      height: 100svh;
+      align-content: center;
     }
   }
 
@@ -91,6 +107,28 @@
         // that gives the row its rhythm, and once the heading dropped
         // its eyebrow the section has the height to carry it again.
         margin-top: clamp(2rem, 1rem + 4vw, 5.5rem);
+
+        // The 1st/3rd/5th cards give up $member-photo-crop off the
+        // bottom of their photo by default — shrinking a box's height
+        // leaves its top where it was. To make the 2nd/4th give up
+        // theirs off the *top* instead (so the row reads as more
+        // staggered, not just shifted down as a block), the photo's
+        // own height drops by that same amount again and margin-top
+        // makes up the difference — the photo's bottom then lands
+        // exactly where the uncropped height would have put it, and
+        // only the top recedes.
+        //
+        // This goes on .member__photo itself, not the img inside it —
+        // putting it on the img left the img still full height, just
+        // pushed down inside a .member__photo box that hadn't grown to
+        // match, so the container's own background showed through as a
+        // bare strip above the picture. Moving both rules to the frame
+        // means the whole box (frame, radius and photo together) is
+        // what shifts, so there's nothing left to show through.
+        .member__photo {
+          margin-top: $member-photo-crop;
+          height: calc(#{$member-photo-h} - #{$member-photo-crop});
+        }
       }
     }
   }
@@ -113,6 +151,19 @@
     background-color: var(--surface-2);
     border-radius: $radius-md;
 
+    // Five across: the columns are narrow and near-equal at every
+    // width, so a measured height reads more evenly than a ratio.
+    // min(vh, vw) so whichever axis is tighter is the one that sets the
+    // height: the vw term stops the photo turning skinny once the five
+    // columns get narrow near $bp-lg. $member-photo-h is defined at the
+    // top of this file since the staggered (even) cards below need to
+    // read the same value back for their own crop — this sits on the
+    // frame, not the img, so the frame and the picture always resize
+    // together (see the note on .team__cell:nth-child(even)).
+    @include up($bp-lg) {
+      height: $member-photo-h;
+    }
+
     img {
       width: 100%;
       // While the row wraps, the cell is a fraction of the container
@@ -126,16 +177,8 @@
         transform $dur-slow $ease-out,
         filter $dur-slow $ease-out;
 
-      // Five across: the columns are narrow and near-equal at every
-      // width, so a measured height reads more evenly than a ratio.
-      // Tall portrait again, ~1:1.5 like it was before full-screen-
-      // section. min(vh, vw) so whichever axis is tighter is the one
-      // that sets the height: the vh term keeps the whole section
-      // inside one screen on a short window, and the vw term stops the
-      // photo turning skinny once the five columns get narrow near
-      // $bp-lg. ~330px on a 1280x900 screen, up to the 24rem cap.
       @include up($bp-lg) {
-        height: clamp(17rem, min(38vh, 26vw), 24rem);
+        height: 100%;
         aspect-ratio: auto;
       }
     }
