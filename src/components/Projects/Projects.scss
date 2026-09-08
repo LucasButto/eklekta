@@ -113,21 +113,21 @@ $field-graphite-dark: #262247;
 
   // Everything below the heading, as its own block — same split
   // Servicios has between its masthead and .services__body. The
-  // heading scrolls by at its own natural height; this is what
-  // actually occupies one full screen, filters at their natural size
-  // and the grid growing/shrinking to fill whatever that leaves (see
-  // .projects__stage and .projects__grid).
+  // heading scrolls by at its own natural height; this holds the
+  // filters at their natural size and the grid below them.
   &__body {
     @include up($bp-lg) {
       display: flex;
       flex-direction: column;
-      height: 100svh;
-      // A literal 100svh left the last row flush against the very foot
-      // of the screen with nothing under it — the grid reads as
-      // overflowing even though it technically isn't. box-sizing:
-      // border-box (the site-wide default) means this comes straight
-      // out of the grid's share, so cards shrink by exactly this much
-      // rather than the section growing past one screen.
+      // A ceiling, not a fixed height. `height: 100svh` here forced the
+      // rows to stretch and fill the screen — on a 1080p-and-taller
+      // display that pushed the cards to near-square and lost the
+      // landscape bento proportion. The rows now carry a real height
+      // ($card-h-lg — see .projects__row), so on a large screen the
+      // section sits at content height; a short laptop still shrinks
+      // the rows to fit through the flex children below.
+      max-height: 100svh;
+      min-height: 0;
       padding-bottom: clamp(32px, 6vh, 64px);
     }
   }
@@ -284,15 +284,12 @@ $field-graphite-dark: #262247;
     }
 
     // The real bento, from here down a column of .projects__row items
-    // (see below) rather than a wrapped flex-row — that's what lets the
-    // rows share the section's remaining height instead of each reading
-    // a height off $card-h-lg (still around, but now only a detail-mode
-    // fallback — see .projects__stage). That was this same "how tall
-    // should a row be" question, answered with a guess at the available
-    // space instead of the space itself, and it went stale the same way
-    // the hero wordmark's and the services rail's own guesses did
-    // earlier in this project — measured against one viewport, wrong on
-    // the next. A row now simply is whatever height is left.
+    // (see below) rather than a wrapped flex-row. The rows carry a real
+    // height ($card-h-lg) again: letting them stretch to fill the
+    // screen read fine on a laptop but went near-square and too tall on
+    // a 1080p-and-larger display. $card-h-lg is viewport-relative and
+    // capped, and the rows still shrink under it (flex-shrink) when a
+    // short screen forces .projects__body against its max-height.
     @include up($bp-lg) {
       display: flex;
       flex-direction: column;
@@ -355,7 +352,12 @@ $field-graphite-dark: #262247;
     @include up($bp-lg) {
       flex-wrap: nowrap;
       gap: $projects-gap;
-      flex: 1 1 0;
+      // A real landscape height that ramps with the viewport and is
+      // capped (see $card-h-lg), so the cards keep their proportion on
+      // large displays. `0 1` — no grow into leftover height, but still
+      // shrinkable when a short screen needs the whole section to fit.
+      flex: 0 1 auto;
+      height: $card-h-lg;
       min-height: 0;
     }
   }
@@ -908,16 +910,15 @@ $field-graphite-dark: #262247;
   }
 
   @include up($bp-lg) {
-    // konekta is .projects__grid's only child on this tab, and the grid
-    // is a flex column now (see .projects__grid) — so it grows to fill
-    // the same leftover height a row of cards would, rather than
-    // guessing at the two-row height those rows used to have. width is
-    // explicit for the same reason .projects__row's is: a column-flex
-    // child's cross-axis stretch left it at a content-based width
-    // instead of filling the grid.
+    // konekta is .projects__grid's only child on this tab. It stands as
+    // tall as the two bento rows it replaces ($card-h-lg each) — the
+    // grid no longer forces a full screen, so this is a real min-height
+    // rather than a flex-grow into leftover space. width is explicit
+    // because a column-flex child's cross-axis stretch otherwise left it
+    // at a content-based width instead of filling the grid.
     width: 100%;
-    flex: 1 1 auto;
-    min-height: 0;
+    flex: 0 1 auto;
+    min-height: calc(#{$card-h-lg} * 2 + #{$projects-gap});
   }
 
   &:focus-visible {
