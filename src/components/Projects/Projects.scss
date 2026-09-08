@@ -380,12 +380,15 @@ $field-graphite-dark: #262247;
       }
 
       // Opened, the card is the screenshot and nothing else — no field
-      // showing, no type over the picture. The readout beside it
-      // already carries the category, the name and the blurb, so the
-      // panel's job here is only to show the work. The field colour
-      // stays underneath as the placeholder the image loads over.
+      // colour, no type over the picture. The readout beside it already
+      // carries the category, the name and the blurb, so the panel's
+      // job here is only to show the work. The tint is dropped for a
+      // flat near-black: it is only ever the ground the image loads
+      // over and the ground the corners clip to, and a slice of the
+      // bright field peeking past the radius read wrong.
       .project-card {
         padding: 0;
+        background-color: $ink;
 
         // The panel is the close control; a large tile lifting on hover
         // reads wrong, so it just deepens its shadow.
@@ -393,13 +396,6 @@ $field-graphite-dark: #262247;
           transform: none;
           box-shadow: var(--shadow-lg);
         }
-      }
-
-      .project-card__shot {
-        margin-top: 0;
-        // The card's own radius clips it — a second one inside would
-        // read as a frame, which is exactly what this stopped being.
-        border-radius: 0;
       }
     }
 
@@ -740,17 +736,22 @@ $field-graphite-dark: #262247;
 
   // ---------------------------------------------- the opened panel's shot
   // The same screenshot the peek teased, at full size: opened, it fills
-  // the card edge to edge (see .projects__cell[data-view="lead"]).
+  // the card edge to edge (the card is `position: relative`, this is
+  // `inset: 0`). `border-radius: inherit` so it clips to its own
+  // rounded corner rather than leaning on the card's overflow — that
+  // left a hairline of the card ground showing at the radius.
+  //
+  // The card's geometry FLIP carries it from bento slot to panel; on
+  // top of that it fades and settles in on its own (projects-shot-reveal
+  // below), so the open reads as one move at one tempo — the screenshot
+  // resolving as the panel arrives, not a separate step before it.
   &__shot {
-    position: relative;
-    display: block;
-    flex: 1 1 auto;
-    width: 100%;
-    min-height: 0;
-    margin-top: clamp(0.9rem, 0.6rem + 1.2vw, 1.75rem);
+    position: absolute;
+    inset: 0;
     overflow: hidden;
-    background-color: rgb(0 0 0 / 14%);
-    border-radius: $radius-sm;
+    background-color: $ink;
+    border-radius: inherit;
+    animation: projects-shot-reveal 780ms $ease-in-out both;
 
     picture {
       display: contents;
@@ -774,8 +775,9 @@ $field-graphite-dark: #262247;
     }
   }
 
-  // The close glyph on the opened panel — the field's own colours,
-  // inverted, so it works on lime as readily as on graphite.
+  // The close glyph on the opened panel. Neutral — a translucent
+  // near-black disc with a paper glyph — because the panel is a
+  // screenshot now and nothing tinted should show over it.
   &__close {
     position: absolute;
     top: $space-sm;
@@ -785,8 +787,8 @@ $field-graphite-dark: #262247;
     place-items: center;
     width: 2.25rem;
     height: 2.25rem;
-    color: var(--field);
-    background-color: var(--ink);
+    color: $paper;
+    background-color: rgb(11 11 16 / 64%);
     border-radius: 50%;
     transition:
       opacity $dur-base $ease-out,
@@ -982,6 +984,21 @@ $field-graphite-dark: #262247;
   }
 }
 
+// The opened panel's screenshot: fades and eases down from a hair
+// zoomed as the card's own FLIP brings the panel in. One tempo with
+// that move — no separate "fill the card first" beat.
+@keyframes projects-shot-reveal {
+  from {
+    opacity: 0;
+    transform: scale(1.035);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @include reduced-motion {
   .projects__filter-marker {
     transition: none;
@@ -994,7 +1011,9 @@ $field-graphite-dark: #262247;
   }
 
   .projects__readout > *,
-  .konekta {
+  .konekta,
+  // The opened screenshot just appears at full size.
+  .project-card__shot {
     animation: none;
   }
 

@@ -198,35 +198,31 @@ export function Projects() {
 
       if (id === openId || id === returningId) {
         // The cover travels between its bento slot and the large left
-        // column — the same move both ways. It animates geometry
-        // (width/height), not scale, so the object-fit: cover image
-        // re-crops as the frame changes shape instead of the picture
-        // stretching. Opening also blends opacity up from the grid card
-        // it replaced; closing stays opaque — it is the same card going
-        // home.
-        const opening = id === openId
+        // column — the same move both ways, geometry (width/height) not
+        // scale so object-fit: cover re-crops as the frame reshapes
+        // rather than the picture stretching. It stays opaque the whole
+        // way: on open the screenshot inside fades up on its own (see
+        // projects-shot-reveal in the SCSS), on close it is the same
+        // card going home.
         el.animate(
           [
             {
               transform: `translate(${dx}px, ${dy}px)`,
               width: `${Math.round(before.width)}px`,
               height: `${Math.round(before.height)}px`,
-              opacity: opening ? 0.35 : 1,
               zIndex: '4',
             },
-            { opacity: 1, offset: 0.45 },
             {
               transform: 'none',
               width: `${Math.round(after.width)}px`,
               height: `${Math.round(after.height)}px`,
-              opacity: 1,
               zIndex: '4',
             },
           ],
           {
             duration: openMs,
             easing: EASE,
-            delay: opening ? OPEN_DELAY_MS : 0,
+            delay: id === openId ? OPEN_DELAY_MS : 0,
             fill: 'backwards',
           },
         )
