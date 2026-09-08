@@ -3,7 +3,10 @@
 // The photo's own height (all five cards) and how much of it the
 // staggered (2nd/4th) cards give up from the top instead of the
 // bottom — see .member__photo img and .team__cell:nth-child(even).
-$member-photo-h: clamp(16rem, min(48vh, 26vw), 26rem);
+// The 24rem cap (was 26): on a 1080p screen the taller value tipped
+// the section a touch past one screenful once browser chrome is in
+// play, so the row wanted a scroll of its own.
+$member-photo-h: clamp(16rem, min(48vh, 26vw), 24rem);
 $member-photo-crop: clamp(1rem, 0.5rem + 1.2vw, 2rem);
 
 .team {
