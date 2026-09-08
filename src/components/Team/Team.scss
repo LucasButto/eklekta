@@ -9,12 +9,12 @@ $member-photo-crop: clamp(1rem, 0.5rem + 1.2vw, 2rem);
 .team {
   @include section-spacing;
 
-  // No full-screen-section here any more: that centred the heading and
-  // the row together as one block, so a tall heading ate into the
-  // row's share. Now .team__row owns its own full screen on its own
-  // (below) and .team__inner (the heading) just sits above it at its
-  // natural height — the same split Proyectos uses between its heading
-  // and .projects__body.
+  // The heading and the row just stack at their natural heights on
+  // desktop — no full-screen-section, no full-screen row. An earlier
+  // pass gave .team__row its own 100svh and centred the cards inside
+  // it; on a 1080p-and-taller screen that stranded a ~300px band of
+  // empty space between the heading and the cards. Same split Proyectos
+  // uses: heading above, content right below it.
 
   // clip, not hidden: with the swipe rail gone there is nothing here
   // that should ever scroll, and `hidden` would still leave the
@@ -27,9 +27,10 @@ $member-photo-crop: clamp(1rem, 0.5rem + 1.2vw, 2rem);
   @include up($bp-lg) {
     padding-block: 5.125rem $space-sm;
 
-    // A nav tap lands a touch deeper than the header line — the centred
-    // content otherwise sits a long way below the bar. ~one
-    // scrollbar-arrow click.
+    // A nav tap trims part of the top padding back — landing the
+    // section flush at the header line plus a full 5.125rem of padding
+    // drops the heading a long way below the bar. ~one scrollbar-arrow
+    // click higher.
     scroll-margin-top: -2.5rem;
   }
 
@@ -40,14 +41,13 @@ $member-photo-crop: clamp(1rem, 0.5rem + 1.2vw, 2rem);
   &__heading {
     margin-bottom: $heading-gap;
 
-    // On desktop the section runs under full-screen-section and has to
-    // seat a five-card row on the same screen, so every block above the
-    // row gives back what it can: a tighter gap down to the row, and
-    // enough width for the display line to hold two lines instead of
-    // three (same type size, ~80px of height back). 68rem, not 64:
-    // once the type reaches its 5.6rem cap (~1535px wide and up) 64rem
-    // tipped it back to three. The intro widens off its default 46ch
-    // to match.
+    // Desktop keeps the display line to two lines rather than three
+    // (same type size, ~80px of height back) and a tighter gap down to
+    // the row — a five-up portrait row already runs tall, and the
+    // closer the heading sits to it the more they read as one block.
+    // 68rem, not 64: once the type reaches its 5.6rem cap (~1535px wide
+    // and up) 64rem tipped it back to three. The intro widens off its
+    // default 46ch to match.
     @include up($bp-lg) {
       max-width: min(100%, 68rem);
       margin-bottom: clamp(0.75rem, 2vh, 1.75rem);
@@ -86,14 +86,10 @@ $member-photo-crop: clamp(1rem, 0.5rem + 1.2vw, 2rem);
     @include up($bp-lg) {
       grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: clamp(0.75rem, 0.4rem + 1.2vw, 1.5rem);
+      // Cells top-align so the 2nd/4th drop reads as a stagger rather
+      // than a block shift. No forced height here any more — the row
+      // sits at its natural height right under the heading.
       align-items: start;
-      // The row's own full screen, decoupled from the heading above it
-      // (see the note on .team at the top of this file). align-content
-      // centres the single row of cards inside that height the same
-      // way full-screen-section used to centre heading+row together —
-      // just scoped to the row alone now.
-      height: 100svh;
-      align-content: center;
     }
   }
 
@@ -139,9 +135,8 @@ $member-photo-crop: clamp(1rem, 0.5rem + 1.2vw, 2rem);
   flex-direction: column;
   gap: $space-sm;
 
-  // Desktop shares the screen with the heading (full-screen-section);
-  // the photo-to-caption gap tightens a notch so the row keeps more of
-  // that height for the photo itself.
+  // The photo-to-caption gap tightens a notch on desktop, where a
+  // five-up row of portraits already runs tall.
   @include up($bp-lg) {
     gap: $space-xs;
   }
