@@ -161,9 +161,10 @@
     @include up($bp-lg) {
       .manifesto {
         // The runway. Longer = the photos climb more slowly. The frame
-        // stays pinned across all of it: the last ~20% is a hold where
-        // the assembled collage just sits before the pin releases.
-        min-height: 400svh;
+        // stays pinned across all of it; the closing line now finishes
+        // at contain 93% (below), so only the last ~7% — a beat, not the
+        // half-screen it was — sits assembled before the pin releases.
+        min-height: 350svh;
         padding-block: 0;
         view-timeline-name: --manifesto-seq;
       }
@@ -214,8 +215,9 @@
       }
 
       // Out of the centred flow so the statement sits dead centre.
-      // Climbs in from below like the photos once they've settled, and
-      // holds for the last of the scroll.
+      // Climbs in from below like the photos once they've settled; it
+      // finishes near the end of the pin (93%) so there is barely any
+      // dead scroll between it landing and the section handing off.
       .manifesto__closing-line {
         position: absolute;
         top: 42%;
@@ -223,7 +225,7 @@
         opacity: 0;
         animation: manifesto-closing-in linear both;
         animation-timeline: --manifesto-seq;
-        animation-range: contain 62% contain 84%;
+        animation-range: contain 62% contain 93%;
         will-change: transform, opacity;
       }
     }
