@@ -20,6 +20,15 @@
     // was already pushing 95svh, so the same fixed padding every
     // other section carries was the last thing tipping it over.
     padding-block: clamp(1.25rem, 0.75rem + 3.2vh, 3rem);
+
+    // Trims full-screen-section's 95svh. On a notebook the banner + form
+    // already fill that, but on a tall (1080p+) screen they left ~450px
+    // of slack that centring split above and below — floating the whole
+    // section a long way under the Manifiesto sequence that runs
+    // straight into it. This keeps just enough room to still read as a
+    // full closing beat; the leftover on a tall screen stays small and
+    // centred.
+    min-height: 68svh;
   }
 
   &__inner {
@@ -307,6 +316,19 @@
   // on the same line without one.
   &__form {
     width: 100%;
+  }
+}
+
+// Manifiesto runs its full pinned sequence directly above this — by the
+// time its pin releases the page has visibly turned to the close, so the
+// standard between-sections gap on top of that read as a stall. Pull
+// this one pair in. Local override of the .page > section + section
+// rhythm (globals.scss); `.page >` keeps it above that rule's weight.
+// Desktop only: below $bp-lg the collage is static and the plain gap is
+// already tight.
+@include up($bp-lg) {
+  .page > .manifesto + .contact {
+    margin-block-start: clamp(1.75rem, 1rem + 2vw, 3.75rem);
   }
 }
 
