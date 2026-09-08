@@ -27,6 +27,18 @@ export interface Project {
   /** The full account of the work. Dialog only. */
   description: string
   /**
+   * The card's colour field — the flat ground the project's name is set
+   * on, the way konekta's panel sets its wordmark on celeste. One of the
+   * names the card's `[data-tint]` rules define (see Projects.scss):
+   * `orange`, `blue`, `lime`, `violet`, `graphite`. Optional; a project
+   * without one falls back to the brand violet.
+   *
+   * Tints repeat from one filter tab to the next on purpose — a tab
+   * never shows another tab's cards, so the set stays a handful of
+   * strong colours instead of thinning into near-duplicates.
+   */
+  tint?: string
+  /**
    * Path stem for the landscape cover — `${cover}-{400,800,1200}.{webp,jpg}`
    * are the real files (see coverSet in ProjectCard). Shown in the grid
    * tile and the side-rail mini.
