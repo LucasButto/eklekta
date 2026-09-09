@@ -1,11 +1,18 @@
 @use "styles" as *;
 
 // =============================================================
-//  Proyectos — an iOS App Store "Today" grid.
+//  Proyectos — a grid of posters.
+//
+//  In the grid every project is a flat colour field with its category
+//  up top and its name set large at the foot, the same construction the
+//  konekta panel uses. The screenshot is not the card there: it waits
+//  off the edge and slides part-way in on hover. Opening the project is
+//  what pays that off — the panel drops the type entirely and becomes
+//  the screenshot, with the readout beside it carrying the words.
 //
 //  Cards sit in a two-up bento that alternates wide / narrow row to
 //  row. Open one and the section becomes a master-detail: the picked
-//  cover grows tall on the left, its readout (title, link, blurb) sits
+//  panel grows tall on the left, its readout (title, link, blurb) sits
 //  beside it, and the rest of the set stacks into a rail on the right.
 //  <Projects> plays the reflow as a FLIP (WAAPI), so this file only
 //  describes the two end states.
@@ -23,26 +30,51 @@ $card-h: clamp(220px, 58vw, 340px);
 $card-h-md: clamp(240px, 34vw, 320px);
 $card-h-lg: clamp(210px, 29vh, 420px);
 
-$card-inset: clamp(0.9rem, 0.6rem + 1vw, 1.5rem);
-$card-title: clamp(1.15rem, 0.95rem + 1vw, 1.9rem);
-// Deepened from the original 52/30/8/0 — 4 of the 5 covers here are
-// full-page screenshots of the client's own site, so the "photo" is
-// often itself dense with a hero heading, logo, or product copy sitting
-// exactly where the card's own title goes. The old scrim faded to
-// transparent by 46-62% and left our white title fighting the source
-// page's own text (worst on Peisino and Home Steel Home, whose hero
-// headings sit top-left same as ours). AMECOM's cover keeps its busy
-// text off to the right, which is why it read fine before — that stays
-// true here too, so darkening the top-left plateau doesn't cost it
-// anything.
-$card-scrim: linear-gradient(
-  to bottom,
-  rgb(0 0 0 / 78%) 0%,
-  rgb(0 0 0 / 58%) 22%,
-  rgb(0 0 0 / 30%) 42%,
-  rgb(0 0 0 / 10%) 58%,
-  rgb(0 0 0 / 0%) 70%
-);
+// Roomier than the old cover's inset: nothing is fighting a photograph
+// for legibility any more, so the type can sit off the edges the way it
+// does on the konekta panel rather than hugging them.
+$card-inset: clamp(1.1rem, 0.75rem + 1.3vw, 2rem);
+// The name is the card now, so it is set a good deal larger than it was
+// over the screenshot. The ceiling is what "Home Steel Home" — the
+// longest title in the set, in a face as wide as Monument — can still
+// take in the bento's *narrow* column without running past two lines.
+$card-title: clamp(1.3rem, 1rem + 1.3vw, 2.35rem);
+
+// How much of the card's width the hover peek occupies, and how much of
+// its *own* width stays hanging off the right edge once it lands.
+$peek-w: 38%;
+$peek-rest: 14%;
+// The bento's wide cards get a much bigger panel that rises straight up
+// out of the bottom edge and rests in the card's bottom-right corner —
+// a little over half the card's width and most of its height, so the
+// screenshot is actually readable rather than a thumbnail. The bleed
+// off the right edge is a smaller share here than on the narrow cards:
+// at the narrow card's 14% this panel would throw away 61px of picture
+// instead of 25px, and the point of the bleed is the cut, not its size.
+// 9% lands it at ~37px, in line with what the narrow cards give up.
+// $peek-rest-y is how much of its own height stays below the card's
+// bottom edge once it lands.
+$peek-w-wide: 59%;
+$peek-rest-wide: 9%;
+$peek-rest-y: 10%;
+// Where each landed peek's left edge falls, and so where the title's
+// measure has to stop. Narrow: 100% - 38% + 14% of 38%. Wide: the same
+// sum at 40%, and then a further step back — the wide panel is big
+// enough that a title running right up against it would read as
+// crowding rather than as two things sharing a card. Written out rather
+// than calculated because Sass cannot multiply two percentages.
+$head-max: 67%;
+$head-max-wide: 40%;
+
+// ------------------------------------------------ the colour fields
+// Each project is set on a flat tint, chosen so the pair carries its
+// own text: the two light fields take ink, the three deep ones take
+// paper. $brand-deep (not $brand) is the violet — it is the one metered
+// at 5.0:1 with white. Graphite is the odd one out across themes: at
+// #141031 it reads as a near-black card against the light page, but it
+// would vanish into --bg in dark mode, so it lifts there.
+$field-graphite: #141031;
+$field-graphite-dark: #262247;
 
 .projects {
   // Top and bottom split on purpose (not one padding-block value): the
@@ -81,21 +113,21 @@ $card-scrim: linear-gradient(
 
   // Everything below the heading, as its own block — same split
   // Servicios has between its masthead and .services__body. The
-  // heading scrolls by at its own natural height; this is what
-  // actually occupies one full screen, filters at their natural size
-  // and the grid growing/shrinking to fill whatever that leaves (see
-  // .projects__stage and .projects__grid).
+  // heading scrolls by at its own natural height; this holds the
+  // filters at their natural size and the grid below them.
   &__body {
     @include up($bp-lg) {
       display: flex;
       flex-direction: column;
-      height: 100svh;
-      // A literal 100svh left the last row flush against the very foot
-      // of the screen with nothing under it — the grid reads as
-      // overflowing even though it technically isn't. box-sizing:
-      // border-box (the site-wide default) means this comes straight
-      // out of the grid's share, so cards shrink by exactly this much
-      // rather than the section growing past one screen.
+      // A ceiling, not a fixed height. `height: 100svh` here forced the
+      // rows to stretch and fill the screen — on a 1080p-and-taller
+      // display that pushed the cards to near-square and lost the
+      // landscape bento proportion. The rows now carry a real height
+      // ($card-h-lg — see .projects__row), so on a large screen the
+      // section sits at content height; a short laptop still shrinks
+      // the rows to fit through the flex children below.
+      max-height: 100svh;
+      min-height: 0;
       padding-bottom: clamp(32px, 6vh, 64px);
     }
   }
@@ -252,15 +284,12 @@ $card-scrim: linear-gradient(
     }
 
     // The real bento, from here down a column of .projects__row items
-    // (see below) rather than a wrapped flex-row — that's what lets the
-    // rows share the section's remaining height instead of each reading
-    // a height off $card-h-lg (still around, but now only a detail-mode
-    // fallback — see .projects__stage). That was this same "how tall
-    // should a row be" question, answered with a guess at the available
-    // space instead of the space itself, and it went stale the same way
-    // the hero wordmark's and the services rail's own guesses did
-    // earlier in this project — measured against one viewport, wrong on
-    // the next. A row now simply is whatever height is left.
+    // (see below) rather than a wrapped flex-row. The rows carry a real
+    // height ($card-h-lg) again: letting them stretch to fill the
+    // screen read fine on a laptop but went near-square and too tall on
+    // a 1080p-and-larger display. $card-h-lg is viewport-relative and
+    // capped, and the rows still shrink under it (flex-shrink) when a
+    // short screen forces .projects__body against its max-height.
     @include up($bp-lg) {
       display: flex;
       flex-direction: column;
@@ -323,12 +352,17 @@ $card-scrim: linear-gradient(
     @include up($bp-lg) {
       flex-wrap: nowrap;
       gap: $projects-gap;
-      flex: 1 1 0;
+      // A real landscape height that ramps with the viewport and is
+      // capped (see $card-h-lg), so the cards keep their proportion on
+      // large displays. `0 1` — no grow into leftover height, but still
+      // shrinkable when a short screen needs the whole section to fit.
+      flex: 0 1 auto;
+      height: $card-h-lg;
       min-height: 0;
     }
   }
 
-  // ------------------------------------------------ the opened cover
+  // ------------------------------------------------ the opened panel
   &__cell {
     position: relative;
 
@@ -345,13 +379,19 @@ $card-scrim: linear-gradient(
         height: clamp(13rem, 8rem + 30vw, 21rem);
       }
 
-      .project-card__title {
-        font-size: clamp(1.7rem, 1.1rem + 2.6vw, 3rem);
-      }
-
-      // The cover is the close control; a huge tile lifting on hover
-      // reads wrong, so it just deepens its shadow.
+      // Opened, the card is the screenshot and nothing else — no field
+      // colour, no type over the picture. The readout beside it already
+      // carries the category, the name and the blurb, so the panel's
+      // job here is only to show the work. The tint is dropped for a
+      // flat near-black: it is only ever the ground the image loads
+      // over and the ground the corners clip to, and a slice of the
+      // bright field peeking past the radius read wrong.
       .project-card {
+        padding: 0;
+        background-color: $ink;
+
+        // The panel is the close control; a large tile lifting on hover
+        // reads wrong, so it just deepens its shadow.
         @include hover {
           transform: none;
           box-shadow: var(--shadow-lg);
@@ -360,8 +400,9 @@ $card-scrim: linear-gradient(
     }
 
     // ---------------------------------------------- the rail minis
-    // Small versions of the bento tile — same 4:3 crop, same top-left
-    // head — just a tighter type ramp.
+    // The poster with nothing behind it — same field, same eyebrow and
+    // name, just a tighter type ramp and no screenshot to preview at
+    // this size.
     &[data-view="rail"] {
       flex: 0 0 auto;
       width: 100%;
@@ -372,11 +413,12 @@ $card-scrim: linear-gradient(
         width: auto;
       }
 
-      .project-card__head {
-        gap: 0.2rem;
+      .project-card {
+        padding: clamp(0.7rem, 0.5rem + 0.6vw, 1.05rem);
+        border-radius: $radius-sm;
       }
 
-      .project-card__category {
+      .project-card__eyebrow {
         font-size: 0.6rem;
         letter-spacing: 0.12em;
       }
@@ -527,123 +569,215 @@ $card-scrim: linear-gradient(
   }
 }
 
-// ------------------------------------------------ shared cover bits
-// The card paints the cover the same way in every view — same scrim,
-// same title inset — so the FLIP that regrows one box into another
-// never re-frames the image or jumps the text.
-%project-cover {
-  position: relative;
-  display: block;
-  width: 100%;
-
-  // The <picture> is just a wrapper for the source switch — the <img>
-  // inside is what's positioned.
-  picture {
-    display: contents;
-  }
-
-  img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-
-    &[data-align="left"] {
-      object-position: left center;
-    }
-
-    &[data-align="right"] {
-      object-position: right center;
-    }
-  }
-}
-
-%project-scrim {
-  position: absolute;
-  inset: 0;
-  background-image: $card-scrim;
-}
-
-%project-head {
-  position: absolute;
-  top: $card-inset;
-  left: $card-inset;
-  right: $card-inset;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  max-width: 24rem;
-}
-
-%project-category {
-  font-size: $text-xs;
-  font-weight: $fw-semibold;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgb(255 255 255 / 82%);
-}
-
-%project-title {
-  @include display($display-sm, $fw-ultra);
-
-  font-size: $card-title;
-  color: #fff;
-  text-wrap: balance;
-  overflow-wrap: break-word;
-}
-
 // ------------------------------------------------ one card
+// A poster, not a photograph: the project's colour field, its category
+// up top, its name set large at the foot. The bento tile and the rail
+// mini are the same construction at two sizes; the opened panel throws
+// the type away and is the screenshot alone.
+//
 // The whole card is the control. It is a <button>, not a link: in the
-// grid it opens the inline detail, as the opened cover it closes back,
+// grid it opens the inline detail, as the opened panel it closes back,
 // and the link out to the live site lives in the readout.
 .project-card {
+  // The field and the ink that rides on it. Set per project by the
+  // [data-tint] rules below; the brand violet is what a project with no
+  // tint of its own falls back to.
+  --field: #{$brand-deep};
+  --ink: #{$paper};
+
   position: relative;
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   width: 100%;
   height: 100%;
-  padding: 0;
+  padding: $card-inset;
   overflow: hidden;
   text-align: left;
+  color: var(--ink);
   cursor: pointer;
-  background-color: var(--surface-2);
+  background-color: var(--field);
   border: 0;
-  border-radius: $radius-sm;
+  border-radius: $radius-md;
   isolation: isolate;
   transition:
     transform $dur-mid $ease-out,
     box-shadow $dur-base $ease-out;
+
+  &[data-tint="orange"] {
+    --field: #{$accent-orange};
+    --ink: #{$ink};
+  }
+
+  &[data-tint="blue"] {
+    --field: #{$accent-blue};
+    --ink: #{$paper};
+  }
+
+  &[data-tint="lime"] {
+    --field: #{$accent-lime};
+    --ink: #{$ink};
+  }
+
+  &[data-tint="violet"] {
+    --field: #{$brand-deep};
+    --ink: #{$paper};
+  }
+
+  &[data-tint="graphite"] {
+    --field: #{$field-graphite};
+    --ink: #{$paper};
+  }
 
   &:focus-visible {
     outline: 2px solid var(--focus);
     outline-offset: -3px;
   }
 
-  &__media {
-    @extend %project-cover;
-
-    height: 100%;
+  // opacity rather than a second colour token per tint: the eyebrow has
+  // to recede against five different fields, two of which carry ink and
+  // three paper, and stepping the card's own ink back is the one move
+  // that reads the same on all of them.
+  &__eyebrow {
+    position: relative;
+    z-index: 1;
+    font-size: $text-xs;
+    font-weight: $fw-semibold;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: inherit;
+    opacity: 0.66;
   }
 
-  &__scrim {
-    @extend %project-scrim;
-  }
-
+  // Pushed to the foot of the card by the auto margin. The opened panel
+  // resets that (see .projects__cell[data-view="lead"]) — there the
+  // name sits under the eyebrow and the screenshot takes the rest.
   &__head {
-    @extend %project-head;
-  }
-
-  &__category {
-    @extend %project-category;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-top: auto;
   }
 
   &__title {
-    @extend %project-title;
+    @include display($display-sm, $fw-ultra);
+
+    font-size: $card-title;
+    color: inherit;
+    text-wrap: balance;
+    // Insurance: the title scale is measured against today's names, and
+    // a future one can be anything. It only fires when a single word
+    // cannot fit a line by itself.
+    overflow-wrap: break-word;
   }
 
-  // The close glyph on the opened cover.
+  &__sub {
+    font-size: $text-sm;
+    font-weight: $fw-medium;
+    letter-spacing: 0.01em;
+    color: inherit;
+    opacity: 0.72;
+  }
+
+  // ---------------------------------------------- the hover peek
+  // A strip of the site, entering from beyond the card's right edge and
+  // settling still half off it — the card showing what it is hiding
+  // rather than becoming it. Rounded on the left only, because its
+  // right side is meant to read as continuing past the card.
+  //
+  // It sits at rest fully outside the card (translateX(100%) against an
+  // element already flush with the right edge), so `overflow: hidden`
+  // on the card is what keeps it invisible until asked for.
+  &__peek {
+    position: absolute;
+    top: 12%;
+    bottom: 12%;
+    right: 0;
+    z-index: 0;
+    display: block;
+    width: $peek-w;
+    overflow: hidden;
+    background-color: rgb(0 0 0 / 14%);
+    border-radius: $radius-sm 0 0 $radius-sm;
+    box-shadow: -18px 0 40px rgb(0 0 0 / 22%);
+    transform: translateX(100%);
+    transition: transform $dur-slow $ease-out;
+
+    // Not painted at all on touch, where there is no hover to trigger
+    // it — the image is still fetched, so this stays a display rule
+    // only for the pointer-less case.
+    @media not all and (hover: hover) and (pointer: fine) {
+      display: none;
+    }
+
+    picture {
+      display: contents;
+    }
+
+    img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
+
+      &[data-align="left"] {
+        object-position: top left;
+      }
+
+      &[data-align="right"] {
+        object-position: top right;
+      }
+    }
+  }
+
+  // ---------------------------------------------- the opened panel's shot
+  // The same screenshot the peek teased, at full size: opened, it fills
+  // the card edge to edge (the card is `position: relative`, this is
+  // `inset: 0`). `border-radius: inherit` so it clips to its own
+  // rounded corner rather than leaning on the card's overflow — that
+  // left a hairline of the card ground showing at the radius.
+  //
+  // The card's geometry FLIP carries it from bento slot to panel; on
+  // top of that it fades and settles in on its own (projects-shot-reveal
+  // below), so the open reads as one move at one tempo — the screenshot
+  // resolving as the panel arrives, not a separate step before it.
+  &__shot {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    background-color: $ink;
+    border-radius: inherit;
+    animation: projects-shot-reveal 780ms $ease-in-out both;
+
+    picture {
+      display: contents;
+    }
+
+    img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
+
+      &[data-align="left"] {
+        object-position: top left;
+      }
+
+      &[data-align="right"] {
+        object-position: top right;
+      }
+    }
+  }
+
+  // The close glyph on the opened panel. Neutral — a translucent
+  // near-black disc with a paper glyph — because the panel is a
+  // screenshot now and nothing tinted should show over it.
   &__close {
     position: absolute;
     top: $space-sm;
@@ -653,16 +787,12 @@ $card-scrim: linear-gradient(
     place-items: center;
     width: 2.25rem;
     height: 2.25rem;
-    color: #fff;
-    background-color: rgb(0 0 0 / 42%);
+    color: $paper;
+    background-color: rgb(11 11 16 / 64%);
     border-radius: 50%;
     transition:
-      background-color $dur-base $ease-out,
+      opacity $dur-base $ease-out,
       transform $dur-base $ease-spring;
-
-    @supports (backdrop-filter: blur(1px)) {
-      backdrop-filter: blur(6px);
-    }
 
     svg {
       width: 1rem;
@@ -672,14 +802,87 @@ $card-scrim: linear-gradient(
 
   @include hover {
     z-index: 1;
-    transform: scale(1.03);
+    // Gentler than the old cover's 1.03: the peek sliding out is the
+    // event now, and a card scaling underneath it competes with that.
+    transform: scale(1.012);
     box-shadow: var(--shadow-md);
 
+    .project-card__peek {
+      transform: translateX($peek-rest);
+    }
+
     .project-card__close {
-      background-color: var(--brand-deep);
       transform: rotate(90deg);
     }
   }
+}
+
+// The title's measure in the bento stops where the landed peek starts,
+// so the two never overlap and the title does not re-flow on hover.
+// Scoped to where a peek can actually land: without a fine pointer
+// there is no peek, and the name takes the whole card. The opened panel
+// and the rail minis have no peek either — their heads stay full width.
+@media (hover: hover) and (pointer: fine) {
+  .projects__cell[data-view="grid"] .project-card__head {
+    max-width: $head-max;
+  }
+
+  // The bento's big cards take the peek differently. They are nearly
+  // twice as wide as they are tall, and a strip crossing in flat over
+  // that much width reads as a bar being drawn across the card rather
+  // than something arriving; there is also a lot of height going
+  // unused. So on those the panel stands nearly the full height of the
+  // card in the bottom-right corner and rises straight up out of the
+  // bottom edge into place — a page being raised, not a strip laid
+  // across. It is already at its resting X while it waits below, so the
+  // travel is purely vertical; only the foot and the right edge stay
+  // cut, which is what keeps it reading as a real object the card is
+  // holding rather than a panel pasted into it. The narrow cards keep
+  // the sideways entry, which is the right move at their proportion.
+  //
+  // Wide/narrow only exists from $bp-lg (below it every cell is a full
+  // or half row), so this is scoped to match. `:only-child` is the odd
+  // count's closer — a lone card takes the whole row, which makes it
+  // the widest card of the set, not an exception to the rule.
+  @include up($bp-lg) {
+    .projects__cell--wide .project-card__head,
+    .projects__cell[data-view="grid"]:only-child .project-card__head {
+      max-width: $head-max-wide;
+    }
+
+    .projects__cell--wide .project-card__peek,
+    .projects__cell[data-view="grid"]:only-child .project-card__peek {
+      top: 8%;
+      bottom: 0;
+      width: $peek-w-wide;
+      // A share of the card's width stops being the right measure once
+      // the card gets very wide: on an odd count's full-row closer 59%
+      // is 703px, most of the row. The cap is in rem so it still rides
+      // the root ramp on a 2K display, where the whole layout grows
+      // with it — but note the rem here is the 90% one this breakpoint
+      // sets (≈14.4px, see _reset.scss), not 16px, so 30rem is ~432px
+      // and clears a normal wide card's 411px without touching it.
+      max-width: 30rem;
+      // Only the top corners are ever in view: the right edge and the
+      // foot are both clipped by the card.
+      border-radius: $radius-sm $radius-sm 0 0;
+      box-shadow: -16px -14px 40px rgb(0 0 0 / 22%);
+      transform: translate($peek-rest-wide, 100%);
+    }
+
+    .projects__cell--wide .project-card:hover .project-card__peek,
+    .projects__cell[data-view="grid"]:only-child
+      .project-card:hover
+      .project-card__peek {
+      transform: translate($peek-rest-wide, $peek-rest-y);
+    }
+  }
+}
+
+// Graphite is the one field that cannot survive the theme swap
+// unchanged — a near-black card on a near-black page is not a card.
+:root[data-theme="dark"] .project-card[data-tint="graphite"] {
+  --field: #{$field-graphite-dark};
 }
 
 // ------------------------------------------------ konekta (the CRM tab)
@@ -709,16 +912,15 @@ $card-scrim: linear-gradient(
   }
 
   @include up($bp-lg) {
-    // konekta is .projects__grid's only child on this tab, and the grid
-    // is a flex column now (see .projects__grid) — so it grows to fill
-    // the same leftover height a row of cards would, rather than
-    // guessing at the two-row height those rows used to have. width is
-    // explicit for the same reason .projects__row's is: a column-flex
-    // child's cross-axis stretch left it at a content-based width
-    // instead of filling the grid.
+    // konekta is .projects__grid's only child on this tab. It stands as
+    // tall as the two bento rows it replaces ($card-h-lg each) — the
+    // grid no longer forces a full screen, so this is a real min-height
+    // rather than a flex-grow into leftover space. width is explicit
+    // because a column-flex child's cross-axis stretch otherwise left it
+    // at a content-based width instead of filling the grid.
     width: 100%;
-    flex: 1 1 auto;
-    min-height: 0;
+    flex: 0 1 auto;
+    min-height: calc(#{$card-h-lg} * 2 + #{$projects-gap});
   }
 
   &:focus-visible {
@@ -782,13 +984,36 @@ $card-scrim: linear-gradient(
   }
 }
 
+// The opened panel's screenshot: fades and eases down from a hair
+// zoomed as the card's own FLIP brings the panel in. One tempo with
+// that move — no separate "fill the card first" beat.
+@keyframes projects-shot-reveal {
+  from {
+    opacity: 0;
+    transform: scale(1.035);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @include reduced-motion {
   .projects__filter-marker {
     transition: none;
   }
 
+  // The peek still appears on hover — it is information, not decoration
+  // — it just stops travelling to get there.
+  .project-card__peek {
+    transition: none;
+  }
+
   .projects__readout > *,
-  .konekta {
+  .konekta,
+  // The opened screenshot just appears at full size.
+  .project-card__shot {
     animation: none;
   }
 

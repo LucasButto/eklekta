@@ -27,21 +27,34 @@ export interface Project {
   /** The full account of the work. Dialog only. */
   description: string
   /**
+   * The card's colour field — the flat ground the project's name is set
+   * on, the way konekta's panel sets its wordmark on celeste. One of the
+   * names the card's `[data-tint]` rules define (see Projects.scss):
+   * `orange`, `blue`, `lime`, `violet`, `graphite`. Optional; a project
+   * without one falls back to the brand violet.
+   *
+   * Tints repeat from one filter tab to the next on purpose — a tab
+   * never shows another tab's cards, so the set stays a handful of
+   * strong colours instead of thinning into near-duplicates.
+   */
+  tint?: string
+  /**
    * Path stem for the landscape cover — `${cover}-{400,800,1200}.{webp,jpg}`
-   * are the real files (see coverSet in ProjectCard). Shown in the grid
-   * tile and the side-rail mini.
+   * are the real files (see coverSet in ProjectCard). The fallback for
+   * projects with no portrait crop of their own.
    */
   cover: string
   /**
-   * Path stem for the portrait crop shown when the project is opened
-   * large — `${coverLarge}-{440,832}.{webp,jpg}`. Optional: automation
-   * work has no dedicated vertical, so the opened cover falls back to
-   * `cover` (those are already portrait).
+   * Path stem for the portrait crop — `${coverLarge}-{440,832}.{webp,jpg}`.
+   * It is the screenshot that slides in from the card's right edge on
+   * hover and, larger, the one framed inside the opened project's panel.
+   * Optional: automation work has no dedicated vertical, so it falls
+   * back to `cover` (those are already portrait).
    */
   coverLarge?: string
   /**
-   * Which part of the cover carries the brand. Every cover is a wide
-   * screenshot of a live site dropped into a portrait or square tile, so
+   * Which part of the screenshot carries the brand. Every one is a wide
+   * capture of a live site dropped into a portrait frame, so
    * object-fit: cover throws most of the width away — 'left' or 'right'
    * keeps whichever edge holds the logo and headline instead of
    * centring on whatever happens to sit in the middle. Optional,
