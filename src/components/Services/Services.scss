@@ -43,6 +43,14 @@
   // ------------------------------------------------ title block
   &__masthead {
     padding-block: $section-y $heading-gap;
+
+    // "Nuestros" on one line, then the "servicios" slab under it: this
+    // heading keeps the looser leading it had before the site-wide
+    // tightening (see SectionHeading.scss) so the slab doesn't crowd the
+    // line above it.
+    .section-heading__title {
+      line-height: 1.18;
+    }
   }
 
   &__inner {

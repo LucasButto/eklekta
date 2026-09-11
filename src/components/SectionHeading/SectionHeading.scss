@@ -11,11 +11,6 @@
   &__title {
     @include display($display-md);
 
-    // A slab needs room above it, otherwise the block bleeds into
-    // the descenders of the previous line.
-    &:has(.text-slab) {
-      line-height: 1.18;
-    }
     // Insets the first line from the anchor edge, so a two-line display
     // heading staggers the way the mockup does. Gated on $bp-md
     // because that is where --right actually right-aligns: below it the
