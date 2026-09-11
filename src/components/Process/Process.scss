@@ -96,6 +96,39 @@
     gap: clamp(1.25rem, 0.75rem + 1.4vw, 2rem);
   }
 
+  // "De la reunión inicial / a la entrega." — the short version of how
+  // we work (the step-by-step detail lives in its own section). Plain
+  // two-line heading, left-aligned, no rays or stagger; the only mark is
+  // the brand slab (.text-slab) on "entrega".
+  &__heading {
+    // Uncap it (SectionHeading's own 57rem) so line one doesn't wrap.
+    max-width: none;
+
+    .section-heading__title {
+      // A touch over the display mixin's 0.94 so the slab on line two
+      // clears line one.
+      line-height: 1.12;
+
+      p {
+        @include up($bp-md) {
+          // SectionHeading adds this to stagger a right-anchored
+          // heading; nothing to stagger here.
+          margin-right: 0;
+        }
+      }
+
+      // "entrega" is the only slab word on the site with both an
+      // ascender (t) and a descender (g). The shared block is inset to
+      // hug the baseline of words that have neither ("servicios"), so
+      // the g's tail pokes out. Keep the base's top (0 — Monument's tall
+      // ascent already clears the t there) and only run the bottom well
+      // past the box edge to take in the g. Left/right stay from base.
+      .text-slab::before {
+        inset-block: 0 -0.05em;
+      }
+    }
+  }
+
   &__aside {
     display: flex;
     flex-direction: column;
@@ -200,3 +233,7 @@
 :root[data-theme="dark"] .process__bg {
   opacity: 0.75;
 }
+
+// No per-theme override needed for the heading: both lines take --text
+// like any heading, and .text-slab on "entrega" carries its own
+// light/dark handling from globals.scss.

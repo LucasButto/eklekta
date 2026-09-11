@@ -25,7 +25,19 @@ export function Process() {
       <div className="process__masthead" id="proceso">
         <div className="process__inner">
           <div className="process__head">
-            <SectionHeading title="Proceso" className="process__heading" />
+            <SectionHeading
+              className="process__heading"
+              title={
+                <>
+                  {/* Plain two-line heading; the brand slab sits on
+                      "entrega" alone. */}
+                  <p>De la reunión inicial</p>
+                  <p>
+                    a la <span className="text-slab">entrega.</span>
+                  </p>
+                </>
+              }
+            />
 
             <Reveal className="process__aside" delay={120}>
               <p className="process__intro">
