@@ -5,29 +5,29 @@ import {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
 } from 'react'
 import { Button } from '@/components/Button/Button'
 import { SectionHeading } from '@/components/SectionHeading/SectionHeading'
 import projectsData from '@/data/projects.json'
-import type { Project } from '@/types'
+import type { Project, ProjectGroup } from '@/types'
 import { KonektaCard } from './KonektaCard'
 import { ProjectCard } from './ProjectCard'
 import './Projects.scss'
 
-const projects = projectsData as Project[]
+const groups = projectsData as ProjectGroup[]
 
-// The wide tiles go to the flagged projects. sort() is stable, so
-// everything else keeps the order it has in the JSON file.
-const ordered = [...projects].sort(
-  (a, b) => Number(b.featured) - Number(a.featured),
+/** The filter bar, in the JSON's order. `id` is the group's `kind`. */
+const FILTERS = groups.map((group) => ({ id: group.kind, label: group.label }))
+
+// Each group's projects, flagged tiles first. sort() is stable, so the
+// rest keep the order they have in the JSON file.
+const byKind = new Map<string, Project[]>(
+  groups.map((group) => [
+    group.kind,
+    [...group.projects].sort((a, b) => Number(b.featured) - Number(a.featured)),
+  ]),
 )
-
-/** The filter bar, in display order. `id` matches `Project.kind`. */
-const FILTERS = [
-  { id: 'sitio-web', label: 'Sitios web' },
-  { id: 'automatizacion', label: 'Automatización' },
-  { id: 'crm', label: 'CRM' },
-] as const
 
 // Long enough for the last card's stagger (index * 30ms) plus the
 // card-out keyframe (see Projects.scss). Kept in sync by eye.
@@ -88,10 +88,7 @@ export function Projects() {
   // The opened project, or null for the plain grid.
   const [openId, setOpenId] = useState<string | null>(null)
 
-  const list = useMemo(
-    () => ordered.filter((project) => project.kind === shown),
-    [shown],
-  )
+  const list = useMemo(() => byKind.get(shown) ?? [], [shown])
   const leadProject = useMemo(
     () => (openId ? (list.find((p) => p.id === openId) ?? null) : null),
     [openId, list],
@@ -178,8 +175,11 @@ export function Projects() {
     const openMs = fast ? Math.round(OPEN_MS * FAST_CLOSE) : OPEN_MS
     const staggerMs = fast ? STAGGER_MS * FAST_CLOSE : STAGGER_MS
 
-    // On close, the cover that was open becomes a grid card again and
-    // gets the big geometry move back into its slot.
+    // The card that was open. On close it becomes a grid poster again —
+    // it no longer carries the screenshot (that lives on the opened
+    // panel alone), so it rejoins the same scale move every other card
+    // makes rather than a width/height one, and leads the re-forming
+    // grid without a stagger.
     const returningId = openId ? null : lastOpenedId.current
 
     for (const [id, el] of cellRefs.current) {
@@ -196,14 +196,12 @@ export function Projects() {
       const dx = before.left - after.left
       const dy = before.top - after.top
 
-      if (id === openId || id === returningId) {
-        // The cover travels between its bento slot and the large left
-        // column — the same move both ways, geometry (width/height) not
-        // scale so object-fit: cover re-crops as the frame reshapes
-        // rather than the picture stretching. It stays opaque the whole
-        // way: on open the screenshot inside fades up on its own (see
-        // projects-shot-reveal in the SCSS), on close it is the same
-        // card going home.
+      if (id === openId) {
+        // Opening: the bento slot grows into the large left column.
+        // Geometry (width/height), not scale, so the screenshot's
+        // object-fit: cover re-crops as the frame reshapes rather than
+        // the picture stretching. The screenshot fades up on its own
+        // (projects-shot-reveal in the SCSS).
         el.animate(
           [
             {
@@ -219,12 +217,7 @@ export function Projects() {
               zIndex: '4',
             },
           ],
-          {
-            duration: openMs,
-            easing: EASE,
-            delay: id === openId ? OPEN_DELAY_MS : 0,
-            fill: 'backwards',
-          },
+          { duration: openMs, easing: EASE, delay: OPEN_DELAY_MS, fill: 'backwards' },
         )
         continue
       }
@@ -243,7 +236,12 @@ export function Projects() {
 
       const bigResize = sx < 0.72 || sx > 1.4 || sy < 0.72 || sy > 1.4
       const i = parseInt(el.style.getPropertyValue('--i'), 10) || 0
-      const delay = Math.min(i, 5) * staggerMs
+      // The returning card leads the grid re-forming — no stagger. On a
+      // pure resize with no travel (the top-left card, whose slot shares
+      // the opened panel's corner) the width/height branch used to leave
+      // it motionless because flex-basis overrode the width; the scale
+      // here moves regardless of dx/dy.
+      const delay = id === returningId ? 0 : Math.min(i, 5) * staggerMs
 
       // `zIndex` on the keyframes (not inline) so it rides above the
       // opened cover and readout for the whole travel — delay included
@@ -295,6 +293,27 @@ export function Projects() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
+  }, [openId, select])
+
+  // A pointer down outside the readout closes the detail, the way
+  // clicking a modal's backdrop dismisses it — the readout is the
+  // panel's "content". Two spots inside the stage are held back from
+  // counting as outside: the rail (its minis switch between projects)
+  // and the filter bar (it runs its own open-aware close). Everything
+  // else — the opened screenshot, the empty stage tracks, the rest of
+  // the page — dismisses.
+  useEffect(() => {
+    if (!openId) return
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Element | null
+      if (!target) return
+      if (readoutRef.current?.contains(target)) return
+      if (target.closest('.projects__rail')) return
+      if (target.closest('.projects__filters')) return
+      select(null)
+    }
+    window.addEventListener('pointerdown', onPointerDown)
+    return () => window.removeEventListener('pointerdown', onPointerDown)
   }, [openId, select])
 
   const filterAfterClose = useRef<number | undefined>(undefined)
@@ -373,6 +392,35 @@ export function Projects() {
     if (barRef.current) placeMarker(barRef.current)
   }, [filter])
 
+  // The bar fades and lifts in the first time it reaches the viewport —
+  // the same entrance the heading and the cards already get (the global
+  // [data-reveal] rules in Reveal.scss). Inlined like ProjectCard's
+  // reveal rather than a <Reveal> wrapper so barRef stays on the bar
+  // itself for the marker maths. `offsetLeft`/`offsetWidth` ignore the
+  // hidden state's opacity and transform, so the marker still lands
+  // right while the bar is still down.
+  useEffect(() => {
+    const bar = barRef.current
+    if (!bar) return
+    if (!('IntersectionObserver' in window)) {
+      bar.dataset.reveal = 'shown'
+      return
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            bar.dataset.reveal = 'shown'
+            observer.disconnect()
+          }
+        }
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -8% 0px' },
+    )
+    observer.observe(bar)
+    return () => observer.disconnect()
+  }, [])
+
   return (
     <section className="projects" id="proyectos">
       <div className="projects__inner">
@@ -388,6 +436,8 @@ export function Projects() {
             role="group"
             aria-label="Filtrar proyectos por tipo de trabajo"
             ref={barRef}
+            data-reveal="hidden"
+            style={{ '--reveal-delay': '80ms' } as CSSProperties}
           >
             <span className="projects__filter-marker" aria-hidden="true" />
             {FILTERS.map((f) => (
@@ -417,6 +467,13 @@ export function Projects() {
 
           {leadProject && (
             <div
+              // Keyed by project id so picking a different project while
+              // the detail is open remounts the readout — the title,
+              // blurb and CTA replay the staggered fade-up (see
+              // projects-readout-in) instead of the text swapping in
+              // place. Matches the lead card, which already remounts on
+              // its own `lead-${id}` key and re-runs its shot reveal.
+              key={`readout-${leadProject.id}`}
               className="projects__readout"
               ref={readoutRef}
               tabIndex={-1}
@@ -470,6 +527,16 @@ export function Projects() {
             className={mode === 'detail' ? 'projects__rail' : 'projects__grid'}
             role="list"
             data-swapping={mode === 'grid' && swapping ? '' : undefined}
+            // Drives the short-filter layouts (see Projects.scss): one or
+            // two projects still fill the full 2×2 bento height, and two
+            // split the row evenly instead of wide/narrow. Only set for
+            // the real grid — the rail and the konekta panel size
+            // themselves.
+            data-count={
+              mode === 'grid' && shown !== 'crm'
+                ? railProjects.length
+                : undefined
+            }
           >
             {shown === 'crm' ? (
               <KonektaCard />
@@ -505,15 +572,17 @@ export function Projects() {
                       index={rowIndex * 2 + i}
                       view="grid"
                       span={
-                        row.length === 2
-                          ? rowIndex % 2 === 0
+                        // Two projects share the row evenly — no
+                        // wide/narrow (see .projects__grid[data-count="2"]).
+                        railProjects.length === 2 || row.length !== 2
+                          ? undefined
+                          : rowIndex % 2 === 0
                             ? i === 0
                               ? 'wide'
                               : 'narrow'
                             : i === 0
                               ? 'narrow'
                               : 'wide'
-                          : undefined
                       }
                       onSelect={select}
                       registerRef={registerRef}

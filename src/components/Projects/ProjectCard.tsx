@@ -172,7 +172,9 @@ export function ProjectCard({
               <span className="project-card__eyebrow">{category}</span>
             )}
             <span className="project-card__head">
-              <span className="project-card__title">{project.title}</span>
+              <span className="project-card__title">
+                {project.title.toUpperCase()}
+              </span>
               {isGrid && (
                 <span className="project-card__sub">{project.subtitle}</span>
               )}
