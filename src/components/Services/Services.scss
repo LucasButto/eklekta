@@ -73,6 +73,17 @@
     @include up($bp-lg) {
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
       column-gap: clamp(2rem, 1rem + 4vw, 5rem);
+
+      // Pull the whole sequence up under the masthead. The rail centres
+      // its panel in a viewport-tall box, so at rest the photo sits a
+      // long way below the heading with dead texture between them; this
+      // closes most of that. It is a rigid shift of the entire body —
+      // the pin, the list lead-in and the run-out are all viewport- or
+      // self-relative, so none of that tuning moves (every service still
+      // reaches the reading line, verified); the section just starts
+      // higher and runs a touch shorter. vh term so it tracks the same
+      // viewport-tall gap it is trimming.
+      margin-top: clamp(-7rem, -2rem - 5vh, -2.75rem);
     }
   }
 
@@ -168,6 +179,18 @@
       // the note and button below stay on screen.
       flex: 0 1 auto;
       min-height: 0;
+
+      // On a 2K panel the 70% cap leaves the rail half empty — the box
+      // is viewport-tall and the panel fills only 570 of the 1285px it
+      // has to play with, so the photo reads small against the type
+      // beside it. 85% takes it to ~693px and still clears the shortest
+      // 2K window worth planning for (2560×1080, where panel + note come
+      // to 878px inside 925px). It changes nothing about the reading
+      // line: the rail centres panel + note as a group, so the panel's
+      // own height cancels out of where its centre lands.
+      @include up($bp-2k) {
+        max-width: 85%;
+      }
     }
   }
 
@@ -220,6 +243,21 @@
       // service was already 148px past the panel's centre before the pin
       // even started, and the last one never reached it at all.
       //
+      // The lead-in is derived, not guessed. The reading line is the
+      // RAIL's centre — the whole left column, not the photo inside it.
+      // (Lining the text up with the photo alone put it half of the
+      // closing note above the column's middle, which read as the text
+      // sitting too high.) The list starts at the same y as the rail, so
+      //   padding-top = railH/2 - firstItem/2
+      // The reader is always scrolling down when the pin engages, so the
+      // bar is hidden and the rail is the full 100svh from 0 (see the
+      // [data-nav-hidden] rule on &__rail) — leaving 50svh minus half
+      // the first service, measured at 14.81rem tall. That term is rem,
+      // so this tracks the large-display root ramp; checked at 1280×720,
+      // 1440×900, 1920×1080 and 2560×1440. (A static 17rem started the
+      // first service 78px high at 1080p and drifted further on every
+      // taller window — it never reached the line at all.)
+      //
       // The run-out is in vh, not rem, because the two ends of the run
       // it has to cover scale differently. The pin releases when the
       // rail's bottom meets the bottom of its column, and the rail is
@@ -238,10 +276,17 @@
       // buys the last service a moment at the reading line before the
       // rail releases into Proyectos. Lower the 51vh to end the sequence
       // sooner, raise it to hold the last service longer.
-      padding-block: 17rem 51vh;
+      padding-block: calc(50svh - 7.4rem) 51vh;
     }
   }
 
+  // The beat at the reading line is NOT CSS scroll snap — `scroll-snap`
+  // moves the scroll position for you, and `proximity` kept pulling the
+  // reader back onto the service they were leaving. useScrollSequence
+  // watches each service's distance to the rail's centre frame by frame
+  // and, when one crosses it, snaps the scroll onto the centre and
+  // holds it there for a short beat (HOLD_MS) — one gesture to stop on
+  // a service, another to move on.
   &__item {
     display: flex;
     flex-direction: column;
@@ -249,9 +294,9 @@
     align-items: flex-start;
 
     @include up($bp-lg) {
-      // Written by useScrollSequence every frame. The fallbacks matter:
-      // before the first rAF, and for anyone on reduced motion, the
-      // item stays fully legible and unmoved.
+      // Written by useScrollSequence every frame — the scroll-driven
+      // fade travel. The fallbacks cover the gap before the first rAF
+      // and reduced motion, where the item stays legible and unmoved.
       opacity: var(--seq-opacity, 1);
       transform: translate3d(0, calc(var(--seq-shift, 0) * 1.25rem), 0);
       will-change: opacity, transform;

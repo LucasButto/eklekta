@@ -72,6 +72,19 @@ export function Navbar() {
     }
   }, [hidden])
 
+  // `pinned` is true for exactly the span of a nav link's smooth-scroll
+  // (see pinForNav / the navScroll effect above). Surface it on the root
+  // so the Services sequence knows not to catch a service on the reading
+  // line while the page is only passing through on its way elsewhere.
+  useEffect(() => {
+    const root = document.documentElement
+    if (pinned) root.dataset.navScrolling = '1'
+    else delete root.dataset.navScrolling
+    return () => {
+      delete root.dataset.navScrolling
+    }
+  }, [pinned])
+
   const sectionIds = useMemo(() => data.nav.map((item) => item.id), [])
   const active = useActiveSection(sectionIds)
 
