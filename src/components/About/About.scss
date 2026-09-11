@@ -15,6 +15,17 @@
     @include container;
 
     margin-bottom: $heading-gap;
+
+    // "para avanzar." is the only slab phrase on the site with a
+    // descender. The shared .text-slab block is inset to hug the
+    // baseline of words that don't have one ("servicios"), so the tail
+    // of the p pokes out the bottom. Drop just this slab's block — same
+    // height, shifted down, bottom running a hair past the box edge — so
+    // the p sits inside the violet with a little room to spare. Left and
+    // right insets stay from the base rule.
+    .text-slab::before {
+      inset-block: 0.16em -0.02em;
+    }
   }
 
   // Image / text / image, with the outer figures running off the
