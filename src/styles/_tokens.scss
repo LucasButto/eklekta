@@ -88,6 +88,16 @@ $container-max: 90rem; // 1440px @ 16px root
 $content-max: 73.75rem; // 1180px @ 16px root
 $gutter: clamp(1.25rem, 0.6rem + 3vw, 4rem);
 
+// ---------------------------------------------- brand slab
+// The height of a solid brand bar behind display type. Contact's
+// "Hablemos." banner is the reference — this is its line box worked
+// out: font-size × line-height 0.8 + the 0.25em / 0.05em block
+// padding = 1.1 × the font. Team's heading rays read the same value
+// back so the two bars measure the same at every width. Change one,
+// change this.
+$slab-font: clamp(2rem, 0.78rem + min(5.2vw, 8.4vh), 5.6rem);
+$slab-height: calc(#{$slab-font} * 1.1);
+
 // ---------------------------------------------- radii
 // In rem so corners keep their proportion to the card when the root
 // scales up on large displays.
