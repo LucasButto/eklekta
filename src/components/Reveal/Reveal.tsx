@@ -1,4 +1,12 @@
-import { useEffect, useRef, type CSSProperties, type ElementType, type ReactNode } from 'react'
+import {
+  useEffect,
+  useRef,
+  type CSSProperties,
+  type ElementType,
+  type FocusEventHandler,
+  type MouseEventHandler,
+  type ReactNode,
+} from 'react'
 import './Reveal.scss'
 
 interface RevealProps {
@@ -10,6 +18,14 @@ interface RevealProps {
   className?: string
   /** Extra inline styles / custom properties, merged after `--reveal-delay`. */
   style?: CSSProperties
+  // Forwarded straight to the rendered element — for callers that need
+  // to know about hover/focus on this same node (a carousel pausing its
+  // autoplay, say) without wrapping Reveal in another element and
+  // fighting the layout it's meant to sit invisibly inside of.
+  onMouseEnter?: MouseEventHandler
+  onMouseLeave?: MouseEventHandler
+  onFocus?: FocusEventHandler
+  onBlur?: FocusEventHandler
 }
 
 /**
@@ -28,6 +44,10 @@ export function Reveal({
   as: Tag = 'div',
   className,
   style,
+  onMouseEnter,
+  onMouseLeave,
+  onFocus,
+  onBlur,
 }: RevealProps) {
   const ref = useRef<HTMLElement>(null)
 
@@ -61,6 +81,10 @@ export function Reveal({
       ref={ref}
       className={className}
       data-reveal="hidden"
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onFocus={onFocus}
+      onBlur={onBlur}
       style={
         delay || style
           ? ({

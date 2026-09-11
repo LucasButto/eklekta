@@ -111,8 +111,22 @@ export interface ProcessStep {
   id: string
   step: string
   title: string
+  /** Proceso's own copy — the short recap in its 2x2 grid. */
   description: string
+  /**
+   * About's copy for the same step — longer and more specific than
+   * `description`. The two sections read as distinct pieces of writing
+   * on purpose (Proceso is the recap, About is the walkthrough), so this
+   * is never derived from `description`.
+   */
+  detail: string
   duration: string
+  /**
+   * The stage photo for the About carousel, which walks these same four
+   * steps one at a time (see About.tsx). One process, two views — the
+   * Proceso section reads `description` and ignores this and `detail`.
+   */
+  image: string
 }
 
 export interface NavItem {
