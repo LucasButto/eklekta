@@ -30,6 +30,13 @@ $font-body:
   -apple-system,
   "Segoe UI",
   sans-serif;
+// The wordmark's own face — Futura PT Demi. Only used where something
+// needs to read as the logo ("Eso es eklekta."). Fallbacks are the
+// usual geometric-sans substitutes so the shape survives if the webfont
+// is slow or blocked.
+$font-logo:
+  "Futura PT", "Century Gothic", "Avenir Next", "Avenir", "Poppins",
+  system-ui, sans-serif;
 
 $fw-light: 300;
 $fw-regular: 400;
