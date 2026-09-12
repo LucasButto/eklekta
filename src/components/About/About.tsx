@@ -288,7 +288,11 @@ export function About() {
           {/* The live region is the stable wrapper; the copy inside is
               keyed so each step remounts and replays about-copy-in. */}
           <div className="about__copy-slot" aria-live="polite">
-            <div className="about__copy" key={step.id}>
+            <div
+              className="about__copy"
+              data-direction={directionRef.current}
+              key={step.id}
+            >
               <h3 className="about__title">{step.title}</h3>
               <p className="about__body">{step.detail}</p>
             </div>

@@ -257,10 +257,22 @@ $travel: 850ms;
     gap: $space-sm;
     align-items: flex-start;
 
+    // Which side the copy rides in from — the same edge the photo
+    // itself travels from (peek → stage is a straight horizontal FLIP,
+    // no vertical move), so the text reads as part of the same card
+    // arriving rather than drifting up on its own. Forward mirrors the
+    // incoming photo (from the right); backward mirrors the outgoing
+    // one's retreat (from the left). Set from About.tsx's `direction`.
+    --dir: 1;
+
+    &[data-direction='backward'] {
+      --dir: -1;
+    }
+
     // Title, then body — one after another, not the whole block arriving
     // at once. Same construction Proyectos uses to bring in an opened
     // project's readout (.projects__readout > *): held briefly, then
-    // each line's own fade + lift, stepped by --line. Starting at the
+    // each line's own fade + slide, stepped by --line. Starting at the
     // same instant as the photo (no hold at all) buried the two reveals
     // into one blur instead of reading as a sequence — but waiting the
     // full $travel for the photo to land left the panel empty too long.
@@ -393,13 +405,13 @@ $travel: 850ms;
   }
 }
 
-// Each line rises into place on its own — same keyframe Proyectos'
-// projects-readout-in uses, just under this section's own name. No `to`
-// block: `both` plus the element's own resting opacity/transform already
-// is the end state.
+// Each line slides into place from --dir's edge — mirroring the
+// photo's own left/right FLIP instead of the plain rise Proyectos'
+// projects-readout-in uses. No `to` block: `both` plus the element's
+// own resting opacity/transform already is the end state.
 @keyframes about-copy-in {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateX(calc(var(--dir, 1) * 20px));
   }
 }
