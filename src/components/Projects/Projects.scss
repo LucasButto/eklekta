@@ -935,6 +935,19 @@ $field-graphite-dark: #262247;
   color: #0b0b10;
   text-decoration: none;
   background-color: var(--accent-cyan);
+  // Same webp-first, three-step convention coverSet.ts builds for every
+  // other project's <picture> (400/800/1200, generated alongside the
+  // .jpg). A plain background can't take a srcset, so the width step is
+  // picked by breakpoint here instead — the jpg url() is the fallback
+  // for browsers that don't parse image-set(), left in place since an
+  // unsupported second declaration is just dropped, not overridden.
+  background-image: url('/images/projects/Fondo_KONEKTA-400.jpg');
+  background-image: image-set(
+    url('/images/projects/Fondo_KONEKTA-400.webp') type('image/webp'),
+    url('/images/projects/Fondo_KONEKTA-400.jpg') type('image/jpeg')
+  );
+  background-position: center;
+  background-size: cover;
   border-radius: $radius-md;
   isolation: isolate;
   animation: projects-readout-in $dur-slow $ease-out both;
@@ -944,6 +957,11 @@ $field-graphite-dark: #262247;
 
   @include up($bp-md) {
     min-height: $card-h-md;
+    background-image: url('/images/projects/Fondo_KONEKTA-800.jpg');
+    background-image: image-set(
+      url('/images/projects/Fondo_KONEKTA-800.webp') type('image/webp'),
+      url('/images/projects/Fondo_KONEKTA-800.jpg') type('image/jpeg')
+    );
   }
 
   @include up($bp-lg) {
@@ -956,6 +974,11 @@ $field-graphite-dark: #262247;
     width: 100%;
     flex: 0 1 auto;
     min-height: calc(#{$card-h-lg} * 2 + #{$projects-gap});
+    background-image: url('/images/projects/Fondo_KONEKTA-1200.jpg');
+    background-image: image-set(
+      url('/images/projects/Fondo_KONEKTA-1200.webp') type('image/webp'),
+      url('/images/projects/Fondo_KONEKTA-1200.jpg') type('image/jpeg')
+    );
   }
 
   &:focus-visible {
