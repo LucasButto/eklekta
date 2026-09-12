@@ -145,8 +145,10 @@ $member-scrim: #191823;
         // lowercase — its visual mass sits higher in the line box than
         // the box's own middle, so a bar centred on the box reads low
         // against it. The capitalised top line does not have the same
-        // pull, so only this one moves. Tune by eye.
-        transform: translateY(-0.07em);
+        // pull, so only this one moves. Tune by eye — was -0.07em, eased
+        // back to -0.03em: the fuller nudge overshot and read as sitting
+        // on the text's baseline instead of centred against it.
+        transform: translateY(-0.03em);
         content: "";
       }
     }
