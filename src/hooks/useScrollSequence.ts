@@ -19,7 +19,7 @@ const READ_LINE = 0.5;
  * is short enough to read as a catch, and it can never trap — it ends
  * on a clock.
  */
-const HOLD_MS = 50;
+const HOLD_MS = 200;
 
 /**
  * The escape hatch. Keep scrolling hard through the beat — this much
