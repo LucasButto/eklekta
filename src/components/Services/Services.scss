@@ -366,7 +366,7 @@
     padding: 0.34em 0.85em;
     font-size: $text-sm;
     font-weight: $fw-medium;
-    color: var(--brand);
+    color: var(--brand-press);
     background-color: var(--brand-softer);
     border: 1px solid var(--brand-soft);
     border-radius: $radius-pill;
@@ -385,6 +385,7 @@
       color: var(--on-brand);
       background-color: var(--brand-deep);
       border-color: var(--brand-deep);
+      cursor: default;
     }
   }
 
