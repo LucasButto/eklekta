@@ -233,6 +233,15 @@
     flex-wrap: wrap;
     gap: $space-md $space-lg;
     align-items: center;
+
+    // Same two columns as .contact__detail's dt/dd, so the social row
+    // reads as one more line of the list: "Escribinos" sits where a dt
+    // would, the icons start exactly under the dd column above it.
+    @include up($bp-sm) {
+      display: grid;
+      grid-template-columns: 10rem minmax(0, 1fr);
+      gap: $space-sm;
+    }
   }
 
   // A plain link, not a <Button> pill: sitting right beside the round
