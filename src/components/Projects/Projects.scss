@@ -96,6 +96,11 @@ $field-graphite-dark: #262247;
     // Was -2.5rem, then 0rem (one click down) — reversed per feedback,
     // one click further up from the original instead.
     scroll-margin-top: -5rem;
+
+    // One click further up again, just at 1920.
+    @include up($bp-3xl) {
+      scroll-margin-top: -7.5rem;
+    }
   }
 
   &__inner {
