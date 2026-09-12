@@ -45,6 +45,15 @@ $member-scrim: #191823;
     // drops the heading a long way below the bar. ~one scrollbar-arrow
     // click higher.
     scroll-margin-top: -2.5rem;
+
+    // At 1920 the staggered (2nd/4th) cards below are already at their
+    // clamp ceiling, so the row reads tall — the same -2.5rem lands the
+    // nav tap with the row sitting low enough that it, and especially
+    // that stagger drop, crowd the bottom of the screen. One click
+    // further (same 2.5rem step) pulls the whole landing up.
+    @include up($bp-3xl) {
+      scroll-margin-top: -5rem;
+    }
   }
 
   &__inner {
@@ -182,6 +191,13 @@ $member-scrim: #191823;
       // than a block shift. No forced height here any more — the row
       // sits at its natural height right under the heading.
       align-items: start;
+
+      // At 1920 the row sits flush against its 104rem cap (100vw - 12rem
+      // is still the looser of the two there), so the five cards read a
+      // touch wide. A small trim off the cap narrows all five evenly.
+      @include up($bp-3xl) {
+        max-width: min(100rem, 100vw - 12rem);
+      }
     }
   }
 
@@ -201,6 +217,14 @@ $member-scrim: #191823;
         // that gives the row its rhythm, and once the heading dropped
         // its eyebrow the section has the height to carry it again.
         margin-top: clamp(2.75rem, 1.25rem + 5.5vw, 7.5rem);
+
+        // The clamp is already flat at its 7.5rem ceiling by 1920 (the
+        // vw term crosses it around 1636px), so the drop keeps crowding
+        // the row's bottom edge all the way up through here. A small
+        // trim, not a full click — just enough clearance.
+        @include up($bp-3xl) {
+          margin-top: 6.5rem;
+        }
 
         // The 1st/3rd/5th cards give up $member-photo-crop off the
         // bottom of their photo by default — shrinking a box's height
