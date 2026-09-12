@@ -17,6 +17,26 @@
   @include up($bp-lg) {
     scroll-margin-top: -2.5rem;
 
+    // From 1920 up (not yet wide enough for the $bp-2k override below).
+    // One more click past the plain 0 landing: holds back a bit more of
+    // Manifesto's tail above Contact instead of landing flush on its edge.
+    @include up($bp-3xl) {
+      scroll-margin-top: 2.5rem;
+    }
+
+    // At 2K the root font-size ramp (_reset.scss) has already climbed
+    // past the 90% floor, so this same -2.5rem overshoots by more px
+    // than it did at the size it was tuned for — a nav tap scrolls past
+    // the section's actual top by that much extra, landing high enough
+    // that the footer curtain's gap runs out before the section is back
+    // to centred. +10rem cancelled the overshoot outright but sat the
+    // landing further from the footer than it needs to; one click back
+    // down (same 2.5rem step as the -5rem / -7.5rem history above) to
+    // +7.5rem still clears it, just closer.
+    @include up($bp-2k) {
+      scroll-margin-top: 7.5rem;
+    }
+
     // Overrides section-spacing's own $section-y (up to 4.5rem a side,
     // ~130px total here) with a vh-aware value instead. $section-y is
     // shared by other sections that fit their screen comfortably as
