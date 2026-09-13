@@ -11,10 +11,11 @@ export function Hero() {
       <div className="hero__viewport">
         <div className="hero__photo" aria-hidden="true">
           <picture>
-            {/* Art direction: the phone gets a tighter 3:2 crop that
-                keeps her in frame; wide screens get the 16:9 with the
-                studio negative space. Mobile sources first — the browser
-                takes the first <source> whose media and type both match. */}
+            {/* Art direction: the phone gets its own portrait shot so
+                object-fit:cover isn't cropping a landscape frame down to
+                a sliver; wide screens get the 16:9. Mobile sources first
+                — the browser takes the first <source> whose media and
+                type both match. */}
             <source
               media="(max-width: 767.98px)"
               type="image/webp"
@@ -29,12 +30,12 @@ export function Hero() {
             />
             <source
               type="image/webp"
-              srcSet="/images/hero/new-hero-960.webp 960w, /images/hero/new-hero-1600.webp 1600w"
+              srcSet="/images/hero/new-hero-960.webp 960w, /images/hero/new-hero-1600.webp 1600w, /images/hero/new-hero-2560.webp 2560w, /images/hero/new-hero-3840.webp 3840w"
               sizes="100vw"
             />
             <source
               type="image/jpeg"
-              srcSet="/images/hero/new-hero-960.jpg 960w, /images/hero/new-hero-1600.jpg 1600w"
+              srcSet="/images/hero/new-hero-960.jpg 960w, /images/hero/new-hero-1600.jpg 1600w, /images/hero/new-hero-2560.jpg 2560w, /images/hero/new-hero-3840.jpg 3840w"
               sizes="100vw"
             />
             {/* The hero's largest paint — loads eagerly, off the lazy path. */}
