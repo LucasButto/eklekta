@@ -113,9 +113,31 @@ $travel: 850ms;
     overflow: hidden;
     background-color: var(--surface-2);
     border-radius: $radius-md;
-    // Geometry belongs to the grid and to the FLIP; only the soft-focus
-    // half of the move is a transition.
-    transition: opacity $travel $ease-out;
+    // The actual per-slot corner squaring is clip-path, not this — see
+    // the reasoning below. This stays only as the shape a browser
+    // without clip-path's round() syntax falls back to.
+    //
+    // Position and size belong to the grid and to the FLIP (About.tsx
+    // measures and plays those back frame by frame); everything else —
+    // opacity, and the corners below — is a plain CSS transition. The
+    // corners matter here specifically: `data-slot` flips the instant
+    // React re-renders, which is the same instant the FLIP starts, so
+    // without a transition the bled edge's two square corners snap to
+    // their new side immediately — while the photo is still sitting
+    // most of the way across the row, on the wrong end of that square
+    // edge. Same $travel/$ease-out as the FLIP so the corners finish
+    // rounding (or squaring) right as the photo lands, not before.
+    //
+    // This animates on clip-path, not border-radius: border-radius +
+    // overflow:hidden turned out not to repaint reliably on an element
+    // that had just come off the FLIP's own transform/size animation —
+    // the photo would land with a corner reading square in Chrome even
+    // though the computed radius was correct, DOM-inspectable and all.
+    // clip-path clips through a different pipeline and isn't affected.
+    clip-path: inset(0 round $radius-md);
+    transition:
+      opacity $travel $ease-out,
+      clip-path $travel $ease-out;
 
     img {
       width: 100%;
@@ -233,8 +255,11 @@ $travel: 850ms;
 
         grid-area: 1 / 1;
         height: $stage-h;
-        border-start-start-radius: 0;
-        border-end-start-radius: 0;
+        // Left corners square (flush with the bled edge), right corners
+        // still rounded. Physical, not logical, since clip-path's round()
+        // has no logical-property form — matches the rest of the site,
+        // which has no RTL support to preserve here either.
+        clip-path: inset(0 round 0 $radius-md $radius-md 0);
       }
 
       &[data-slot='next'],
@@ -243,8 +268,7 @@ $travel: 850ms;
 
         grid-area: 1 / 3;
         height: $peek-h;
-        border-start-end-radius: 0;
-        border-end-end-radius: 0;
+        clip-path: inset(0 round $radius-md 0 0 $radius-md);
       }
     }
   }
