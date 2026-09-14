@@ -188,6 +188,15 @@
       // colour they already sat on when body was providing it.
       background-color: var(--bg);
       transition: background-color $dur-slow $ease-out;
+
+      // A strip of bare curtain after the last section. Contact is a
+      // short (~68svh) centred section, so with the curtain ending right
+      // at its box the pinned footer already shows — mid-blur, half-
+      // faded — in the gap below it while Contact is still the thing on
+      // screen. This holds the curtain over that gap: ~one screen's
+      // worth of footer-visible height when Contact sits centred, so the
+      // reveal only starts once the reader scrolls past it on purpose.
+      padding-bottom: clamp(7rem, 15svh, 15rem);
     }
 
     .footer {
@@ -287,6 +296,9 @@
     position: static;
     z-index: auto;
     background-color: transparent;
+    // No curtain to hold here — the footer is back in normal flow, so
+    // the padding would just be a dead gap above it.
+    padding-bottom: 0;
   }
 
   .footer {

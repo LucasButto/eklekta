@@ -100,14 +100,20 @@ export function Services() {
 
           {/* Pinned rail: the panel and the CTA travel together for the
               whole sequence, so the invitation is on screen no matter
-              which service is being read. */}
-          <div className="services__rail">
+              which service is being read.
+
+              It is also the sequence's marker — the reading line is this
+              whole column's centre, not the photo's. The photo sits high
+              in the rail (the closing note is under it), so lining the
+              service text up with the photo alone left the text reading
+              as too high in the column. */}
+          <div className="services__rail" ref={markerRef}>
             {/* All four textures are stacked and cross-faded by opacity
                 rather than swapping one src, so there is no blank frame
                 while the next file decodes. Decorative: the service each
                 one belongs to is named in the text column, so alt stays
                 empty and screen readers skip the stack. */}
-            <div className="services__media" ref={markerRef} aria-hidden="true">
+            <div className="services__media" aria-hidden="true">
               {services.map((service, index) => (
                 <picture
                   className="services__shot"

@@ -96,6 +96,11 @@ $field-graphite-dark: #262247;
     // Was -2.5rem, then 0rem (one click down) — reversed per feedback,
     // one click further up from the original instead.
     scroll-margin-top: -5rem;
+
+    // One click further up again, just at 1920.
+    @include up($bp-3xl) {
+      scroll-margin-top: -7.5rem;
+    }
   }
 
   &__inner {
@@ -329,6 +334,29 @@ $field-graphite-dark: #262247;
       // sitting at a bare/narrow's 40% with a wide gap beside it.
       .projects__cell:only-child {
         flex-basis: 100%;
+      }
+
+      // ---- short filters (one or two projects) ----
+      // Three and four are the bento as designed. One or two still fill
+      // the height the full 2×2 would — two $card-h-lg rows plus the gap
+      // between them — so a short filter doesn't collapse the section to
+      // a fraction of itself. It is the same height the konekta panel is
+      // pinned to on the CRM tab. At two, the row also splits evenly
+      // rather than taking the wide/narrow step (Projects.tsx drops the
+      // span at this count).
+      &[data-count="1"] .projects__row,
+      &[data-count="2"] .projects__row {
+        height: calc(#{$card-h-lg} * 2 + #{$projects-gap});
+      }
+
+      &[data-count="2"] .projects__cell {
+        flex: 1 1 0;
+      }
+
+      // The lone card stands as a feature panel, konekta-style — its
+      // name gets room to match the footprint.
+      &[data-count="1"] .project-card__title {
+        font-size: clamp(1.9rem, 1rem + 3.4vw, 3.6rem);
       }
     }
   }
@@ -735,11 +763,14 @@ $field-graphite-dark: #262247;
   }
 
   // ---------------------------------------------- the opened panel's shot
-  // The same screenshot the peek teased, at full size: opened, it fills
-  // the card edge to edge (the card is `position: relative`, this is
-  // `inset: 0`). `border-radius: inherit` so it clips to its own
-  // rounded corner rather than leaning on the card's overflow — that
-  // left a hairline of the card ground showing at the radius.
+  // The same screenshot the peek teased, at full size: opened, it covers
+  // the card. It rounds itself (`border-radius: inherit`) AND is pulled a
+  // pixel past every edge (`inset: -1px`): at `inset: 0` the flat
+  // near-black the card sits on rimmed the picture by a subpixel — at the
+  // rounded corners, and on the fractional card sizes the FLIP passes
+  // through, along the straight edges too. The overhang puts the picture
+  // past where the card's ground could ever show; the card's own
+  // overflow clips the bleed back to the radius.
   //
   // The card's geometry FLIP carries it from bento slot to panel; on
   // top of that it fades and settles in on its own (projects-shot-reveal
@@ -747,10 +778,14 @@ $field-graphite-dark: #262247;
   // resolving as the panel arrives, not a separate step before it.
   &__shot {
     position: absolute;
-    inset: 0;
+    inset: -1px;
     overflow: hidden;
     background-color: $ink;
-    border-radius: inherit;
+    // A touch rounder than the card (which is $radius-md): with the
+    // -1px overhang this puts the shot's own corner safely outside the
+    // card's, so the card's radius is the only edge that ever shows and
+    // the picture fills right up to it.
+    border-radius: calc(#{$radius-md} + 2px);
     animation: projects-shot-reveal 780ms $ease-in-out both;
 
     picture {
@@ -900,6 +935,19 @@ $field-graphite-dark: #262247;
   color: #0b0b10;
   text-decoration: none;
   background-color: var(--accent-cyan);
+  // Same webp-first, three-step convention coverSet.ts builds for every
+  // other project's <picture> (400/800/1200, generated alongside the
+  // .jpg). A plain background can't take a srcset, so the width step is
+  // picked by breakpoint here instead — the jpg url() is the fallback
+  // for browsers that don't parse image-set(), left in place since an
+  // unsupported second declaration is just dropped, not overridden.
+  background-image: url('/images/projects/Fondo_KONEKTA-400.jpg');
+  background-image: image-set(
+    url('/images/projects/Fondo_KONEKTA-400.webp') type('image/webp'),
+    url('/images/projects/Fondo_KONEKTA-400.jpg') type('image/jpeg')
+  );
+  background-position: center;
+  background-size: cover;
   border-radius: $radius-md;
   isolation: isolate;
   animation: projects-readout-in $dur-slow $ease-out both;
@@ -909,6 +957,11 @@ $field-graphite-dark: #262247;
 
   @include up($bp-md) {
     min-height: $card-h-md;
+    background-image: url('/images/projects/Fondo_KONEKTA-800.jpg');
+    background-image: image-set(
+      url('/images/projects/Fondo_KONEKTA-800.webp') type('image/webp'),
+      url('/images/projects/Fondo_KONEKTA-800.jpg') type('image/jpeg')
+    );
   }
 
   @include up($bp-lg) {
@@ -921,6 +974,11 @@ $field-graphite-dark: #262247;
     width: 100%;
     flex: 0 1 auto;
     min-height: calc(#{$card-h-lg} * 2 + #{$projects-gap});
+    background-image: url('/images/projects/Fondo_KONEKTA-1200.jpg');
+    background-image: image-set(
+      url('/images/projects/Fondo_KONEKTA-1200.webp') type('image/webp'),
+      url('/images/projects/Fondo_KONEKTA-1200.jpg') type('image/jpeg')
+    );
   }
 
   &:focus-visible {

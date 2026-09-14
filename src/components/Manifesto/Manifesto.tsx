@@ -44,8 +44,16 @@ export function Manifesto() {
         </div>
 
         <h2 className="manifesto__text" id="manifesto-title">
-          Automatizar no es sumar herramientas. Es sacar del medio todo lo que
-          no debería necesitar tu atención.
+          {/* Two parts on their own blocks: the enhancement fades them
+              in one at a time as the reader scrolls through the pin,
+              then the closing line lands. The <h2> still carries the
+              whole statement as its accessible name. */}
+          <span className="manifesto__part manifesto__part--one">
+            Automatizar no es sumar herramientas.
+          </span>{" "}
+          <span className="manifesto__part manifesto__part--two">
+            Es sacar del medio lo repetitivo.
+          </span>
         </h2>
 
         <p className="manifesto__closing-line">Eso es eklekta.</p>

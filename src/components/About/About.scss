@@ -1,5 +1,16 @@
 @use 'styles' as *;
 
+// The stage (the big photo) and the peek (the blurred one waiting off
+// the right edge). Same variables drive the FLIP's start and end boxes,
+// since both come straight from the grid. Sizes carried over unchanged
+// from the old lead/trail figures this carousel replaced.
+$stage-h: clamp(20rem, 30vw, 32.5rem);
+$peek-h: clamp(16.25rem, 24vw, 25rem);
+
+// The travel. TRAVEL_MS in About.tsx runs the geometry half of the same
+// move and has to match; kept in sync by eye.
+$travel: 850ms;
+
 .about {
   @include section-spacing;
 
@@ -15,76 +26,392 @@
     @include container;
 
     margin-bottom: $heading-gap;
+
+    // "para avanzar." is the only slab phrase on the site with a
+    // descender. The shared .text-slab block is inset to hug the
+    // baseline of words that don't have one ("servicios"), so the tail
+    // of the p pokes out the bottom. Drop just this slab's block — same
+    // height, shifted down, bottom running a hair past the box edge — so
+    // the p sits inside the violet with a little room to spare. Left and
+    // right insets stay from the base rule.
+    .text-slab::before {
+      inset-block: 0.16em -0.02em;
+    }
   }
 
-  // Image / text / image, with the outer figures running off the
-  // edges of the viewport the way the mockup does.
+  // ------------------------------------------------ the carousel
+  // Proceso's four steps, walked one at a time. Every slide is a grid
+  // item of this one grid for the whole life of the section — only the
+  // slot it is placed in changes — so the photo that travels from the
+  // peek into the stage stays the same DOM node the whole way and a
+  // plain FLIP (see About.tsx) carries it.
+  //
+  // Stacked below $bp-lg: photo, copy, controls. The peek has nowhere to
+  // live in one column, so it drops out and the slides simply cross-fade.
   &__feature {
     @include container;
 
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: $space-lg;
     align-items: center;
 
     @include up($bp-lg) {
-      grid-template-columns: minmax(0, 0.9fr) minmax(320px, 0.85fr) minmax(0, 0.42fr);
-      gap: clamp(2rem, 1rem + 3vw, 4.5rem);
+      // The stage column gives up width to the panel next to it — the
+      // copy reads better with the extra room than the photo needed it.
+      // Height is untouched (still $stage-h) — only the column narrows.
+      grid-template-columns:
+        minmax(0, 0.73fr)
+        minmax(19rem, 1fr)
+        minmax(0, 0.36fr);
+      gap: clamp(1.5rem, 0.75rem + 2.4vw, 3.5rem);
+    }
+
+    // Hovering the advance button — or the peek photo itself, now that
+    // it's clickable too — lifts and sharpens that photo, so the link
+    // between either control and the incoming step reads before the
+    // first click.
+    &:has(.about__nav-btn--next:hover),
+    &:has(.about__nav-btn--next:focus-visible),
+    &:has(.about__slide[data-slot='next']:hover),
+    &:has(.about__slide[data-slot='next']:focus-visible) {
+      .about__slide[data-slot='next'] {
+        img {
+          filter: blur(1px) saturate(0.95);
+        }
+
+        &::after {
+          opacity: 0.1;
+        }
+      }
     }
   }
 
-  &__figure {
+  &__slide {
+    position: relative;
+    grid-area: 1 / 1;
+    height: clamp(13.75rem, 34vw, 28.75rem);
+    margin: 0;
     overflow: hidden;
     background-color: var(--surface-2);
     border-radius: $radius-md;
+    // Geometry belongs to the grid and to the FLIP; only the soft-focus
+    // half of the move is a transition.
+    transition: opacity $travel $ease-out;
 
     img {
       width: 100%;
-      height: clamp(13.75rem, 34vw, 28.75rem);
+      height: 100%;
       object-fit: cover;
+      // On the img, not the figure: blurring the frame itself would eat
+      // its own rounded edges, whereas the frame clips a blurred picture
+      // cleanly.
+      transition: filter $travel $ease-out;
+    }
+
+    // The scrim that pushes the waiting photo back behind the copy. In
+    // --bg so it reads as distance in either theme rather than a wash.
+    &::after {
+      position: absolute;
+      inset: 0;
+      background-color: var(--bg);
+      opacity: 0;
+      transition: opacity $travel $ease-out;
+      pointer-events: none;
+      content: '';
+    }
+
+    // ---- slots
+    // Above .about__panel's own z-index (3): the incoming photo's FLIP
+    // carries it from the peek column, straight across the panel's own
+    // column, into the stage — it has to ride over the copy for that
+    // crossing to read, not duck behind it.
+    //
+    // Doubles as the back control (see isActive in About.tsx): clicking
+    // it sends it the other way, over to the peek side.
+    &[data-slot='active'] {
+      z-index: 4;
+      opacity: 1;
+      cursor: pointer;
+
+      &:focus-visible {
+        outline: 2px solid var(--focus);
+        outline-offset: 2px;
+      }
+    }
+
+    // The step that just left. It holds the stage at opacity 0 while the
+    // new photo flies in over it, so it fades in place instead of
+    // darting off sideways; About.tsx parks it once the travel is done.
+    &[data-slot='out'] {
+      z-index: 1;
+      opacity: 0;
+    }
+
+    &[data-slot='next'],
+    &[data-slot='rest'] {
+      img {
+        filter: blur(3px) saturate(0.8);
+      }
+
+      &::after {
+        opacity: 0.34;
+      }
+    }
+
+    // Doubles as the advance control (see isNext in About.tsx) — it
+    // needs its own cursor and focus ring, not just the arrow button's.
+    &[data-slot='next'] {
+      z-index: 1;
+      opacity: 1;
+      cursor: pointer;
+
+      &:focus-visible {
+        outline: 2px solid var(--focus);
+        outline-offset: 2px;
+      }
+    }
+
+    &[data-slot='rest'] {
+      z-index: 0;
+      opacity: 0;
+    }
+
+    // One column: only the stage exists, and the deck behind it is not
+    // laid out at all — which is also what tells the FLIP to sit this
+    // one out (a slide measuring zero at either end is skipped).
+    @include down($bp-lg) {
+      &[data-slot='next'],
+      &[data-slot='rest'] {
+        display: none;
+      }
     }
 
     @include up($bp-lg) {
-      &--lead {
+      &[data-slot='active'],
+      &[data-slot='out'] {
         @include bleed-start;
 
+        grid-area: 1 / 1;
+        height: $stage-h;
         border-start-start-radius: 0;
         border-end-start-radius: 0;
-
-        img {
-          height: clamp(20rem, 30vw, 32.5rem);
-        }
       }
 
-      &--trail {
+      &[data-slot='next'],
+      &[data-slot='rest'] {
         @include bleed-end;
 
+        grid-area: 1 / 3;
+        height: $peek-h;
         border-start-end-radius: 0;
         border-end-end-radius: 0;
-
-        img {
-          height: clamp(16.25rem, 24vw, 25rem);
-        }
       }
     }
   }
 
   &__panel {
+    position: relative;
+    z-index: 3;
+    grid-area: 2 / 1;
     display: flex;
     flex-direction: column;
     gap: $space-md;
     align-items: flex-start;
+
+    @include up($bp-lg) {
+      grid-area: 1 / 2;
+      // The photo travelling from the peek to the stage rides over this
+      // whole column (see &__slide's z-index) — it briefly covers the
+      // copy as it passes, the way a card would slide across a desk.
+      padding: clamp(1rem, 2vw, 2rem) clamp(1rem, 0.4rem + 1.6vw, 2.25rem);
+      background-color: var(--bg);
+      border-radius: $radius-md;
+    }
   }
 
-  &__panel-title {
-    font-size: $text-lg;
-    font-weight: $fw-semibold;
-    line-height: 1.28;
+  // The live region — a stable wrapper, since the copy inside it is
+  // keyed and remounts on every step. Reserves the tallest step's own
+  // box (measured against the longest of the four `detail` paragraphs,
+  // at $bp-lg — the narrowest column, where wrapping runs longest) so
+  // every step renders the same height here regardless of copy length;
+  // combined with &__nav's margin-top, that's what keeps the controls
+  // from shifting when the text changes.
+  &__copy-slot {
+    width: 100%;
+
+    @include up($bp-lg) {
+      min-height: 24rem;
+      // Centers .about__copy in this reserved box instead of pinning it
+      // to the top — a short step's text used to just sit high with all
+      // the slack left underneath it.
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+  }
+
+  &__copy {
+    display: flex;
+    flex-direction: column;
+    gap: $space-sm;
+    align-items: flex-start;
+
+    // Which side the copy rides in from — the same edge the photo
+    // itself travels from (peek → stage is a straight horizontal FLIP,
+    // no vertical move), so the text reads as part of the same card
+    // arriving rather than drifting up on its own. Forward mirrors the
+    // incoming photo (from the right); backward mirrors the outgoing
+    // one's retreat (from the left). Set from About.tsx's `direction`.
+    --dir: 1;
+
+    &[data-direction='backward'] {
+      --dir: -1;
+    }
+
+    // Title, then body — one after another, not the whole block arriving
+    // at once. Same construction Proyectos uses to bring in an opened
+    // project's readout (.projects__readout > *): held briefly, then
+    // each line's own fade + slide, stepped by --line. Starting at the
+    // same instant as the photo (no hold at all) buried the two reveals
+    // into one blur instead of reading as a sequence — but waiting the
+    // full $travel for the photo to land left the panel empty too long.
+    // This splits the difference: the text starts partway through the
+    // photo's travel, not at either end of it.
+    > * {
+      animation: about-copy-in $dur-slow $ease-out both;
+      animation-delay: calc(380ms + var(--line, 0) * 130ms);
+    }
+
+    > :nth-child(1) {
+      --line: 0;
+    }
+
+    > :nth-child(2) {
+      --line: 1;
+    }
+
+    @include reduced-motion {
+      > * {
+        animation: none;
+      }
+    }
+  }
+
+  &__title {
+    font-family: $font-display;
+    font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.6rem);
+    font-weight: $fw-ultra;
+    line-height: 1.05;
     color: var(--text);
     text-wrap: balance;
   }
 
-  &__panel-body {
+  &__body {
     @include body-copy;
+
+    max-width: 46ch;
+  }
+
+  // ------------------------------------------------ controls
+  &__nav {
+    display: flex;
+    align-items: center;
+    gap: $space-md;
+    // Pins the controls to the bottom of &__copy-slot's reserved box
+    // regardless of how tall the current step's copy runs, so they sit
+    // at a fixed distance from the photo on every step instead of
+    // drifting with the text.
+    margin-top: auto;
+  }
+
+  &__dots {
+    display: flex;
+    align-items: center;
+    gap: $space-3xs;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  // The bar hugs its own mark, so the current step's longer pill widens
+  // the button rather than being clipped by a fixed box.
+  &__dot {
+    display: flex;
+    align-items: center;
+    height: 1.75rem;
+    padding-inline: 0.375rem;
+    cursor: pointer;
+
+    &::before {
+      width: 0.5rem;
+      height: 0.5rem;
+      background-color: var(--border-strong);
+      border-radius: $radius-pill;
+      transition:
+        width $dur-base $ease-out,
+        background-color $dur-base $ease-out;
+      content: '';
+    }
+
+    &[aria-current]::before {
+      width: 1.5rem;
+      background-color: var(--brand);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    @include hover {
+      &::before {
+        background-color: var(--brand);
+      }
+    }
+  }
+
+  // Bare arrows, no shape around them at all — a bordered ring and a
+  // solid circle both came before this and both read as too heavy;
+  // dropping the chip entirely and sizing the glyph itself up is the
+  // plainer answer. Prev and next flank the dots the way transport
+  // controls do.
+  &__nav-btn {
+    display: inline-grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    color: var(--text-muted);
+    background: none;
+    border: 0;
+    cursor: pointer;
+    transition: color $dur-base $ease-out;
+
+    svg {
+      width: 1.4rem;
+      height: 1.4rem;
+    }
+
+    // One icon, mirrored — no second asset to keep in sync.
+    &--prev svg {
+      transform: scaleX(-1);
+    }
+
+    @include focus-ring;
+
+    @include hover {
+      color: var(--brand);
+    }
+  }
+}
+
+// Each line slides into place from --dir's edge — mirroring the
+// photo's own left/right FLIP instead of the plain rise Proyectos'
+// projects-readout-in uses. No `to` block: `both` plus the element's
+// own resting opacity/transform already is the end state.
+@keyframes about-copy-in {
+  from {
+    opacity: 0;
+    transform: translateX(calc(var(--dir, 1) * 20px));
   }
 }

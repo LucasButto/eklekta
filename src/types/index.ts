@@ -1,13 +1,22 @@
+/**
+ * One filter tab and every project under it. `projects.json` is an
+ * array of these, in tab order — position 0 is "Sitios web", and so on.
+ * Adding a project is dropping an object into the right group's
+ * `projects` array; adding a tab is a new group. `crm` carries an empty
+ * array — its tab shows the konekta panel, not a card grid.
+ */
+export interface ProjectGroup {
+  /** Matches the filter tab's id and, historically, a project's `kind`. */
+  kind: string
+  /** The tab's visible label in the filter bar. */
+  label: string
+  projects: Project[]
+}
+
 export interface Project {
   id: string
   title: string
   client: string
-  /**
-   * Which filter tab the project sits under — `sitio-web`, `automatizacion`,
-   * `crm`, … Free-form so the data can grow a new kind without a type change;
-   * the Projects filter bar decides which kinds it surfaces.
-   */
-  kind: string
   /**
    * Optional on purpose: a delivery year is a factual claim about a real
    * client, so a project carries one only once it is confirmed. The card
@@ -102,8 +111,22 @@ export interface ProcessStep {
   id: string
   step: string
   title: string
+  /** Proceso's own copy — the short recap in its 2x2 grid. */
   description: string
+  /**
+   * About's copy for the same step — longer and more specific than
+   * `description`. The two sections read as distinct pieces of writing
+   * on purpose (Proceso is the recap, About is the walkthrough), so this
+   * is never derived from `description`.
+   */
+  detail: string
   duration: string
+  /**
+   * The stage photo for the About carousel, which walks these same four
+   * steps one at a time (see About.tsx). One process, two views — the
+   * Proceso section reads `description` and ignores this and `detail`.
+   */
+  image: string
 }
 
 export interface NavItem {

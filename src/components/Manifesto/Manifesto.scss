@@ -61,10 +61,12 @@
   @include display($display-md, $fw-ultra);
 
   // A full sentence, not a heading — $display-md's own scale (let alone
-  // $display-lg) read as shouting here, wrapping to 6-7 lines and
-  // running into the collage above and below it. This caps at roughly
-  // half that.
-  font-size: clamp(1.3rem, 0.6rem + 3.6vw, 4rem);
+  // $display-lg) read as shouting here. Still, at the earlier cap the
+  // two short parts left the pinned frame looking half-empty, so this
+  // sits noticeably larger now: big enough to carry the section, capped
+  // before it wraps past three lines or collides with the passing
+  // photos.
+  font-size: clamp(1.7rem, 0.8rem + 4.4vw, 5.25rem);
   max-width: 18ch;
   color: var(--text);
 
@@ -74,17 +76,41 @@
   // scale and was wrapping this sentence to 7 lines even after the
   // font-size cut. Wider now that there's a smaller font to carry.
   @include up($bp-lg) {
+    // Kept tight so the headline's edges clear the photographs riding up
+    // each side rather than running under them.
     max-width: 20ch;
+  }
+}
+
+// Each half of the statement on its own block, so the enhancement can
+// bring them in one at a time. The space between the two <span>s in the
+// markup collapses; this gap is what separates them.
+.manifesto__part {
+  display: block;
+
+  & + & {
+    margin-top: 0.4em;
   }
 }
 
 .manifesto__closing-line {
   @include display($display-lg, $fw-ultra);
 
-  // Still the loudest line in the section (it's the punchline), just
-  // not $display-lg's full 7.8rem — that overran the frame at anything
-  // above ~1400px wide.
-  font-size: clamp(2.4rem, 1rem + 6vw, 7rem);
+  // The whole line is set in the wordmark's own face (Futura PT Demi,
+  // the weight the logo is drawn in) so the section closes on the brand
+  // mark rather than the Monument display face above it. One shipped
+  // weight, so 500 is fixed — 800 from the display mixin would trigger
+  // faux-bold. Futura is far narrower than Monument, so it carries a
+  // bigger point size here than the old Monument setting did.
+  font-family: $font-logo;
+  font-weight: 500;
+
+  // Base size — the one the static collage and reduced-motion readers
+  // get. Held inside the container here; the scroll enhancement below
+  // lets it grow much larger.
+  font-size: clamp(3rem, 1rem + 7vw, 8.5rem);
+  // One line always — it is a three-word mark, never a wrapping phrase.
+  white-space: nowrap;
   color: var(--brand);
 }
 
@@ -113,8 +139,12 @@
     // The statement crosses the photographs. A bloom in the page
     // colour, stacked so the near passes are all but opaque, keeps
     // every glyph legible over whatever it lands on — and reads as a
-    // glow, not a plate. Tracks the theme through var(--bg).
+    // glow, not a plate. Tracks the theme through var(--bg). Denser now
+    // that the photos are larger and spend more of each pass behind the
+    // headline.
     text-shadow:
+      0 0 0.1em var(--bg),
+      0 0 0.14em var(--bg),
       0 0 0.14em var(--bg),
       0 0 0.14em var(--bg),
       0 0 0.14em var(--bg),
@@ -128,43 +158,47 @@
 
     &--lead {
       top: 0;
-      left: clamp(1rem, 6vw, 7rem);
-      width: clamp(13.5rem, 19vw, 20rem);
-      height: clamp(17.5rem, 25vw, 26rem);
+      left: clamp(1rem, 4.5vw, 5.5rem);
+      width: clamp(15.5rem, 22vw, 23.5rem);
+      height: clamp(20rem, 29vw, 30.5rem);
     }
 
     &--mid {
       top: 30%;
-      right: clamp(0rem, 1.5vw, 2rem);
-      width: clamp(16.5rem, 23.5vw, 25rem);
-      height: clamp(21rem, 31vw, 33rem);
+      right: clamp(0rem, 1vw, 1.5rem);
+      width: clamp(18.5rem, 27vw, 29rem);
+      height: clamp(24rem, 36vw, 38.5rem);
     }
 
     &--trail {
       bottom: 0;
-      left: clamp(3.5rem, 12vw, 14rem);
-      width: clamp(12.5rem, 17vw, 18rem);
-      height: clamp(16rem, 22vw, 23rem);
+      left: clamp(3rem, 10.5vw, 12.5rem);
+      width: clamp(14.5rem, 19.5vw, 21rem);
+      height: clamp(18.5rem, 25vw, 26.5rem);
     }
   }
 }
 
 // ============================================================
-//  Enhancement — pinned statement; each photo climbs in from below
-//  and settles into its corner of a collage that then holds for the
-//  rest of the scroll, and the closing line rises in under it. A
-//  view timeline on the tall section scrubs it all; fill:both keeps
-//  a photo parked below frame until its slice, then holds it at rest.
+//  Enhancement — the frame pins while the reader scrolls through it.
+//  The three photographs climb up from below and keep going, out the
+//  top — they pass, they do not park. Over the same scroll the
+//  statement builds a part at a time, and the closing line lands last.
+//  A view timeline on the tall section scrubs all of it.
 // ============================================================
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
     @include up($bp-lg) {
       .manifesto {
-        // The runway. Longer = the photos climb more slowly. The frame
-        // stays pinned across all of it; the closing line now finishes
-        // at contain 93% (below), so only the last ~7% — a beat, not the
-        // half-screen it was — sits assembled before the pin releases.
-        min-height: 350svh;
+        // The runway. Every move here — the photos passing, each part
+        // fading up, the closing line landing — is scrubbed against this
+        // height, so a taller section spreads the same motion over more
+        // scroll and reads slower. Trimmed from 300svh: the sequence now
+        // finishes well before the pin releases (the closing lands early
+        // and the last photo is timed to clear near the very end), so
+        // the extra height was mostly a dead hold on the assembled state
+        // before the next section — a long scroll for no new motion.
+        min-height: 255svh;
         padding-block: 0;
         view-timeline-name: --manifesto-seq;
       }
@@ -175,80 +209,129 @@
         height: 100svh;
         min-height: 0;
         // clip on the pinned box itself — safe for its own stickiness,
-        // and it's what hides each photo below the frame until it
-        // climbs in.
+        // and it's what hides each photo below and above the frame
+        // between its slices.
         overflow: clip;
       }
 
-      // Each photo starts fully below the frame and rises to its
-      // resting slot, then holds. Vertical placement is the keyframe's
-      // job now (--rest-y down from the frame top); the horizontal
-      // lane still comes from the static block. `contain` is the
-      // pinned window: frame top at viewport top → section bottom at
-      // viewport bottom.
+      // Each photo runs from fully below the frame to fully above it.
+      // The horizontal lane still comes from the static block; only the
+      // vertical travel is the keyframe's. Staggered so they cross the
+      // frame one after another rather than as a block. The first two
+      // start during `entry` — while the section is still sliding up
+      // into the pin — so the frame is never on screen empty.
       .manifesto__figure {
-        animation: manifesto-rise-in linear both;
+        animation: manifesto-pass linear both;
         animation-timeline: --manifesto-seq;
         will-change: transform;
       }
 
-      // lead ends up top-left, mid mid-right, trail lower-left. `top`
-      // is flattened per-modifier so it beats the static block's own
-      // --mid { top } / --trail { bottom }.
       .manifesto__figure--lead {
         top: 0;
-        --rest-y: 3svh;
-        animation-range: contain 4% contain 34%;
+        animation-range: entry 12% contain 44%;
       }
 
       .manifesto__figure--mid {
         top: 0;
-        --rest-y: 38svh;
-        animation-range: contain 21% contain 51%;
+        animation-range: entry 55% contain 62%;
       }
 
       .manifesto__figure--trail {
         top: 0;
         bottom: auto;
-        --rest-y: 58svh;
-        animation-range: contain 38% contain 68%;
+        // Its own slower keyframe (travels less far) so the last photo is
+        // still visibly crossing the frame until near the end of the
+        // pin, instead of having flown off two-thirds through and leaving
+        // a long dead hold on the assembled state before the section
+        // releases.
+        animation-name: manifesto-pass-trail;
+        animation-range: contain 4% contain 92%;
       }
 
-      // Out of the centred flow so the statement sits dead centre.
-      // Climbs in from below like the photos once they've settled; it
-      // finishes near the end of the pin (93%) so there is barely any
-      // dead scroll between it landing and the section handing off.
+      // Statement and closing line both stay in the grid's flow (each
+      // holds its box at opacity 0), so `align-content: center` keeps the
+      // whole group — statement + gap + punchline — centred in the pinned
+      // frame at every font size, with nothing to re-tune when the
+      // closing line grows. They only fade and rise into place.
+      .manifesto__part,
       .manifesto__closing-line {
-        position: absolute;
-        top: 42%;
-        margin-top: clamp(14rem, 36vh, 23rem);
         opacity: 0;
-        animation: manifesto-closing-in linear both;
+        animation: manifesto-part-in linear both;
         animation-timeline: --manifesto-seq;
-        animation-range: contain 62% contain 93%;
         will-change: transform, opacity;
+      }
+
+      // The statement is four dense Monument lines; the closing is one
+      // lighter Futura line. Box-centred, the group's ink weight still
+      // sits high and reads top-heavy. Nudge just the statement down (the
+      // closing keeps its place) so the heavy block lands closer to the
+      // optical centre — layout centring is untouched, this is a paint-
+      // only shift.
+      .manifesto__text {
+        transform: translateY(clamp(1rem, 2.4vh, 3rem));
+      }
+
+      // The first part fades up through the back half of `entry` — it
+      // rides in with the section so the frame never crosses the screen
+      // blank — and is settled by the pin; the second a fifth of the way
+      // into the pin; and each stays.
+      .manifesto__part--one {
+        animation-range: entry 25% contain 6%;
+      }
+
+      .manifesto__part--two {
+        animation-range: contain 12% contain 32%;
+      }
+
+      // The punchline. Set in Futura at a large size (see the base rule),
+      // held a little further below the statement than the grid gap
+      // alone — the em keeps that separation in proportion as the type
+      // scales. It lands while the last photo is still on its way out,
+      // not after — so the mark is already there as the frame clears.
+      .manifesto__closing-line {
+        margin-top: max(1.75rem, 0.26em);
+        // Big — Futura is far narrower than the Monument this used to be
+        // in, so it carries a much larger point size for the same weight
+        // on the page. Capped where "Eso es eklekta." still clears the
+        // container once the root font-size ramp is in past 1920.
+        font-size: clamp(3.4rem, calc(14.5vw - 1rem), 13.8rem);
+        animation-range: contain 32% contain 60%;
       }
     }
   }
 }
 
-@keyframes manifesto-rise-in {
+@keyframes manifesto-pass {
   from {
-    transform: translate3d(0, 112svh, 0);
+    transform: translate3d(0, 104svh, 0);
   }
 
   to {
-    transform: translate3d(0, var(--rest-y, 0), 0);
+    transform: translate3d(0, -82svh, 0);
   }
 }
 
-@keyframes manifesto-closing-in {
+// The trail photo, slower: it stops just past clearing the frame's top
+// edge (its own height is ~40svh) rather than sailing another 40svh
+// beyond like the other two, so the same animation-range keeps it in
+// view later into the pin.
+@keyframes manifesto-pass-trail {
   from {
-    opacity: 0;
-    transform: translate3d(0, 44svh, 0);
+    transform: translate3d(0, 106svh, 0);
   }
 
-  30% {
+  to {
+    transform: translate3d(0, -54svh, 0);
+  }
+}
+
+@keyframes manifesto-part-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 2rem, 0);
+  }
+
+  60% {
     opacity: 1;
   }
 

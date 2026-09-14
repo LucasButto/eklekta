@@ -4,6 +4,11 @@
   @include section-spacing;
   @include full-screen-section;
 
+  // The "Hablemos." bar bleeds off the left; clip keeps that sliver
+  // from adding a scrollbar. No sticky child here, so clip is safe
+  // (unlike .services, which needs isolation instead).
+  overflow-x: clip;
+
   // A nav tap lands well past the header line — the closing section
   // centres its content and holds it lower than the rest, so it gets a
   // bigger nudge than Proyectos / Equipo. Was -5rem, then -7.5rem
@@ -11,6 +16,26 @@
   // down from the original instead.
   @include up($bp-lg) {
     scroll-margin-top: -2.5rem;
+
+    // From 1920 up (not yet wide enough for the $bp-2k override below).
+    // One more click past the plain 0 landing: holds back a bit more of
+    // Manifesto's tail above Contact instead of landing flush on its edge.
+    @include up($bp-3xl) {
+      scroll-margin-top: 2.5rem;
+    }
+
+    // At 2K the root font-size ramp (_reset.scss) has already climbed
+    // past the 90% floor, so this same -2.5rem overshoots by more px
+    // than it did at the size it was tuned for — a nav tap scrolls past
+    // the section's actual top by that much extra, landing high enough
+    // that the footer curtain's gap runs out before the section is back
+    // to centred. +10rem cancelled the overshoot outright but sat the
+    // landing further from the footer than it needs to; one click back
+    // down (same 2.5rem step as the -5rem / -7.5rem history above) to
+    // +7.5rem still clears it, just closer.
+    @include up($bp-2k) {
+      scroll-margin-top: 7.5rem;
+    }
 
     // Overrides section-spacing's own $section-y (up to 4.5rem a side,
     // ~130px total here) with a vh-aware value instead. $section-y is
@@ -75,7 +100,10 @@
     // smaller and the section overflowed one screen again anyway. The
     // vh term is what actually shrinks it once height, not width, is
     // the tight axis.
-    font-size: clamp(2rem, 0.78rem + min(5.2vw, 8.4vh), 5.6rem);
+    //
+    // Lives in $slab-font (tokens) because Team's heading rays size
+    // themselves off the bar this line produces — keep them one value.
+    font-size: $slab-font;
     position: relative;
     z-index: 0;
     // Tighter than the display mixin's own 0.94 — this one line is the
@@ -105,15 +133,13 @@
     &::before {
       position: absolute;
       inset: 0;
-      // Overruns the left edge of .contact__grid rather than stopping
-      // flush with it. Not tied to a spacing token — the user tuned
-      // this by eye in a mockup and landed on 180px; `--edge` (full
-      // viewport-edge bleed) and `--gutter` (~50-64px here) were tried
-      // first and read as too little or too much in between. Right/
-      // top/bottom stay put (the `inset: 0` above), so only this one
-      // side overruns; the word itself doesn't move, it's still
-      // right-aligned inside .contact__banner-line same as before.
-      inset-inline-start: -280px;
+      // Runs off the left edge of the screen at every width. `--edge`
+      // is the container-content-to-viewport gap, so the bar's left
+      // lands exactly on the viewport edge (`.contact` clips the
+      // scrollbar-width sliver `--edge`'s 100vw term leaves over). The
+      // other three sides stay on `inset: 0`, so the word doesn't
+      // move — still right-aligned inside .contact__banner-line.
+      inset-inline-start: calc(-1 * var(--edge));
       z-index: -1;
       content: "";
       background-color: var(--brand);
@@ -207,6 +233,15 @@
     flex-wrap: wrap;
     gap: $space-md $space-lg;
     align-items: center;
+
+    // Same two columns as .contact__detail's dt/dd, so the social row
+    // reads as one more line of the list: "Escribinos" sits where a dt
+    // would, the icons start exactly under the dd column above it.
+    @include up($bp-sm) {
+      display: grid;
+      grid-template-columns: 10rem minmax(0, 1fr);
+      gap: $space-sm;
+    }
   }
 
   // A plain link, not a <Button> pill: sitting right beside the round

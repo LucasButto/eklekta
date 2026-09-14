@@ -7,6 +7,10 @@
 //  use" release. It is wired through $font-display so swapping it
 //  for a licensed copy (or another wide grotesk) is a one-line
 //  change in _tokens.scss.
+//  Futura PT (Demi) is the face the eklekta wordmark is drawn in —
+//  matched by stroke ratio, not guessed. Only the one weight the
+//  logo uses is shipped; wired through $font-logo. Also "free for
+//  personal use" here, same swap-for-a-licence note as Monument.
 // =============================================================
 
 @font-face {
@@ -21,6 +25,14 @@
   font-family: 'Monument Extended';
   src: url('/fonts/MonumentExtended-Ultrabold.woff2') format('woff2');
   font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Futura PT';
+  src: url('/fonts/FuturaPT-Demi.woff2') format('woff2');
+  font-weight: 500;
   font-style: normal;
   font-display: swap;
 }

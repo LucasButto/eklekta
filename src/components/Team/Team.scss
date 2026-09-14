@@ -1,13 +1,23 @@
 @use "styles" as *;
 
-// The photo's own height (all five cards) and how much of it the
-// staggered (2nd/4th) cards give up from the top instead of the
-// bottom — see .member__photo img and .team__cell:nth-child(even).
-// The 24rem cap (was 26): on a 1080p screen the taller value tipped
-// the section a touch past one screenful once browser chrome is in
-// play, so the row wanted a scroll of its own.
-$member-photo-h: clamp(16rem, min(48vh, 26vw), 24rem);
-$member-photo-crop: clamp(1rem, 0.5rem + 1.2vw, 2rem);
+// The card's own height (all five) and how much of it the staggered
+// (2nd/4th) cards give up from the top instead of the bottom — see
+// .member__photo and .team__cell:nth-child(even). Everything lives
+// inside the frame now, so the whole card is picture: it runs wider
+// (see the row's max-width / padding at $bp-lg) and taller than a photo
+// with type under it ever did.
+$member-photo-h: clamp(19rem, min(54vh, 28vw), 30rem);
+$member-photo-crop: clamp(1.25rem, 0.6rem + 1.4vw, 2.5rem);
+
+// The scrim behind the caption ($bp-lg and up, where the type sits over
+// the picture). A lifted charcoal, not $ink's near-black: in dark mode
+// --bg *is* $ink, so a pure-ink scrim made the card's bottom edge melt
+// into the page and the whole thing read as one black slab. This tone
+// stays a step above both grounds so the frame keeps its shape, and the
+// gradient itself (see .member__body) is mixed lighter and told to fade
+// out sooner so it reads as a wash, not a plate — softer still in dark
+// mode, where the near-black page doubles its apparent weight.
+$member-scrim: #191823;
 
 .team {
   @include section-spacing;
@@ -35,6 +45,15 @@ $member-photo-crop: clamp(1rem, 0.5rem + 1.2vw, 2rem);
     // drops the heading a long way below the bar. ~one scrollbar-arrow
     // click higher.
     scroll-margin-top: -2.5rem;
+
+    // At 1920 the staggered (2nd/4th) cards below are already at their
+    // clamp ceiling, so the row reads tall — the same -2.5rem lands the
+    // nav tap with the row sitting low enough that it, and especially
+    // that stagger drop, crowd the bottom of the screen. One click
+    // further (same 2.5rem step) pulls the whole landing up.
+    @include up($bp-3xl) {
+      scroll-margin-top: -5rem;
+    }
   }
 
   &__inner {
@@ -44,20 +63,93 @@ $member-photo-crop: clamp(1rem, 0.5rem + 1.2vw, 2rem);
   &__heading {
     margin-bottom: $heading-gap;
 
-    // Desktop keeps the display line to two lines rather than three
-    // (same type size, ~80px of height back) and a tighter gap down to
-    // the row — a five-up portrait row already runs tall, and the
-    // closer the heading sits to it the more they read as one block.
-    // 68rem, not 64: once the type reaches its 5.6rem cap (~1535px wide
-    // and up) 64rem tipped it back to three. The intro widens off its
-    // default 46ch to match.
     @include up($bp-lg) {
-      max-width: min(100%, 68rem);
-      margin-bottom: clamp(0.75rem, 2vh, 1.75rem);
+      // Was clamp(0.75rem, 2vh, 1.75rem) — down at ~18px it read as the
+      // cards crowding the intro. Opened up to a clear heading-to-content
+      // gap; still well short of $heading-gap so the section doesn't run
+      // long on a tall screen.
+      margin-bottom: clamp(2.25rem, 6vh, 4.5rem);
       gap: $space-xs;
+    }
+
+    // ---- the split title -------------------------------------------
+    // From $bp-md the title runs the full content width so its two
+    // lines can anchor to opposite edges, each with a brand slab in the
+    // room it leaves, bleeding to the viewport edge. Below $bp-md the
+    // slabs have no width to read in, so the heading stays the plain
+    // centred stack --center gives it. The intro stays centred and
+    // capped either way.
+    @include up($bp-md) {
+      max-width: none;
+
+      .section-heading__title {
+        width: 100%;
+        // A hair over the display face's own 0.94 so the two slabs
+        // clear each other vertically.
+        line-height: 1.08;
+      }
 
       .section-heading__intro {
         max-width: 62ch;
+      }
+    }
+  }
+
+  &__line {
+    display: block;
+
+    @include up($bp-md) {
+      display: flex;
+      align-items: center;
+
+      // The slab, on whichever pseudo the variant turns on with
+      // `content`. `flex: 1` eats the leftover width. Anchored to the
+      // top of the line (not centred like Contact's own bar) and
+      // trimmed a bit off $slab-height, both off the bottom edge only —
+      // at the full height the top-right bar's bottom ran right up
+      // against the j in "trabajo" on the line below (the two lines
+      // sit flush with no gap between their boxes). Both bars get the
+      // same trim so they still read as a matched pair.
+      &::before,
+      &::after {
+        flex: 1 1 auto;
+        align-self: flex-start;
+        min-width: clamp(2rem, 8vw, 7rem);
+        height: calc(#{$slab-height} - 1rem);
+        background-color: var(--brand);
+      }
+    }
+  }
+
+  // Below $bp-md the lines inherit --center's centring and just stack;
+  // the anchored/slabbed layout is all in the media queries.
+  &__line--start {
+    @include up($bp-md) {
+      text-align: left;
+
+      &::after {
+        margin-inline: 0.4em calc(-1 * var(--edge));
+        content: "";
+      }
+    }
+  }
+
+  &__line--end {
+    @include up($bp-md) {
+      justify-content: flex-end;
+      text-align: right;
+
+      &::before {
+        margin-inline: calc(-1 * var(--edge)) 0.4em;
+        // Nudged up off dead-centre. "hace el trabajo." is all
+        // lowercase — its visual mass sits higher in the line box than
+        // the box's own middle, so a bar centred on the box reads low
+        // against it. The capitalised top line does not have the same
+        // pull, so only this one moves. Tune by eye — was -0.07em, eased
+        // back to -0.03em: the fuller nudge overshot and read as sitting
+        // on the text's baseline instead of centred against it.
+        transform: translateY(-0.03em);
+        content: "";
       }
     }
   }
@@ -87,12 +179,27 @@ $member-photo-crop: clamp(1rem, 0.5rem + 1.2vw, 2rem);
     // mobile rail's fixed height used to produce. Three across holds
     // the portrait proportion through the whole tablet band.
     @include up($bp-lg) {
+      // Still a little wider than the page's 90rem container — the row is
+      // all picture now — but pulled back in from the near-bleed it had:
+      // the cards read better a touch smaller with a real margin either
+      // side. Small padding, tight gaps: what width there is goes into
+      // the cards. Nudged in slightly again (108rem/9rem → 104rem/12rem)
+      // per feedback that the cards still ran a hair too wide.
+      max-width: min(104rem, 100vw - 12rem);
+      padding-inline: clamp(0.75rem, 0.25rem + 1vw, 2rem);
       grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: clamp(0.75rem, 0.4rem + 1.2vw, 1.5rem);
+      gap: clamp(0.45rem, 0.1rem + 0.75vw, 1rem);
       // Cells top-align so the 2nd/4th drop reads as a stagger rather
       // than a block shift. No forced height here any more — the row
       // sits at its natural height right under the heading.
       align-items: start;
+
+      // At 1920 the row sits flush against its 104rem cap (100vw - 12rem
+      // is still the looser of the two there), so the five cards read a
+      // touch wide. A small trim off the cap narrows all five evenly.
+      @include up($bp-3xl) {
+        max-width: min(100rem, 100vw - 12rem);
+      }
     }
   }
 
@@ -101,11 +208,25 @@ $member-photo-crop: clamp(1rem, 0.5rem + 1.2vw, 2rem);
     // full five across — staggering a wrapping 2- or 3-up grid just
     // opens a hole in the next line.
     @include up($bp-lg) {
+      // Nothing to pad out here any more. The caption is anchored to the
+      // bottom of its own frame — a longer name or role just grows the
+      // block upward into the picture instead of pushing anything down —
+      // and every frame in a stagger group is the same height, so the
+      // captions sit level across the group by construction.
+
       &:nth-child(even) {
         // The full mockup drop — the two lowered cards are the move
         // that gives the row its rhythm, and once the heading dropped
         // its eyebrow the section has the height to carry it again.
-        margin-top: clamp(2rem, 1rem + 4vw, 5.5rem);
+        margin-top: clamp(2.75rem, 1.25rem + 5.5vw, 7.5rem);
+
+        // The clamp is already flat at its 7.5rem ceiling by 1920 (the
+        // vw term crosses it around 1636px), so the drop keeps crowding
+        // the row's bottom edge all the way up through here. A small
+        // trim, not a full click — just enough clearance.
+        @include up($bp-3xl) {
+          margin-top: 6.5rem;
+        }
 
         // The 1st/3rd/5th cards give up $member-photo-crop off the
         // bottom of their photo by default — shrinking a box's height
@@ -133,18 +254,38 @@ $member-photo-crop: clamp(1rem, 0.5rem + 1.2vw, 2rem);
   }
 }
 
+// =============================================================
+//  One card, and the card is a link — the whole frame is clickable and
+//  opens the person's LinkedIn. The frame holds everything: picture,
+//  name, role. A single object, not a photo with loose type under it.
+//
+//  Two shapes for one structure:
+//   · $bp-lg and up (the staggered five-across row) the caption is laid
+//     over the bottom of the picture on a scrim.
+//   · Below that the columns are too narrow to carry display type over
+//     an image, so the same caption drops to a panel under the picture,
+//     still inside the frame.
+// =============================================================
 .member {
-  display: flex;
-  flex-direction: column;
-  gap: $space-sm;
+  // The whole card is a link to the person's LinkedIn.
+  display: block;
+  border-radius: $radius-lg;
+  color: inherit;
 
-  // The photo-to-caption gap tightens a notch on desktop, where a
-  // five-up row of portraits already runs tall.
-  @include up($bp-lg) {
-    gap: $space-xs;
+  &:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 4px;
+  }
+
+  // Keyboard focus reveals the link cue too — not just hover — and on
+  // any device, so it sits outside the hover media query below.
+  &:focus-visible &__cue {
+    opacity: 1;
+    transform: translateY(0);
   }
 
   &__photo {
+    position: relative;
     overflow: hidden;
     background-color: var(--surface-2);
     border-radius: $radius-md;
@@ -152,12 +293,11 @@ $member-photo-crop: clamp(1rem, 0.5rem + 1.2vw, 2rem);
     // Five across: the columns are narrow and near-equal at every
     // width, so a measured height reads more evenly than a ratio.
     // min(vh, vw) so whichever axis is tighter is the one that sets the
-    // height: the vw term stops the photo turning skinny once the five
+    // height: the vw term stops the card turning skinny once the five
     // columns get narrow near $bp-lg. $member-photo-h is defined at the
-    // top of this file since the staggered (even) cards below need to
-    // read the same value back for their own crop — this sits on the
-    // frame, not the img, so the frame and the picture always resize
-    // together (see the note on .team__cell:nth-child(even)).
+    // top of this file since the staggered (even) cards need to read the
+    // same value back for their own crop — it sits on the frame, so the
+    // frame, the picture and the caption over it all resize together.
     @include up($bp-lg) {
       height: $member-photo-h;
     }
@@ -165,15 +305,12 @@ $member-photo-crop: clamp(1rem, 0.5rem + 1.2vw, 2rem);
     img {
       width: 100%;
       // While the row wraps, the cell is a fraction of the container
-      // rather than a fixed 210px rail card, so the portrait has to be
-      // sized by ratio. A flat 16.25rem floor against a ~160px column
-      // produced a 1:1.6 sliver of a face.
+      // rather than a fixed rail card, so the portrait is sized by
+      // ratio; five-across it fills the measured frame instead.
       height: auto;
       aspect-ratio: 3 / 4;
       object-fit: cover;
-      transition:
-        transform $dur-slow $ease-out,
-        filter $dur-slow $ease-out;
+      transition: transform $dur-slow $ease-out;
 
       @include up($bp-lg) {
         height: 100%;
@@ -182,55 +319,168 @@ $member-photo-crop: clamp(1rem, 0.5rem + 1.2vw, 2rem);
     }
   }
 
-  &:hover &__photo img {
-    transform: scale(1.05);
+  // The link affordance. Nothing else on the card says "clickable" — no
+  // underline, no button — so this fades in at the top-right corner on
+  // hover / focus: the external-link glyph on a frosted chip dark enough
+  // to hold over any photo. Anchored to the corner opposite the caption.
+  &__cue {
+    position: absolute;
+    top: clamp(0.55rem, 0.35rem + 0.6vw, 0.9rem);
+    right: clamp(0.55rem, 0.35rem + 0.6vw, 0.9rem);
+    z-index: 3;
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: $radius-xs;
+    background-color: rgba($ink, 0.55);
+    color: #f5f5f8;
+
+    // Drops in from a few px up so it reads as arriving with the pointer
+    // rather than blinking on in place.
+    opacity: 0;
+    transform: translateY(-0.3rem);
+    transition:
+      opacity $dur-base $ease-out,
+      transform $dur-base $ease-out;
+
+    @supports (backdrop-filter: blur(1px)) {
+      background-color: rgba($ink, 0.32);
+      backdrop-filter: blur(6px);
+    }
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+    }
+
+    @include reduced-motion {
+      transition: opacity $dur-base $ease-out;
+      transform: none;
+    }
   }
 
   &__body {
     display: flex;
     flex-direction: column;
     gap: $space-3xs;
+    padding: $space-sm;
   }
 
   &__name {
-    font-family: $font-display;
-    font-size: clamp(1rem, 0.9rem + 0.4vw, 1.2rem);
+    font-family: $font-body;
     font-weight: $fw-ultra;
-    line-height: 1.15;
+    line-height: 1.12;
     color: var(--text);
+    text-wrap: balance;
+    font-size: clamp(1rem, 0.9rem + 0.45vw, 1.25rem);
   }
 
   &__role {
     font-size: $text-sm;
     font-weight: $fw-medium;
+    line-height: 1.35;
     color: var(--brand);
   }
 
-  &__focus {
-    font-size: $text-sm;
-    line-height: 1.5;
-    color: var(--text-muted);
-    text-wrap: pretty;
+  // ---------------------------------------------- over the picture
+  @include up($bp-lg) {
+    &__body {
+      position: absolute;
+      inset-inline: 0;
+      bottom: 0;
+      // Top padding is the run the scrim needs to fade out over, not
+      // space around the text — the text sits at the bottom of it.
+      padding: clamp(3rem, 1.5rem + 5vw, 5.5rem)
+        clamp(0.9rem, 0.55rem + 1.1vw, 1.5rem)
+        clamp(0.95rem, 0.6rem + 1.1vw, 1.55rem);
+      // The wash: only the very foot of it stays near-opaque to seat the
+      // role line (the lower of the two) over a bright photo — the mid
+      // stops were pulled right down so it clears the picture by ~55% of
+      // its own height instead of running dark most of the way up. The
+      // per-glyph legibility that the old near-solid plate was really
+      // doing now comes from text-shadow below, the way Manifesto's
+      // statement carries over its photos.
+      background: linear-gradient(
+        to top,
+        rgba($member-scrim, 0.92) 0%,
+        rgba($member-scrim, 0.64) 30%,
+        rgba($member-scrim, 0.28) 56%,
+        rgba($member-scrim, 0) 100%
+      );
+      // A tight dark edge plus a soft bloom, both in $ink — keeps the
+      // caption crisp on a pale photo without the scrim having to be a
+      // slab. Small radii so it reads as weight, not a drop shadow.
+      text-shadow:
+        0 1px 2px rgba($ink, 0.55),
+        0 0 6px rgba($ink, 0.4);
+      transition: background $dur-slow $ease-out;
+    }
+
+    // The dark page is itself near-black, so the same scrim reads about
+    // twice as heavy here — card and page fused into one dark mass. Much
+    // lighter: just enough to seat the type, with $member-scrim sitting a
+    // step above --bg so the frame's bottom edge and radius still show.
+    :root[data-theme="dark"] &__body {
+      background: linear-gradient(
+        to top,
+        rgba($member-scrim, 0.66) 0%,
+        rgba($member-scrim, 0.42) 32%,
+        rgba($member-scrim, 0.16) 62%,
+        rgba($member-scrim, 0) 100%
+      );
+    }
+
+    // Fixed light values, not theme tokens: the scrim under them is
+    // dark in either theme, so these must not flip with it.
+    &__name {
+      color: #f5f5f8;
+    }
+
+    &__role {
+      // The lifted violet — light's deeper brand goes muddy on a dark
+      // scrim.
+      color: $brand-lift;
+    }
   }
 
-  &__link {
-    align-self: flex-start;
-    margin-top: $space-3xs;
-    font-size: $text-xs;
-    font-weight: $fw-semibold;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text-faint);
-    border-bottom: 1px solid var(--border-strong);
-    transition:
-      color $dur-base $ease-out,
-      border-color $dur-base $ease-out;
+  // Feedback for the whole card. Keyboard focus gets the same as hover.
+  @media (hover: hover) and (pointer: fine) {
+    &:hover &__photo img,
+    &:focus-visible &__photo img {
+      transform: scale(1.05);
+    }
 
-    @include focus-ring;
+    &:hover &__cue {
+      opacity: 1;
+      transform: translateY(0);
+    }
 
-    @include hover {
-      color: var(--brand);
-      border-color: var(--brand);
+    @include up($bp-lg) {
+      &:hover &__body,
+      &:focus-visible &__body {
+        background: linear-gradient(
+          to top,
+          rgba($member-scrim, 0.94) 0%,
+          rgba($member-scrim, 0.72) 38%,
+          rgba($member-scrim, 0.36) 68%,
+          rgba($member-scrim, 0) 100%
+        );
+      }
+
+      // Same gentle step-up from the (already much lighter) dark base —
+      // without this the light-mode hover rule above would apply in dark
+      // too and slam the scrim from 0.6 to 0.94 on pointer-over.
+      :root[data-theme="dark"] &:hover &__body,
+      :root[data-theme="dark"] &:focus-visible &__body {
+        background: linear-gradient(
+          to top,
+          rgba($member-scrim, 0.72) 0%,
+          rgba($member-scrim, 0.48) 38%,
+          rgba($member-scrim, 0.18) 68%,
+          rgba($member-scrim, 0) 100%
+        );
+      }
     }
   }
 }

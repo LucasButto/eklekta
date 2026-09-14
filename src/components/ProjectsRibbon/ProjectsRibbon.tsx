@@ -1,9 +1,12 @@
 import { useMemo } from 'react'
 import projectsData from '@/data/projects.json'
-import type { Project } from '@/types'
+import type { Project, ProjectGroup } from '@/types'
 import './ProjectsRibbon.scss'
 
-const projects = projectsData as Project[]
+// projects.json groups by filter tab now; the ribbon shows the lot.
+const projects = (projectsData as ProjectGroup[]).flatMap(
+  (group) => group.projects,
+)
 
 /**
  * The full-bleed strip under the hero. It shows the same work as the
