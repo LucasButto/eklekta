@@ -71,10 +71,22 @@ export function About() {
   // Read by the layout effect right after `go` fires, to decide which
   // slide gets the FLIP this time — see the effect below.
   const directionRef = useRef<"forward" | "backward">("forward");
+  // The step being left behind, recorded as `go` fires. Going back it
+  // is the leaving photo that crosses, and on a dot jump that is not
+  // the step next to the new one, so the effect cannot work it out from
+  // `index` alone.
+  const leavingRef = useRef(0);
+  // Carries --shift: the distance the crossing photo covers, measured
+  // off its own FLIP and handed to everything else that travels with it
+  // (the copy, the peek). It sits on the section because those live in
+  // different branches of the tree, and .about__copy is keyed and
+  // remounts every step, so the value could not live there anyway.
+  const rootRef = useRef<HTMLElement | null>(null);
 
   function go(next: number, direction: "forward" | "backward" = "forward") {
     if (next === index) return;
     directionRef.current = direction;
+    leavingRef.current = index;
 
     if (!prefersReducedMotion()) {
       // Snapshot where every slide sits before React re-lays them out;
@@ -125,31 +137,32 @@ export function About() {
     const prev = prevRects.current;
     if (prev.size === 0) return;
     const direction = directionRef.current;
+    // Exactly one photo crosses: going forward the step arriving on
+    // stage, going back the one leaving it. It is named outright rather
+    // than picked as whichever box moved furthest, because the photo
+    // landing in the peek now has an entrance transform of its own (see
+    // about-slide-in) over the very same distance — a measured guess
+    // would be a coin flip between the two.
+    const crossIndex = direction === "forward" ? index : leavingRef.current;
 
-    slideRefs.current.forEach((el, i) => {
-      const before = prev.get(i);
-      if (!el || !before) return;
-      const after = el.getBoundingClientRect();
-      // Below $bp-lg only the stage slide is laid out, so a slide
-      // measures zero at one end of the move — nothing to play back.
-      if (!before.width || !after.width) return;
-
-      // Drop a travel still in flight from a quick previous pick. The
-      // CSS reveal is a CSSTransition subclass, so it is left alone.
+    // Drop travels still in flight from a quick previous pick — all of
+    // them, not just this step's. The CSS reveal is a CSSTransition
+    // subclass, so it is left alone.
+    for (const el of slideRefs.current) {
+      if (!el) continue;
       for (const running of el.getAnimations()) {
         if (running.constructor === Animation) running.cancel();
       }
+    }
 
-      // Going back, the incoming slide (now "active") was sitting
-      // hidden a moment ago and just fades into place on its own — see
-      // the CSS opacity transition on .about__slide. It's the *leaving*
-      // slide that visibly travels this time, stage → peek, so the
-      // motion reads as undoing the forward move rather than repeating
-      // it. That slide falls through to this same loop on its own
-      // iteration (it's no longer pinned via `out`), so nothing else
-      // here needs to change for it.
-      if (direction === "backward" && i === index) return;
+    const el = slideRefs.current[crossIndex];
+    const before = prev.get(crossIndex);
+    const after = el?.getBoundingClientRect();
+    let travelDx = 0;
 
+    // Below $bp-lg only the stage slide is laid out, so a slide measures
+    // zero at one end of the move — nothing to play back.
+    if (el && before && after && before.width && after.width) {
       // The inline axis is stretch, which behaves as `start` the moment
       // the keyframe gives the slide a definite width, so dx is the
       // plain edge delta. The block axis is centred, so dy has to be the
@@ -158,39 +171,57 @@ export function About() {
       const dy =
         before.top + before.height / 2 - (after.top + after.height / 2);
 
-      if (
-        Math.abs(dx) < 1 &&
-        Math.abs(dy) < 1 &&
-        Math.abs(before.width - after.width) < 1
-      ) {
-        return;
-      }
+      travelDx = dx;
 
-      // Geometry (width / height), not scale: the photo's object-fit
-      // re-crops as the frame reshapes rather than the picture
-      // stretching, and it is never upscaled mid-travel. zIndex in the
-      // keyframes (not the element's permanent CSS) rides above the
-      // panel only for the moving slide's own travel, whichever
-      // direction it happens to be going — see .about__slide's z-index
-      // comment for why that crossing has to stay on top.
-      el.animate(
-        [
-          {
-            transform: `translate(${dx}px, ${dy}px)`,
-            width: `${Math.round(before.width)}px`,
-            height: `${Math.round(before.height)}px`,
-            zIndex: "4",
-          },
-          {
-            transform: "none",
-            width: `${Math.round(after.width)}px`,
-            height: `${Math.round(after.height)}px`,
-            zIndex: "4",
-          },
-        ],
-        { duration: TRAVEL_MS, easing: EASE, fill: "backwards" },
+      if (
+        Math.abs(dx) >= 1 ||
+        Math.abs(dy) >= 1 ||
+        Math.abs(before.width - after.width) >= 1
+      ) {
+        // Geometry (width / height), not scale: the photo's object-fit
+        // re-crops as the frame reshapes rather than the picture
+        // stretching, and it is never upscaled mid-travel. zIndex in the
+        // keyframes (not the element's permanent CSS) rides above the
+        // panel only for the moving slide's own travel, whichever
+        // direction it happens to be going — see .about__slide's z-index
+        // comment for why that crossing has to stay on top.
+        el.animate(
+          [
+            {
+              transform: `translate(${dx}px, ${dy}px)`,
+              width: `${Math.round(before.width)}px`,
+              height: `${Math.round(before.height)}px`,
+              zIndex: "4",
+            },
+            {
+              transform: "none",
+              width: `${Math.round(after.width)}px`,
+              height: `${Math.round(after.height)}px`,
+              zIndex: "4",
+            },
+          ],
+          { duration: TRAVEL_MS, easing: EASE, fill: "backwards" },
+        );
+      }
+    }
+
+    // The copy and the waiting peek ride that same distance, in the same
+    // time, on the same curve — so the three hold their spacing the
+    // whole way and arrive as one composition rather than three things
+    // that happen to move at once. Holding that spacing is also what
+    // keeps the copy from ever crossing the peek's picture. Which side
+    // it comes from is --dir's job, so only the magnitude goes through
+    // here. Below $bp-lg no slide is laid out to measure, and the
+    // property is dropped instead of left holding a stale desktop
+    // distance across a resize.
+    if (Math.abs(travelDx) > 1) {
+      rootRef.current?.style.setProperty(
+        "--shift",
+        `${Math.round(Math.abs(travelDx))}px`,
       );
-    });
+    } else {
+      rootRef.current?.style.removeProperty("--shift");
+    }
 
     prev.clear();
   }, [index]);
@@ -198,7 +229,16 @@ export function About() {
   const step = steps[index];
 
   return (
-    <section className="about" id="nosotros">
+    // Which way the last step went, for the two entrances that need to
+    // know: the copy reads it for the side it comes in from, and the
+    // peek for whether it should play its own arrival at all (going
+    // back, a photo is carried into that slot by the FLIP instead).
+    <section
+      className="about"
+      id="nosotros"
+      ref={rootRef}
+      data-direction={directionRef.current}
+    >
       <div className="about__intro">
         <SectionHeading
           title={
@@ -288,11 +328,7 @@ export function About() {
           {/* The live region is the stable wrapper; the copy inside is
               keyed so each step remounts and replays about-copy-in. */}
           <div className="about__copy-slot" aria-live="polite">
-            <div
-              className="about__copy"
-              data-direction={directionRef.current}
-              key={step.id}
-            >
+            <div className="about__copy" key={step.id}>
               <h3 className="about__title">{step.title}</h3>
               <p className="about__body">{step.detail}</p>
             </div>

@@ -22,6 +22,24 @@ $travel: 850ms;
   z-index: 2;
   background-color: var(--bg);
 
+  // Everything in a step change parks a full --shift outside the frame
+  // before coming in — past the right edge going forward, past the left
+  // coming back — which is far enough out to stretch the document
+  // sideways and flash a scrollbar mid-transition. Same fix, and the
+  // same reason, as Contact's and Team's bleeding bars.
+  overflow-x: clip;
+
+  // The side this step's move comes from, read by everything that
+  // travels with it: the copy and whichever photo is arriving. Going
+  // back it is the whole composition sliding the other way, so one sign
+  // flip turns the entrance around. --shift, the distance, is written
+  // here too — from About.tsx, once the FLIP has measured it.
+  --dir: 1;
+
+  &[data-direction='backward'] {
+    --dir: -1;
+  }
+
   &__intro {
     @include container;
 
@@ -119,6 +137,27 @@ $travel: 850ms;
       transition: opacity $travel $ease-out;
       pointer-events: none;
       content: '';
+    }
+
+    // The photo joining the composition this step, travelling in with
+    // the rest of it — same --shift, same $travel, same curve as the
+    // photo crossing slots and the copy between them. Which photo that
+    // is depends on the way the step went, and it is the one the FLIP
+    // does *not* carry: forward the deck hands a new photo to the peek,
+    // coming back it hands one to the stage. Landing it in place and
+    // fading it up instead is what let the copy read straight through
+    // it while it was still half transparent; three things holding
+    // their spacing cannot cross each other at all.
+    // $bp-lg and up only: below it there is no peek and no composition
+    // to keep together — the deck is not even laid out, --shift is never
+    // measured, and the slides just cross-fade in one column. Without
+    // the gate the stage slide would still match on the way back and
+    // slide in a lone photo width while the copy nudged its 1.5rem.
+    @include up($bp-lg) {
+      .about[data-direction='forward'] &[data-slot='next'],
+      .about[data-direction='backward'] &[data-slot='active'] {
+        animation: about-slide-in $travel $ease-out both;
+      }
     }
 
     // ---- slots
@@ -257,38 +296,19 @@ $travel: 850ms;
     gap: $space-sm;
     align-items: flex-start;
 
-    // Which side the copy rides in from — the same edge the photo
-    // itself travels from (peek → stage is a straight horizontal FLIP,
-    // no vertical move), so the text reads as part of the same card
-    // arriving rather than drifting up on its own. Forward mirrors the
-    // incoming photo (from the right); backward mirrors the outgoing
-    // one's retreat (from the left). Set from About.tsx's `direction`.
-    --dir: 1;
-
-    &[data-direction='backward'] {
-      --dir: -1;
-    }
-
-    // Title, then body — one after another, not the whole block arriving
-    // at once. Same construction Proyectos uses to bring in an opened
-    // project's readout (.projects__readout > *): held briefly, then
-    // each line's own fade + slide, stepped by --line. Starting at the
-    // same instant as the photo (no hold at all) buried the two reveals
-    // into one blur instead of reading as a sequence — but waiting the
-    // full $travel for the photo to land left the panel empty too long.
-    // This splits the difference: the text starts partway through the
-    // photo's travel, not at either end of it.
+    // $travel and $ease-out, the photo's own duration and curve, with no
+    // delay on either line: same distance (--shift), same time, same
+    // curve as the photos either side of it is what holds the three at a
+    // fixed spacing the whole way in, and a fixed spacing is what makes
+    // them one moving composition instead of three separate arrivals.
+    //
+    // It is also load-bearing, not just taste. Title and body used to
+    // step 60ms apart, and 60ms of this curve is a long way at the head
+    // of the move: it left the paragraph trailing far enough to overrun
+    // the peek's picture around a third of the way in — the exact thing
+    // travelling together is meant to make impossible.
     > * {
-      animation: about-copy-in $dur-slow $ease-out both;
-      animation-delay: calc(380ms + var(--line, 0) * 130ms);
-    }
-
-    > :nth-child(1) {
-      --line: 0;
-    }
-
-    > :nth-child(2) {
-      --line: 1;
+      animation: about-copy-in $travel $ease-out both;
     }
 
     @include reduced-motion {
@@ -405,13 +425,30 @@ $travel: 850ms;
   }
 }
 
-// Each line slides into place from --dir's edge — mirroring the
-// photo's own left/right FLIP instead of the plain rise Proyectos'
-// projects-readout-in uses. No `to` block: `both` plus the element's
-// own resting opacity/transform already is the end state.
+// The copy rides the photo's own FLIP: --shift is that photo's measured
+// dx, written on the section each step (About.tsx), and --dir the side
+// it comes from. Since the copy rests to the right of the stage, the
+// same dx starts it further out than the photo itself — off past the
+// peek, trailing the picture by exactly the gap it will still have when
+// both land. The fallback covers the first step and everything below
+// $bp-lg, where no slide travels to measure. No `to` block: `both` plus
+// the element's own resting state is the end state.
 @keyframes about-copy-in {
   from {
     opacity: 0;
-    transform: translateX(calc(var(--dir, 1) * 20px));
+    transform: translateX(calc(var(--dir, 1) * var(--shift, 1.5rem)));
+  }
+}
+
+// The photo the deck hands over, arriving from the same side and over
+// the same ground as everything else in the step — so the same --shift
+// and --dir the copy uses. The fallback covers the first render, before
+// any step has been measured: a slide's own width is roughly off frame
+// either way, since both slots bleed to their own edge. No opacity here
+// on purpose — the fade this replaces is what made it read as appearing
+// rather than arriving, and what the copy showed through.
+@keyframes about-slide-in {
+  from {
+    transform: translateX(calc(var(--dir, 1) * var(--shift, 100%)));
   }
 }
