@@ -172,16 +172,17 @@ $theme-sweep-dur: 1300ms;
     &__masthead {
       padding-bottom: clamp(2.25rem, 1.5rem + 4vh, 4rem);
 
-      // Taller wash than desktop — the mark is larger relative to the
-      // screen and the lower phone crop (her legs, the floor) is busier.
+      // Shorter than desktop's reach up the frame — these photos carry
+      // a lot of open sky above her, and the wash was climbing far
+      // enough into it to flatten a big stretch of it.
       &::before {
         background: linear-gradient(
           to top,
           var(--bg-band) 0%,
-          var(--bg-band) 22%,
-          color-mix(in srgb, var(--bg-band) 64%, transparent) 40%,
-          color-mix(in srgb, var(--bg-band) 12%, transparent) 56%,
-          transparent 68%
+          var(--bg-band) 15%,
+          color-mix(in srgb, var(--bg-band) 64%, transparent) 27%,
+          color-mix(in srgb, var(--bg-band) 12%, transparent) 38%,
+          transparent 46%
         );
       }
     }
