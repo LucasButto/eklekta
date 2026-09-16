@@ -120,6 +120,13 @@ $theme-sweep-dur: 1300ms;
       inset: 0;
       z-index: -1;
       content: "";
+      // Transitions the custom property itself (needs the @property
+      // registration in _theme.scss) rather than `background` — you
+      // can't sanely transition between two linear-gradient() values,
+      // but interpolating the one colour they're built from and letting
+      // the gradient re-evaluate every frame works, and keeps this in
+      // step with the photo's own $theme-sweep-dur circle reveal.
+      transition: --bg-band $theme-sweep-dur $ease-out;
       background: linear-gradient(
         to top,
         var(--bg-band) 0%,
@@ -253,6 +260,10 @@ $theme-sweep-dur: 1300ms;
     // `.is-sweeping`) already renders fully revealed at rest.
     &__photo-layer.is-sweeping {
       animation: none;
+    }
+
+    &__masthead::before {
+      transition: none;
     }
   }
 }
