@@ -52,41 +52,60 @@
       crossorigin
     />
 
-    <!-- Hero background photo — the page's largest paint. `type` lets
-         browsers without WebP support skip this and fetch the <picture>
-         element's JPEG fallback instead, so nothing double-fetches.
-         `media` mirrors the <picture> breakpoint so a phone never
-         preloads the desktop shot it is not going to display. -->
-    <link
-      rel="preload"
-      as="image"
-      type="image/webp"
-      media="(max-width: 767px)"
-      href="/images/hero/new-hero-mobile-640.webp"
-      imagesrcset="/images/hero/new-hero-mobile-640.webp 640w, /images/hero/new-hero-mobile-1024.webp 1024w"
-      imagesizes="100vw"
-      fetchpriority="high"
-    />
-    <link
-      rel="preload"
-      as="image"
-      type="image/webp"
-      media="(min-width: 768px)"
-      href="/images/hero/new-hero-1600.webp"
-      imagesrcset="/images/hero/new-hero-960.webp 960w, /images/hero/new-hero-1600.webp 1600w, /images/hero/new-hero-2560.webp 2560w, /images/hero/new-hero-3840.webp 3840w"
-      imagesizes="100vw"
-      fetchpriority="high"
-    />
-
-    <!-- Applies the stored theme before first paint so the page never flashes. -->
+    <!-- Applies the stored theme before first paint so the page never
+         flashes, then preloads the matching hero photo (day vs night —
+         see Hero.tsx) so the largest paint isn't waiting on React to
+         mount before its fetch even starts. Built here instead of as
+         static <link> tags because which photo is "correct" depends on
+         localStorage, which markup alone can't branch on. `type` lets
+         browsers without WebP support skip this and fetch the
+         <picture> element's JPEG fallback instead, so nothing
+         double-fetches. -->
     <script>
       (function () {
+        var theme = "light";
         try {
-          var stored = localStorage.getItem("eklekta-theme");
-          document.documentElement.dataset.theme =
-            stored === "dark" ? "dark" : "light";
-        } catch (e) {
-          document.documentElement.dataset.theme = "light";
+          theme =
+            localStorage.getItem("eklekta-theme") === "dark"
+              ? "dark"
+              : "light";
+        } catch (e) {}
+        document.documentElement.dataset.theme = theme;
+
+        function preload(media, href, srcset) {
+          var link = document.createElement("link");
+          link.rel = "preload";
+          link.as = "image";
+          link.type = "image/webp";
+          if (media) link.media = media;
+          link.href = href;
+          link.setAttribute("imagesrcset", srcset);
+          link.setAttribute("imagesizes", "100vw");
+          link.setAttribute("fetchpriority", "high");
+          document.head.appendChild(link);
+        }
+
+        if (theme === "dark") {
+          // One landscape source only — the night photo has no
+          // dedicated mobile crop (see Hero.tsx).
+          preload(
+            null,
+            "/images/hero/hero-night-1600.webp",
+            "/images/hero/hero-night-960.webp 960w, /images/hero/hero-night-1600.webp 1600w, /images/hero/hero-night-2560.webp 2560w, /images/hero/hero-night-3840.webp 3840w",
+          );
+        } else {
+          // `media` mirrors the <picture> breakpoint so a phone never
+          // preloads the desktop shot it is not going to display.
+          preload(
+            "(max-width: 767px)",
+            "/images/hero/new-hero-mobile-640.webp",
+            "/images/hero/new-hero-mobile-640.webp 640w, /images/hero/new-hero-mobile-1024.webp 1024w",
+          );
+          preload(
+            "(min-width: 768px)",
+            "/images/hero/hero-day-1600.webp",
+            "/images/hero/hero-day-960.webp 960w, /images/hero/hero-day-1600.webp 1600w, /images/hero/hero-day-2560.webp 2560w, /images/hero/hero-day-3840.webp 3840w",
+          );
         }
       })();
     </script>

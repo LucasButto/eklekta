@@ -1,3 +1,4 @@
+import type { MouseEventHandler } from 'react'
 import { useTheme } from '@/hooks/useTheme'
 import './ThemeToggle.scss'
 
@@ -5,11 +6,25 @@ export function ThemeToggle({ className }: { className?: string }) {
   const { theme, toggleTheme } = useTheme()
   const isDark = theme === 'dark'
 
+  // The hero's theme-change wipe (Hero.scss) expands from wherever this
+  // button actually is, at any breakpoint — so record that position as
+  // a % of the viewport straight on the root element before flipping
+  // the theme. A plain DOM write rather than React state/context: it's
+  // a one-off detail for a CSS animation, nothing renders from it.
+  const handleClick: MouseEventHandler<HTMLButtonElement> = (event) => {
+    const rect = event.currentTarget.getBoundingClientRect()
+    const x = ((rect.left + rect.width / 2) / window.innerWidth) * 100
+    const y = ((rect.top + rect.height / 2) / window.innerHeight) * 100
+    document.documentElement.style.setProperty('--theme-origin-x', `${x}%`)
+    document.documentElement.style.setProperty('--theme-origin-y', `${y}%`)
+    toggleTheme()
+  }
+
   return (
     <button
       type="button"
       className={['theme-toggle', className].filter(Boolean).join(' ')}
-      onClick={toggleTheme}
+      onClick={handleClick}
       aria-pressed={isDark}
       title={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
     >

@@ -20,6 +20,12 @@
 //  (About.scss: z-index + an opaque bg).
 // =============================================================
 
+// Shared with the masthead wash's --bg-band transition below, so the
+// gradient behind "eklekta" keeps pace with the photo instead of
+// snapping the instant data-theme flips while the circle is still
+// mid-reveal.
+$theme-sweep-dur: 1300ms;
+
 .hero {
   position: relative;
 
@@ -39,6 +45,31 @@
     inset: 0;
     z-index: 0;
     transform-origin: center;
+  }
+
+  // Day and night are stacked absolutely on top of one another. The
+  // current theme's layer (`.is-current`) sits on top at full size;
+  // while it's mid-wipe (`.is-sweeping`) it's clipped to a circle
+  // expanding from the navbar's sun/moon toggle (--theme-origin-x/y,
+  // set in ThemeToggle.tsx from the button's own position, so it's
+  // right at any breakpoint) so the layer underneath still shows
+  // through the unrevealed rest of the frame. That's what hides the
+  // AI-generated pair not quite lining up pixel for pixel (the
+  // mountains, mainly): a hard cut would show the seam, growing out of
+  // the toggle itself reads as the switch causing the change.
+  &__photo-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    clip-path: circle(150% at var(--theme-origin-x, 100%) var(--theme-origin-y, 0%));
+
+    &.is-current {
+      z-index: 1;
+    }
+
+    &.is-sweeping {
+      animation: hero-circle-reveal $theme-sweep-dur $ease-out both;
+    }
 
     picture,
     img {
@@ -52,6 +83,13 @@
       // She sits right of centre with the lit studio sweep to her left.
       // Held a little high so her face reads above the wordmark's band
       // along the bottom, with the laptop still in frame.
+      object-position: 62% 34%;
+    }
+
+    // The night shot has no dedicated portrait crop (see Hero.tsx) —
+    // unlike the day layer below, it keeps this same desktop framing
+    // at every width instead of switching to a phone object-position.
+    &--night img {
       object-position: 62% 34%;
     }
   }
@@ -122,7 +160,7 @@
 
   // ---- phone ----
   @include down($bp-md) {
-    &__photo img {
+    &__photo-layer--day img {
       // The portrait (2:3) art-directed source — fits a phone with only
       // the sides trimmed. Nudge up so her face clears the wordmark's
       // band and the empty studio sweep above her doesn't dominate.
@@ -210,6 +248,12 @@
     &__wordmark {
       animation: none;
     }
+
+    // Swap instantly rather than wipe — `.is-current` alone (no
+    // `.is-sweeping`) already renders fully revealed at rest.
+    &__photo-layer.is-sweeping {
+      animation: none;
+    }
   }
 }
 
@@ -262,6 +306,21 @@
   }
 }
 
+// ---- theme-change wipe keyframes ----
+// The incoming layer's clip circle grows from nothing, at the toggle's
+// own position (--theme-origin-x/y, see Hero.scss above), out past
+// 150% so it clears every corner of the frame regardless of aspect
+// ratio or how close to an edge the toggle sits.
+@keyframes hero-circle-reveal {
+  from {
+    clip-path: circle(0% at var(--theme-origin-x, 100%) var(--theme-origin-y, 0%));
+  }
+
+  to {
+    clip-path: circle(150% at var(--theme-origin-x, 100%) var(--theme-origin-y, 0%));
+  }
+}
+
 @keyframes hero-masthead-out {
   0%,
   7% {
@@ -284,12 +343,3 @@
   }
 }
 
-// Dark theme.
-:root[data-theme="dark"] {
-  // The studio sweep reads bright against the dark page; a small dip
-  // settles it. On the img, so it composes with the blur the animation
-  // puts on the parent.
-  .hero__photo img {
-    filter: brightness(0.92);
-  }
-}
