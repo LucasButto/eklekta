@@ -63,13 +63,13 @@ export function Hero() {
                 <source
                   media="(max-width: 767.98px)"
                   type="image/webp"
-                  srcSet="/images/hero/new-hero-mobile-640.webp 640w, /images/hero/new-hero-mobile-1024.webp 1024w"
+                  srcSet="/images/hero/hero-day-mobile-640.webp 640w, /images/hero/hero-day-mobile-1024.webp 1024w"
                   sizes="100vw"
                 />
                 <source
                   media="(max-width: 767.98px)"
                   type="image/jpeg"
-                  srcSet="/images/hero/new-hero-mobile-640.jpg 640w, /images/hero/new-hero-mobile-1024.jpg 1024w"
+                  srcSet="/images/hero/hero-day-mobile-640.jpg 640w, /images/hero/hero-day-mobile-1024.jpg 1024w"
                   sizes="100vw"
                 />
                 <source
@@ -102,11 +102,19 @@ export function Hero() {
                 target === "night" ? ` is-current${isSweeping ? " is-sweeping" : ""}` : ""
               }`}
             >
-              {/* One landscape source only — the night shot has no
-                  dedicated portrait crop, so phones fall back to the
-                  same frame via object-fit:cover (see the
-                  --night object-position override in Hero.scss). */}
               <picture>
+                <source
+                  media="(max-width: 767.98px)"
+                  type="image/webp"
+                  srcSet="/images/hero/hero-night-mobile-640.webp 640w, /images/hero/hero-night-mobile-1024.webp 1024w"
+                  sizes="100vw"
+                />
+                <source
+                  media="(max-width: 767.98px)"
+                  type="image/jpeg"
+                  srcSet="/images/hero/hero-night-mobile-640.jpg 640w, /images/hero/hero-night-mobile-1024.jpg 1024w"
+                  sizes="100vw"
+                />
                 <source
                   type="image/webp"
                   srcSet="/images/hero/hero-night-960.webp 960w, /images/hero/hero-night-1600.webp 1600w, /images/hero/hero-night-2560.webp 2560w, /images/hero/hero-night-3840.webp 3840w"
