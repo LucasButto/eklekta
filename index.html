@@ -85,28 +85,32 @@
           document.head.appendChild(link);
         }
 
-        if (theme === "dark") {
-          // One landscape source only — the night photo has no
-          // dedicated mobile crop (see Hero.tsx).
-          preload(
-            null,
-            "/images/hero/hero-night-1600.webp",
-            "/images/hero/hero-night-960.webp 960w, /images/hero/hero-night-1600.webp 1600w, /images/hero/hero-night-2560.webp 2560w, /images/hero/hero-night-3840.webp 3840w",
-          );
-        } else {
-          // `media` mirrors the <picture> breakpoint so a phone never
-          // preloads the desktop shot it is not going to display.
-          preload(
-            "(max-width: 767px)",
-            "/images/hero/new-hero-mobile-640.webp",
-            "/images/hero/new-hero-mobile-640.webp 640w, /images/hero/new-hero-mobile-1024.webp 1024w",
-          );
-          preload(
-            "(min-width: 768px)",
-            "/images/hero/hero-day-1600.webp",
-            "/images/hero/hero-day-960.webp 960w, /images/hero/hero-day-1600.webp 1600w, /images/hero/hero-day-2560.webp 2560w, /images/hero/hero-day-3840.webp 3840w",
-          );
-        }
+        // `media` mirrors the <picture> breakpoint so a phone never
+        // preloads the desktop shot it is not going to display, and
+        // vice versa. Both themes have their own mobile crop now.
+        var prefix = theme === "dark" ? "hero-night" : "hero-day";
+        preload(
+          "(max-width: 767px)",
+          "/images/hero/" + prefix + "-mobile-640.webp",
+          "/images/hero/" +
+            prefix +
+            "-mobile-640.webp 640w, /images/hero/" +
+            prefix +
+            "-mobile-1024.webp 1024w",
+        );
+        preload(
+          "(min-width: 768px)",
+          "/images/hero/" + prefix + "-1600.webp",
+          "/images/hero/" +
+            prefix +
+            "-960.webp 960w, /images/hero/" +
+            prefix +
+            "-1600.webp 1600w, /images/hero/" +
+            prefix +
+            "-2560.webp 2560w, /images/hero/" +
+            prefix +
+            "-3840.webp 3840w",
+        );
       })();
     </script>
   </head>

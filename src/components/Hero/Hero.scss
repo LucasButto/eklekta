@@ -85,13 +85,6 @@ $theme-sweep-dur: 1300ms;
       // along the bottom, with the laptop still in frame.
       object-position: 62% 34%;
     }
-
-    // The night shot has no dedicated portrait crop (see Hero.tsx) —
-    // unlike the day layer below, it keeps this same desktop framing
-    // at every width instead of switching to a phone object-position.
-    &--night img {
-      object-position: 62% 34%;
-    }
   }
 
   // ---- the wordmark block — motion.dev's `hero-content` ----
@@ -167,11 +160,13 @@ $theme-sweep-dur: 1300ms;
 
   // ---- phone ----
   @include down($bp-md) {
-    &__photo-layer--day img {
-      // The portrait (2:3) art-directed source — fits a phone with only
-      // the sides trimmed. Nudge up so her face clears the wordmark's
-      // band and the empty studio sweep above her doesn't dominate.
-      object-position: 50% 32%;
+    &__photo-layer--day img,
+    &__photo-layer--night img {
+      // Each theme's own portrait (2:3-ish) art-directed source — fits
+      // a phone with only the sides trimmed. Nudged right and up so her
+      // face clears the wordmark's band instead of the empty sky
+      // dominating.
+      object-position: 65% 38%;
     }
 
     &__masthead {
