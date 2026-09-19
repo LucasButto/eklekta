@@ -72,45 +72,23 @@
         } catch (e) {}
         document.documentElement.dataset.theme = theme;
 
-        function preload(media, href, srcset) {
+        function preload(media, href) {
           var link = document.createElement("link");
           link.rel = "preload";
           link.as = "image";
           link.type = "image/webp";
           if (media) link.media = media;
           link.href = href;
-          link.setAttribute("imagesrcset", srcset);
-          link.setAttribute("imagesizes", "100vw");
           link.setAttribute("fetchpriority", "high");
           document.head.appendChild(link);
         }
 
         // `media` mirrors the <picture> breakpoint so a phone never
         // preloads the desktop shot it is not going to display, and
-        // vice versa. Both themes have their own mobile crop now.
+        // vice versa. One file each — no srcset, see Hero.tsx.
         var prefix = theme === "dark" ? "hero-night" : "hero-day";
-        preload(
-          "(max-width: 767px)",
-          "/images/hero/" + prefix + "-mobile-640.webp",
-          "/images/hero/" +
-            prefix +
-            "-mobile-640.webp 640w, /images/hero/" +
-            prefix +
-            "-mobile-1024.webp 1024w",
-        );
-        preload(
-          "(min-width: 768px)",
-          "/images/hero/" + prefix + "-1600.webp",
-          "/images/hero/" +
-            prefix +
-            "-960.webp 960w, /images/hero/" +
-            prefix +
-            "-1600.webp 1600w, /images/hero/" +
-            prefix +
-            "-2560.webp 2560w, /images/hero/" +
-            prefix +
-            "-3840.webp 3840w",
-        );
+        preload("(max-width: 767px)", "/images/hero/" + prefix + "-mobile.webp");
+        preload("(min-width: 768px)", "/images/hero/" + prefix + "-desktop.webp");
       })();
     </script>
   </head>

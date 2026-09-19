@@ -59,37 +59,29 @@ export function Hero() {
                     so object-fit:cover isn't cropping a landscape frame
                     down to a sliver; wide screens get the 16:9. Mobile
                     sources first — the browser takes the first
-                    <source> whose media and type both match. */}
+                    <source> whose media and type both match. One size
+                    each (no srcset) — the source files are already
+                    sized for their breakpoint. */}
                 <source
                   media="(max-width: 767.98px)"
                   type="image/webp"
-                  srcSet="/images/hero/hero-day-mobile-640.webp 640w, /images/hero/hero-day-mobile-1024.webp 1024w"
-                  sizes="100vw"
+                  srcSet="/images/hero/hero-day-mobile.webp"
                 />
                 <source
                   media="(max-width: 767.98px)"
                   type="image/jpeg"
-                  srcSet="/images/hero/hero-day-mobile-640.jpg 640w, /images/hero/hero-day-mobile-1024.jpg 1024w"
-                  sizes="100vw"
+                  srcSet="/images/hero/hero-day-mobile.jpg"
                 />
-                <source
-                  type="image/webp"
-                  srcSet="/images/hero/hero-day-960.webp 960w, /images/hero/hero-day-1600.webp 1600w, /images/hero/hero-day-2560.webp 2560w, /images/hero/hero-day-3840.webp 3840w"
-                  sizes="100vw"
-                />
-                <source
-                  type="image/jpeg"
-                  srcSet="/images/hero/hero-day-960.jpg 960w, /images/hero/hero-day-1600.jpg 1600w, /images/hero/hero-day-2560.jpg 2560w, /images/hero/hero-day-3840.jpg 3840w"
-                  sizes="100vw"
-                />
+                <source type="image/webp" srcSet="/images/hero/hero-day-desktop.webp" />
+                <source type="image/jpeg" srcSet="/images/hero/hero-day-desktop.jpg" />
                 {/* The hero's largest paint — loads eagerly, off the lazy path. */}
                 <img
-                  src="/images/hero/hero-day-1600.jpg"
+                  src="/images/hero/hero-day-desktop.jpg"
                   alt=""
                   fetchPriority="high"
                   decoding="async"
-                  width={1600}
-                  height={900}
+                  width={2560}
+                  height={1441}
                 />
               </picture>
             </div>
@@ -106,32 +98,22 @@ export function Hero() {
                 <source
                   media="(max-width: 767.98px)"
                   type="image/webp"
-                  srcSet="/images/hero/hero-night-mobile-640.webp 640w, /images/hero/hero-night-mobile-1024.webp 1024w"
-                  sizes="100vw"
+                  srcSet="/images/hero/hero-night-mobile.webp"
                 />
                 <source
                   media="(max-width: 767.98px)"
                   type="image/jpeg"
-                  srcSet="/images/hero/hero-night-mobile-640.jpg 640w, /images/hero/hero-night-mobile-1024.jpg 1024w"
-                  sizes="100vw"
+                  srcSet="/images/hero/hero-night-mobile.jpg"
                 />
-                <source
-                  type="image/webp"
-                  srcSet="/images/hero/hero-night-960.webp 960w, /images/hero/hero-night-1600.webp 1600w, /images/hero/hero-night-2560.webp 2560w, /images/hero/hero-night-3840.webp 3840w"
-                  sizes="100vw"
-                />
-                <source
-                  type="image/jpeg"
-                  srcSet="/images/hero/hero-night-960.jpg 960w, /images/hero/hero-night-1600.jpg 1600w, /images/hero/hero-night-2560.jpg 2560w, /images/hero/hero-night-3840.jpg 3840w"
-                  sizes="100vw"
-                />
+                <source type="image/webp" srcSet="/images/hero/hero-night-desktop.webp" />
+                <source type="image/jpeg" srcSet="/images/hero/hero-night-desktop.jpg" />
                 <img
-                  src="/images/hero/hero-night-1600.jpg"
+                  src="/images/hero/hero-night-desktop.jpg"
                   alt=""
                   fetchPriority="high"
                   decoding="async"
-                  width={1600}
-                  height={900}
+                  width={2560}
+                  height={1441}
                 />
               </picture>
             </div>
