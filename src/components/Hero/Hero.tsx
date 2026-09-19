@@ -122,10 +122,20 @@ export function Hero() {
 
         {/* The wordmark, set large along the floor of the frame in the
             brand colour, on a neutral wash that rises off the bottom
-            edge (::before) so it keeps contrast where it crosses the
-            photo. Both sink out and fade on scroll while the photo
-            zooms up under them. */}
+            edge so it keeps contrast where it crosses the photo. Both
+            sink out and fade on scroll while the photo zooms up under
+            them. */}
         <div className="hero__masthead">
+          {/* The wash is two stacked layers — the colour being left
+              underneath, the new one on top clipped to the same
+              expanding circle as the photo (identical box, origin and
+              timing, so the two edges travel together). Keyed like the
+              photo layers so the wipe replays on every toggle. */}
+          <div
+            key={isSweeping ? `wash-${sweepGen}` : "wash"}
+            className={`hero__wash${isSweeping ? " is-sweeping" : ""}`}
+          />
+
           <h1 className="hero__title">
             {/* Logo renders role="img" + aria-label itself, so this is
                 the h1's only content — no separate sr-only text needed. */}

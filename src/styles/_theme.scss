@@ -8,17 +8,6 @@
 //  inline script in index.html stamps data-theme before paint.
 // =============================================================
 
-// Typed so a `transition: --bg-band ...` (Hero.scss's masthead wash) can
-// actually interpolate the colour instead of snapping — plain custom
-// properties are untyped and transitions on them are a hard cut.
-// Browsers without @property just keep that cut, so this only adds a
-// smoother path, nothing regresses on older engines.
-@property --bg-band {
-  syntax: "<color>";
-  inherits: true;
-  initial-value: #e8e7ee;
-}
-
 :root {
   // layout — kept as custom properties (not just Sass) so a child can
   // measure its distance to the viewport edge and bleed out exactly.
