@@ -7,16 +7,23 @@ export function ThemeToggle({ className }: { className?: string }) {
   const isDark = theme === 'dark'
 
   // The hero's theme-change wipe (Hero.scss) expands from wherever this
-  // button actually is, at any breakpoint — so record that position as
-  // a % of the viewport straight on the root element before flipping
-  // the theme. A plain DOM write rather than React state/context: it's
-  // a one-off detail for a CSS animation, nothing renders from it.
+  // button actually is, at any breakpoint, and reveals the outgoing
+  // theme's wash colour underneath it — so record both the position and
+  // the colour we're leaving, on the root element, before flipping the
+  // theme (after which --bg-band is already the new one). Plain DOM
+  // writes rather than React state/context: they're one-off details for
+  // a CSS animation, nothing renders from them.
   const handleClick: MouseEventHandler<HTMLButtonElement> = (event) => {
+    const root = document.documentElement
     const rect = event.currentTarget.getBoundingClientRect()
     const x = ((rect.left + rect.width / 2) / window.innerWidth) * 100
     const y = ((rect.top + rect.height / 2) / window.innerHeight) * 100
-    document.documentElement.style.setProperty('--theme-origin-x', `${x}%`)
-    document.documentElement.style.setProperty('--theme-origin-y', `${y}%`)
+    root.style.setProperty('--theme-origin-x', `${x}%`)
+    root.style.setProperty('--theme-origin-y', `${y}%`)
+    root.style.setProperty(
+      '--bg-band-prev',
+      getComputedStyle(root).getPropertyValue('--bg-band').trim(),
+    )
     toggleTheme()
   }
 

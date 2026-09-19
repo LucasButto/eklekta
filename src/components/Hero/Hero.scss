@@ -20,11 +20,10 @@
 //  (About.scss: z-index + an opaque bg).
 // =============================================================
 
-// Shared with the masthead wash's --bg-band transition below, so the
-// gradient behind "eklekta" keeps pace with the photo instead of
-// snapping the instant data-theme flips while the circle is still
-// mid-reveal.
-$theme-sweep-dur: 1300ms;
+// Shared by the photo's circle reveal and the wash's, below — they run
+// the same keyframes over the same box, so the two edges stay on one
+// arc instead of the wash flipping colour everywhere at once.
+$theme-sweep-dur: 1800ms;
 
 .hero {
   position: relative;
@@ -61,7 +60,9 @@ $theme-sweep-dur: 1300ms;
     position: absolute;
     inset: 0;
     z-index: 0;
-    clip-path: circle(150% at var(--theme-origin-x, 100%) var(--theme-origin-y, 0%));
+    clip-path: circle(
+      150% at var(--theme-origin-x, 100%) var(--theme-origin-y, 0%)
+    );
 
     &.is-current {
       z-index: 1;
@@ -101,33 +102,64 @@ $theme-sweep-dur: 1300ms;
     justify-content: flex-end;
     align-items: flex-start;
     padding: 0 var(--gutter) clamp(2rem, 1.4rem + 3vh, 4.5rem);
+  }
 
-    // The wash: --bg-band solid the whole way through the wordmark's
-    // band (~bottom third) so the brand-hued mark keeps contrast where
-    // it crosses the photo, then fading to nothing by ~66% up. Behind
-    // the wordmark, above the photo; rides the same sink/fade. Keyed to
-    // --bg-band so it tracks the theme — light grey-lavender in light,
-    // near-black in dark — with no per-theme override.
-    &::before {
+  // The wash sits behind the wordmark, above the photo, and inside the
+  // masthead so it rides the same sink/fade on scroll.
+  //
+  // Two colour layers rather than one: the theme being left (::before,
+  // captured as --bg-band-prev by ThemeToggle.tsx) and the theme
+  // arriving (::after), which is clipped to the very same expanding
+  // circle as the incoming photo. The masthead box matches .hero__photo
+  // exactly, so an identical origin and radius put both edges on the
+  // same arc — the wash turns colour as the circle sweeps over it
+  // instead of all at once.
+  //
+  // The fade itself is a mask on the parent, and the two layers are
+  // flat and opaque. It has to be that way round: if both painted the
+  // gradient, its semi-transparent middle would composite twice (68%
+  // over 68% reads ~90%) and the wash would sit heavier and higher than
+  // a single layer ever did.
+  &__wash {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    // Solid through the wordmark's band (~bottom quarter) so the
+    // brand-hued mark keeps contrast where it crosses the photo, then
+    // fading to nothing by ~66% up.
+    mask-image: linear-gradient(
+      to top,
+      #000 0%,
+      #000 24%,
+      rgb(0 0 0 / 68%) 40%,
+      rgb(0 0 0 / 12%) 55%,
+      transparent 66%
+    );
+
+    &::before,
+    &::after {
       position: absolute;
       inset: 0;
-      z-index: -1;
       content: "";
-      // Transitions the custom property itself (needs the @property
-      // registration in _theme.scss) rather than `background` — you
-      // can't sanely transition between two linear-gradient() values,
-      // but interpolating the one colour they're built from and letting
-      // the gradient re-evaluate every frame works, and keeps this in
-      // step with the photo's own $theme-sweep-dur circle reveal.
-      transition: --bg-band $theme-sweep-dur $ease-out;
-      background: linear-gradient(
-        to top,
-        var(--bg-band) 0%,
-        var(--bg-band) 24%,
-        color-mix(in srgb, var(--bg-band) 68%, transparent) 40%,
-        color-mix(in srgb, var(--bg-band) 12%, transparent) 55%,
-        transparent 66%
+    }
+
+    // No previous colour on the first paint — nothing has toggled yet,
+    // so both layers are simply the current theme.
+    &::before {
+      background-color: var(--bg-band-prev, var(--bg-band));
+    }
+
+    &::after {
+      background-color: var(--bg-band);
+
+      clip-path: circle(
+        150% at var(--theme-origin-x, 100%) var(--theme-origin-y, 0%)
       );
+    }
+
+    &.is-sweeping::after {
+      animation: hero-circle-reveal $theme-sweep-dur $ease-out both;
     }
   }
 
@@ -171,20 +203,20 @@ $theme-sweep-dur: 1300ms;
 
     &__masthead {
       padding-bottom: clamp(2.25rem, 1.5rem + 4vh, 4rem);
+    }
 
-      // Shorter than desktop's reach up the frame — these photos carry
-      // a lot of open sky above her, and the wash was climbing far
-      // enough into it to flatten a big stretch of it.
-      &::before {
-        background: linear-gradient(
-          to top,
-          var(--bg-band) 0%,
-          var(--bg-band) 15%,
-          color-mix(in srgb, var(--bg-band) 64%, transparent) 27%,
-          color-mix(in srgb, var(--bg-band) 12%, transparent) 38%,
-          transparent 46%
-        );
-      }
+    // Shorter than desktop's reach up the frame — these photos carry a
+    // lot of open sky above her, and the wash was climbing far enough
+    // into it to flatten a big stretch of it.
+    &__wash {
+      mask-image: linear-gradient(
+        to top,
+        #000 0%,
+        #000 15%,
+        rgb(0 0 0 / 64%) 27%,
+        rgb(0 0 0 / 12%) 38%,
+        transparent 46%
+      );
     }
 
     &__wordmark svg {
@@ -252,14 +284,11 @@ $theme-sweep-dur: 1300ms;
       animation: none;
     }
 
-    // Swap instantly rather than wipe — `.is-current` alone (no
-    // `.is-sweeping`) already renders fully revealed at rest.
-    &__photo-layer.is-sweeping {
+    // Swap instantly rather than wipe — the resting state of both (no
+    // `.is-sweeping`) already renders fully revealed.
+    &__photo-layer.is-sweeping,
+    &__wash.is-sweeping::after {
       animation: none;
-    }
-
-    &__masthead::before {
-      transition: none;
     }
   }
 }
@@ -320,11 +349,15 @@ $theme-sweep-dur: 1300ms;
 // ratio or how close to an edge the toggle sits.
 @keyframes hero-circle-reveal {
   from {
-    clip-path: circle(0% at var(--theme-origin-x, 100%) var(--theme-origin-y, 0%));
+    clip-path: circle(
+      0% at var(--theme-origin-x, 100%) var(--theme-origin-y, 0%)
+    );
   }
 
   to {
-    clip-path: circle(150% at var(--theme-origin-x, 100%) var(--theme-origin-y, 0%));
+    clip-path: circle(
+      150% at var(--theme-origin-x, 100%) var(--theme-origin-y, 0%)
+    );
   }
 }
 
@@ -349,4 +382,3 @@ $theme-sweep-dur: 1300ms;
     opacity: 0;
   }
 }
-
