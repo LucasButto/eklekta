@@ -66,7 +66,16 @@
   // sits noticeably larger now: big enough to carry the section, capped
   // before it wraps past three lines or collides with the passing
   // photos.
-  font-size: clamp(1.7rem, 0.8rem + 4.4vw, 5.25rem);
+  // The 8.9vh is the short-window term. This curve is on its 5.25rem
+  // ceiling from ~1450px wide, so it handed a 695px-tall notebook the
+  // very same 75.6px a 1080px-tall screen gets — and the statement, the
+  // punchline and the gap between them share one pinned 100svh frame,
+  // which came out 603px of 695 there against 553px of 1080 here. The
+  // coefficient is free to be anything at or above 7vh (5.25rem ÷ 1080)
+  // and still leave a 1080p screen on its ceiling untouched, so it is
+  // set for the trim we actually want rather than the maximum one:
+  // ~62px on the notebook, not the 49px a bare 7vh would give.
+  font-size: clamp(1.7rem, min(0.8rem + 4.4vw, 8.9vh), 5.25rem);
   max-width: 18ch;
   color: var(--text);
 
@@ -107,8 +116,11 @@
 
   // Base size — the one the static collage and reduced-motion readers
   // get. Held inside the container here; the scroll enhancement below
-  // lets it grow much larger.
-  font-size: clamp(3rem, 1rem + 7vw, 8.5rem);
+  // lets it grow much larger. Carries the same short-window term as the
+  // statement above so the pair stays in step for those readers too;
+  // 14vh clears the 8.5rem ceiling at 1080px tall, so nothing changes
+  // there.
+  font-size: clamp(3rem, min(1rem + 7vw, 14vh), 8.5rem);
   // One line always — it is a three-word mark, never a wrapping phrase.
   white-space: nowrap;
   color: var(--brand);
@@ -122,7 +134,13 @@
   .manifesto__frame {
     min-height: clamp(32rem, 68vh, 44rem);
     align-content: center;
-    gap: clamp(1.5rem, 0.5rem + 2vw, 3rem);
+    // Only two rows ever sit in this grid — the statement and the
+    // punchline; the collage is absolute — so this gap is half of the
+    // space between them (the closing line's own margin-top is the
+    // other half). 4vh is the 3rem ceiling at 1080px tall, so the pair
+    // sits exactly as far apart as it does today on a tall screen and
+    // closes up on a short one.
+    gap: clamp(1.5rem, min(0.5rem + 2vw, 4vh), 3rem);
   }
 
   .manifesto__collage {
@@ -289,12 +307,24 @@
       // scales. It lands while the last photo is still on its way out,
       // not after — so the mark is already there as the frame clears.
       .manifesto__closing-line {
-        margin-top: max(1.75rem, 0.26em);
+        // The other half of the space between the statement and the
+        // punchline (see .manifesto__frame's gap). It is in em so the
+        // separation stays in proportion as the type scales — but em is
+        // blind to the window, and with the closing line pinned to its
+        // own ceiling that came out 51.7px on a 695px-tall notebook
+        // exactly as it does on a 1080px screen, half again the frame
+        // gap beside it. 4.8vh is that same 0.26em measured at 1080, so
+        // a tall screen keeps the em value and a short one closes up.
+        margin-top: max(1rem, min(0.26em, 4.8vh));
         // Big — Futura is far narrower than the Monument this used to be
         // in, so it carries a much larger point size for the same weight
         // on the page. Capped where "Eso es eklekta." still clears the
-        // container once the root font-size ramp is in past 1920.
-        font-size: clamp(3.4rem, calc(14.5vw - 1rem), 13.8rem);
+        // container once the root font-size ramp is in past 1920 — and,
+        // with 23vh, where one line of it cannot take 27% of a short
+        // window's pinned frame. Like the statement's own term, the
+        // coefficient only has to clear 18.4vh (13.8rem ÷ 1080) to leave
+        // 1080p untouched; 23vh spends that headroom on a gentler trim.
+        font-size: clamp(3.4rem, min(14.5vw - 1rem, 23vh), 13.8rem);
         animation-range: contain 32% contain 60%;
       }
     }
