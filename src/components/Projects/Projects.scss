@@ -28,7 +28,23 @@ $projects-gap-md: clamp(10px, 6px + 0.9vw, 20px);
 
 $card-h: clamp(220px, 58vw, 340px);
 $card-h-md: clamp(240px, 34vw, 320px);
-$card-h-lg: clamp(210px, 29vh, 420px);
+// The floor is 254px, not the 210px it was, and it is derived rather
+// than picked: it is the row height that makes .projects__body come out
+// exactly one screen tall on a notebook. Working back from the body's
+// own parts at a 695px viewport — the navbar's 5.125rem, the 38px
+// filter bar and its 2vh margin, the grid's own gap and the body's 6vh
+// bottom padding — leaves 507.8px for two rows, so 254px each fills it
+// to the pixel.
+//
+// Above ~876px tall the 29vh curve is the larger of the two and takes
+// over again, which is what leaves 1080p and every taller screen
+// untouched: the cards keep the landscape bento proportion there, and
+// this floor never enters the picture. Below 695px the rows simply
+// shrink back under it (flex-shrink on .projects__row) rather than
+// overflowing. So the fill is a short-window behaviour only, by
+// construction — a 1080p screen still sits at content height with room
+// to spare, exactly as it does today.
+$card-h-lg: clamp(254px, 29vh, 420px);
 
 // Roomier than the old cover's inset: nothing is fighting a photograph
 // for legibility any more, so the type can sit off the edges the way it
@@ -131,7 +147,17 @@ $field-graphite-dark: #262247;
       // ($card-h-lg — see .projects__row), so on a large screen the
       // section sits at content height; a short laptop still shrinks
       // the rows to fit through the flex children below.
-      max-height: 100svh;
+      //
+      // Minus the header, because the header is what the reader is
+      // actually looking past. A plain 100svh measures the whole screen
+      // including the band the fixed navbar sits over, so the ceiling
+      // was a full 5.125rem looser than the room the body really has —
+      // the same 5.125rem that scroll-padding-top and the Servicios rail
+      // already treat as where the page begins. With $card-h-lg's floor
+      // now sized to fill this exact box, this is what the fill is
+      // measured against; it is also what the rows shrink to on a window
+      // shorter still, so nothing ever lands underneath the bar.
+      max-height: calc(100svh - 5.125rem);
       min-height: 0;
       padding-bottom: clamp(32px, 6vh, 64px);
     }
