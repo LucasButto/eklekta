@@ -70,6 +70,15 @@
     grid-template-columns: minmax(0, 1fr);
     gap: clamp(2rem, 1rem + 4vw, 4.5rem);
 
+    // Below $bp-lg this grid stacks three things, not two: the rail,
+    // its dots, and the closing note. The dots belong to the rail and
+    // read as adrift with a full section gap above them, so the row gap
+    // closes right up and the closing note buys its own separation back
+    // (see &__rail). The column gap above $bp-lg is untouched.
+    @include down($bp-lg) {
+      row-gap: $space-2xs;
+    }
+
     @include up($bp-lg) {
       grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
       column-gap: clamp(2rem, 1rem + 4vw, 5rem);
@@ -97,6 +106,13 @@
     // only half the guard — without this the item still reports its
     // min-content width and overflows the track it was given.
     min-width: 0;
+
+    // The separation the body's own row gap used to give it, back on
+    // the one row that wants it — the closing note is a new thought,
+    // the dots above it are not.
+    @include down($bp-lg) {
+      margin-top: $space-md;
+    }
 
     @include up($bp-lg) {
       // DOM order is list-then-rail (for mobile's sake); put the rail
@@ -220,6 +236,182 @@
     }
   }
 
+  // ------------------------------------------------ mobile carousel
+  // Below $bp-lg there is no pinned panel to hold four services
+  // against, and stacking them cost ~2.960px of scroll — 27% of the
+  // whole page — for four blocks a reader had to take on faith were
+  // even there. Same four services, same copy, as one thumb-swipeable
+  // rail: a card per service with the next one showing at the screen
+  // edge, snapped by CSS alone.
+  //
+  // `display: contents` everywhere else is what makes that free: the
+  // wrapper generates no box at $bp-lg and up, so the desktop grid
+  // still sees .services__list itself as the item it places in column 2
+  // and not one rule of the pinned sequence changes.
+  &__carousel {
+    display: contents;
+
+    @include down($bp-lg) {
+      // The card's own width, published here rather than on the item
+      // because three things downstream have to agree with it: the
+      // item's flex-basis, the title's size cap, and the rail's trailing
+      // padding (which is what lets the LAST card reach the start line).
+      --card-width: 82vw;
+
+      // Two cards at a time once there is width for them — the tablet
+      // band should read as its own layout, not as the phone's
+      // stretched to fit.
+      @include up($bp-md) {
+        --card-width: 44vw;
+      }
+
+      display: block;
+      // Runs the rail edge to edge: a card snapped to the start sits on
+      // the page gutter, and the one after it peeks out of the screen's
+      // own edge rather than out of the container's padding. --edge is
+      // exactly this container's content-box-to-viewport gap, so the
+      // wrapper comes out at precisely the container's border box —
+      // never a pixel wider, which is what would add a horizontal
+      // scrollbar to the page.
+      @include bleed-start;
+      @include bleed-end;
+
+      overflow-x: auto;
+      // The rail is a side street, not a diversion: reaching its end
+      // must not start scrolling the page sideways or trigger a
+      // back-swipe.
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x mandatory;
+      // The snapport starts at the gutter, matching the rail's own
+      // start padding below, so a snapped card lands on the page grid.
+      scroll-padding-inline: var(--edge);
+      // Both axes, explicitly. This read `pan-y pinch-zoom`, which says
+      // the exact opposite of what the comment beside it claimed: the
+      // listed values are the gestures the BROWSER may handle, so
+      // leaving `pan-x` out handed the horizontal axis to the page and
+      // left the rail completely dead to a thumb. Naming both keeps the
+      // page's vertical scroll working when the gesture starts over the
+      // rail — which is the thing the old value was trying to protect —
+      // while giving the rail the axis it actually scrolls on.
+      touch-action: pan-x pan-y pinch-zoom;
+
+      @include hide-scrollbar;
+
+      // Inside, not outside: the rail bleeds to the viewport edge, so an
+      // outset ring would be clipped on both sides.
+      &:focus-visible {
+        outline: 2px solid var(--focus);
+        outline-offset: -2px;
+        border-radius: $radius-xs;
+      }
+    }
+  }
+
+  // The controls under the rail: previous, the dots, next — the row
+  // About's carousel ends in, set the same way (arrows flanking the dots,
+  // left-aligned on the page gutter rather than centred). A sibling of the
+  // carousel rather than a child of it, or it would ride the horizontal
+  // scroll it is reporting on. Hidden by default so $bp-lg and up never
+  // has it in the grid at all — no rule needed up there to take it back
+  // out (it is not rendered there either).
+  &__nav {
+    display: none;
+
+    @include down($bp-lg) {
+      display: flex;
+      // Tight, with the 44px targets themselves carrying the separation —
+      // the same reasoning as About's row: two arrows and four dots at
+      // full width run past a 320px screen otherwise.
+      gap: $space-2xs;
+      align-items: center;
+    }
+  }
+
+  &__progress {
+    display: flex;
+    gap: $space-3xs;
+    align-items: center;
+  }
+
+  // Bare arrows, no shape around them — About's own. One icon, mirrored,
+  // so there is no second asset to keep in sync; the box around the glyph
+  // is a thumb's size.
+  &__nav-btn {
+    display: inline-grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    background: none;
+    border: 0;
+    transition: color $dur-base $ease-out;
+
+    svg {
+      width: 1.4rem;
+      height: 1.4rem;
+    }
+
+    &--prev svg {
+      transform: scaleX(-1);
+    }
+
+    @include focus-ring;
+
+    @include hover {
+      color: var(--brand);
+    }
+  }
+
+  // The bar hugs its own mark, so the current service's longer pill widens
+  // the button rather than being clipped by a fixed box — About's dot,
+  // measure for measure: a 44px-tall target (the height is what a thumb
+  // needs on a row this short) that stays as narrow as the mark plus its
+  // padding, so the row reads as four small dots and not four lozenges.
+  // The width is deliberately not 44: four dots and two arrows at a full
+  // 44 come to 264px before any gap, most of a 320px screen's 280px of
+  // content.
+  &__dot {
+    display: flex;
+    align-items: center;
+    height: 2.75rem;
+    padding-inline: $space-2xs;
+    cursor: pointer;
+
+    &::before {
+      width: 0.5rem;
+      height: 0.5rem;
+      content: "";
+      background-color: var(--border-strong);
+      border-radius: $radius-pill;
+      transition:
+        width $dur-base $ease-out,
+        background-color $dur-base $ease-out;
+    }
+
+    &[aria-current]::before {
+      width: 1.5rem;
+      background-color: var(--brand);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    @include hover {
+      &::before {
+        background-color: var(--brand);
+      }
+    }
+
+    @include reduced-motion {
+      &::before {
+        transition: none;
+      }
+    }
+  }
+
   // ------------------------------------------------ service rows
   &__list {
     display: flex;
@@ -227,6 +419,35 @@
     gap: $space-3xl;
     // Same guard as &__rail — see the note on &__body.
     min-width: 0;
+
+    @include down($bp-lg) {
+      flex-direction: row;
+      gap: $space-sm;
+      // The rail's own end padding. The wrapper bleeds to the screen
+      // edge, so without this the first and last card would sit flush
+      // against it instead of on the page's gutter.
+      //
+      // The END is not the same value, and that is deliberate. A rail
+      // only has enough room after the last card to bring it to the
+      // start line if it is padded by "one screen minus one card" —
+      // without that the scroll runs out ~25px early, the last card can
+      // only ever rest against the far gutter, and its dot could never
+      // do what the other three do. Mandatory snap means this trailing
+      // room is never a resting place: the scroll always settles on a
+      // card's start, so it exists only to make the last of them
+      // reachable.
+      // 100vw, not 100%: a percentage padding is treated as zero while
+      // the browser works out this track's max-content width, so it
+      // would be painted but never counted — and the scroll range it
+      // exists to extend would not grow by a pixel.
+      padding-inline: var(--edge)
+        max(var(--edge), calc(100vw - var(--card-width) - var(--edge)));
+      // A flex row inside a scroll container has to be allowed to run
+      // past it — at `auto` the track would size to the scrollport and
+      // the cards would squeeze instead of scrolling. It is also what
+      // makes the end padding above count against the scroll extent.
+      width: max-content;
+    }
 
     @include up($bp-lg) {
       // Pairs with the rail's explicit grid-column: 1 above.
@@ -293,6 +514,28 @@
     gap: $space-2xs;
     align-items: flex-start;
 
+    @include down($bp-lg) {
+      // One card. ~82vw leaves a real sliver of the next one showing at
+      // 320px and a comfortable one from 375 up, which is the whole
+      // job: the rail has to advertise that there is more to the right
+      // before anyone has swiped. The value itself now lives on
+      // &__carousel, where the rail's trailing padding can read it too.
+      flex: 0 0 var(--card-width);
+      // Flex items floor at their min-content width, and the longest
+      // service name cannot wrap (the display mixin sets
+      // overflow-wrap: normal), so without this one card simply refuses
+      // to be narrower than its own title and drags the rail out with
+      // it. The title's own cap below is what keeps that from ever
+      // being a visible break.
+      min-width: 0;
+      // Every card, the last one included. It used to be the odd one
+      // out — snapped to `end`, because the rail ran out before it
+      // could reach the start line — which meant its dot could never
+      // put it where the other three go. The trailing padding on
+      // &__list buys that room, so all four behave the same now.
+      scroll-snap-align: start;
+    }
+
     @include up($bp-lg) {
       // Written by useScrollSequence every frame — the scroll-driven
       // fade travel. The fallbacks cover the gap before the first rAF
@@ -325,6 +568,21 @@
     color: var(--text);
     transition: color $dur-base $ease-out;
 
+    // On a carousel card the measure is no longer the container but the
+    // card, and the same contract still has to hold: the longest word
+    // on the page fits on one line. "Automatizaciones" is 11.9em in
+    // Monument Extended, so the ceiling is the card over that, with a
+    // little left over — /13 rather than /11.9. It reads the card's own
+    // width back (see &__item's --card-width) instead of restating the
+    // 82vw / 44vw split, so the two can never drift apart. At 768 the
+    // card halves and the title steps down with it, which is the point.
+    @include down($bp-lg) {
+      font-size: min(
+        clamp(1.35rem, 0.85rem + 2.9vw, 3.25rem),
+        calc(var(--card-width) / 13)
+      );
+    }
+
     // Insurance, not layout. The two rules above are measured against
     // Monument Extended's metrics and today's four service names, and
     // neither is guaranteed: the face can fail to load, and a fifth
@@ -353,6 +611,14 @@
 
     max-width: 52ch;
     font-size: $text-lg;
+
+    @include down($bp-lg) {
+      // $text-lg was set for a full-width block with nothing beside it.
+      // On a card it reads as shouting and costs two extra lines of
+      // card height; $text-base is the page's own body size and still
+      // clears 15px on the narrowest phone.
+      font-size: $text-base;
+    }
   }
 
   &__chips {
@@ -360,6 +626,16 @@
     flex-wrap: wrap;
     gap: $space-2xs;
     margin-top: $space-2xs;
+
+    // On the rail the cards all share the tallest one's height, so a
+    // service whose title runs to two lines used to push its chips a
+    // line lower than its neighbours' — and the row of chips jumped as
+    // you swiped. Pinned to the card's floor instead, they line up
+    // across all four whatever the copy above them does.
+    @include down($bp-lg) {
+      margin-top: auto;
+      padding-top: $space-2xs;
+    }
   }
 
   &__chip {
@@ -408,6 +684,36 @@
       object-fit: cover;
     }
 
+    @include down($bp-lg) {
+      // Picture first on a card: it is what makes four cards scannable
+      // at a glance, and it is the only thing that reads at all while
+      // one is half off the screen edge. `order` only — the DOM keeps
+      // title-then-photo, which is also the reading order.
+      order: -1;
+      // A landscape band, not the panel's 4:5 portrait. The card is the
+      // full height budget now, and a 4:5 photo at 82vw alone came to
+      // 384px of it on a 375px screen.
+      aspect-ratio: 4 / 3;
+      margin-top: 0;
+      margin-bottom: $space-2xs;
+
+      // The <picture> between this box and the <img> is inline and
+      // auto-height, so `height: 100%` on the image was resolving
+      // against nothing and the image kept its own 4:5 — the frame then
+      // simply clipped the bottom 40% of it and object-fit never ran.
+      // It went unnoticed while the frame was 4:5 too (the two matched
+      // exactly); the moment the frame became 4:3 it turned into a
+      // top-anchored crop. A grid here stretches the <picture> to the
+      // frame in both axes, which is the definite height the image
+      // needs for cover to do the centring it says it does.
+      display: grid;
+
+      picture {
+        min-width: 0;
+        min-height: 0;
+      }
+    }
+
     @include up($bp-lg) {
       display: none;
     }
@@ -448,7 +754,23 @@
 // brighter surface the theme uses everywhere else — and drops the label
 // to ink, the pair that clears contrast there (~6.3:1) where white on
 // the same fill would not.
+//
+// The RESTING label needed the same treatment and never got it. Every
+// brand token the theme owns is lifted for the dark page except
+// --brand-press, which stays on light's #5348e4 (see _theme.scss) — and
+// that is what the chip reads for its label. On a chip that is 8%
+// violet over --bg-alt, the effective ground is ~#1a1a29 and the pair
+// measures 2.8:1: under AA, and visibly muddier than the body copy
+// right above it. The lifted brand is the same value the hover below
+// already fills with, and takes the resting label to ~5.9:1.
+//
+// Local to the chip on purpose rather than lifting --brand-press in the
+// theme: that token is also the solid button's hover fill, which
+// carries WHITE text (Button.scss) — lifting it there would trade this
+// contrast failure for a worse one.
 :root[data-theme="dark"] .services__chip {
+  color: var(--brand);
+
   @include hover {
     color: var(--text-invert);
     background-color: var(--brand);

@@ -34,7 +34,7 @@ export function ProjectsRibbon() {
                 <img
                   className="ribbon__image"
                   src={`${project.cover}-800.jpg`}
-                  alt={`${project.title} — ${project.categories.join(', ')}`}
+                  alt={`${project.title}: ${project.categories.join(', ')}`}
                   loading="lazy"
                   decoding="async"
                   width={1200}

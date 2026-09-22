@@ -94,17 +94,20 @@ $field-graphite-dark: #262247;
 
 .projects {
   // Top and bottom split on purpose (not one padding-block value): the
-  // fixed, blurred navbar only eats into the top, so only the top needs
-  // to clear it. It measures ~82px on a phone (16px root) and ~74px
-  // from $bp-lg up (90% root — see _reset.scss), and a reader gets here
-  // two ways: the nav's own scroll-padding-top landing, and just
-  // scrolling down normally past Servicios. The old symmetric padding
-  // (max 72px / 56px) covered neither — measured, a plain scroll-to
-  // arrival had the heading 35–46px behind the bar, and even the nav
-  // link's own landing spot cleared it by only ~10px, a sliver of the
-  // first line still clipped. These floors put ~20px of daylight under
-  // the bar at that plain-scroll arrival, the tighter of the two.
-  padding-block: clamp(104px, 88px + 3vw, 140px) clamp(36px, 24px + 3vw, 72px);
+  // fixed navbar only eats into the top, so only the top needs to clear
+  // it. This used to carry a much taller floor (104–140px) to clear the
+  // bar on both ways a reader gets here — a nav tap and an ordinary
+  // scroll down past Servicios — but that was against an earlier,
+  // less aggressive auto-hide: measured against the current one
+  // (useHideOnScroll, gone after 10px of downward travel), the bar is
+  // long hidden before Proyectos comes into view on a plain scroll, and
+  // a nav tap — which pins it visible for the trip — still lands with
+  // room to spare below it. Below $bp-md this was also the biggest gap
+  // to any heading on the page, well past every other section, which
+  // read as a hole under Servicios. Down near the shared rhythm now,
+  // plus a little: the filter bar sits right under the heading here,
+  // where other sections have a looser intro paragraph to separate them.
+  padding-block: clamp(56px, 40px + 3vw, 92px) clamp(36px, 24px + 3vw, 72px);
 
   @include up($bp-lg) {
     padding-block: clamp(100px, 60px + 6vh, 160px) clamp(20px, 3vh, 56px);
@@ -209,8 +212,18 @@ $field-graphite-dark: #262247;
     border-radius: $radius-pill;
     transform: translateX(var(--marker-x, 4px));
     // Only the glide is animated — the width snaps to the new label so
-    // the pill is never a wrong size, even if a slide is cut short.
-    transition: transform $dur-base $ease-spring;
+    // the pill is never a wrong size, even if a slide is cut short. (The
+    // colour eases as well, for the one tab that has its own — below.)
+    transition:
+      transform $dur-base $ease-spring,
+      background-color $dur-base $ease-out;
+
+    // Sitting under the highlighted tab, the pill takes that tab's colour
+    // instead of the brand violet, so selecting it reads as the tab
+    // lighting up and not as a violet pill being dropped on a cyan one.
+    .projects__filters:has(.projects__filter[data-highlight][aria-current="true"]) & {
+      background-color: var(--accent-cyan);
+    }
 
     .projects__filters[data-static] & {
       transition: none;
@@ -232,9 +245,29 @@ $field-graphite-dark: #262247;
     background: none;
     border: 0;
     border-radius: $radius-pill;
-    transition: color $dur-base $ease-out;
+    transition:
+      color $dur-base $ease-out,
+      background-color $dur-base $ease-out;
 
     @include focus-ring;
+
+    // 320px: the three labels come to 8px more than the bar has, which cut
+    // the CRM tab — the one this bar is steering people toward — off the
+    // bar's right edge. Trimming the side padding a fifth is what it takes.
+    @include down(340px) {
+      padding-inline: 1em;
+    }
+
+    // The segmented control is the first thing a thumb reaches for in
+    // Proyectos, and 27px of height is not a thumb's target. The pill
+    // behind it reads `inset-block: 4px` off this same bar, so it grows
+    // to match on its own.
+    @include down($bp-lg) {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 2.75rem;
+    }
 
     &[aria-current="true"] {
       color: var(--on-brand);
@@ -243,6 +276,55 @@ $field-graphite-dark: #262247;
     @include hover {
       &:not([aria-current="true"]) {
         color: var(--text);
+      }
+    }
+
+    // The tab the section is steering people toward: konekta, the CRM. It
+    // wears the colour the CRM panel itself is set on — the cyan and the
+    // dark ink its token is defined as a pair for — so among two muted
+    // labels it is the one that is not like the others, and it reads as
+    // the door to that panel before anyone has opened it.
+    &[data-highlight] {
+      font-weight: $fw-semibold;
+      // Ink, not var(--text): --text is near-white in the dark theme, and
+      // white on this cyan is 1.6:1. The pair is theme-independent, the
+      // same way the panel it stands for is.
+      color: $ink;
+      background-color: var(--accent-cyan);
+
+      // Selected, the sliding pill (cyan as well — see the marker) does the
+      // painting, so the button's own fill steps out of its way instead of
+      // sitting doubled on top of it.
+      &[aria-current="true"] {
+        color: $ink;
+        background-color: transparent;
+      }
+
+      // The generic hover above turns an unselected label to --text, which
+      // is exactly the near-white-on-cyan this tab must never show.
+      @include hover {
+        &:not([aria-current="true"]) {
+          color: $ink;
+          filter: brightness(1.07);
+        }
+      }
+
+      // The nudge. Every so often the tab shakes and lets off a ring, then
+      // sits perfectly still for several seconds — a reminder, not a
+      // spinner. It starts when the bar has been revealed (so the first
+      // shake is seen and not spent while the bar is still off-screen), and
+      // it is gone for good once the tab has been opened (data-nudge comes
+      // off it — see <Projects>). Transform and box-shadow only: nothing
+      // that moves the layout, so it cannot disturb the bar or the marker
+      // measuring the buttons.
+      &[data-nudge] {
+        .projects__filters[data-reveal="shown"] & {
+          animation: projects-crm-nudge 6.5s ease-in-out 1.4s infinite;
+
+          @include reduced-motion {
+            animation: none;
+          }
+        }
       }
     }
   }
@@ -475,6 +557,13 @@ $field-graphite-dark: #262247;
       .project-card__eyebrow {
         font-size: 0.6rem;
         letter-spacing: 0.12em;
+
+        // 0.6rem is 9.6px, which is a desktop mini-card's size on a
+        // phone's screen. Below $bp-lg the rail card is 46vw wide and
+        // the label has the room for the page's own small-label size.
+        @include down($bp-lg) {
+          font-size: $text-xs;
+        }
       }
 
       .project-card__title {
@@ -1107,5 +1196,455 @@ $field-graphite-dark: #262247;
   .projects__grid[data-swapping] .projects__cell,
   .projects__grid[data-swapping] .konekta {
     animation: none;
+  }
+}
+
+// =============================================================
+//  Below $bp-lg: the feed and the sheet
+//
+//  Everything above this line is the bento and its in-place detail,
+//  and none of it renders on a phone any more — <Projects> branches
+//  on the same `max-width: 1023.98px` these blocks use and mounts
+//  <ProjectsFeed> / <ProjectSheet> instead. The rules up there are
+//  left where they are: they are scoped to markup that no longer
+//  exists below $bp-lg, so they cost a few hundred bytes and change
+//  nothing.
+// =============================================================
+
+// One card per project, stacked, and every one of them shows the work.
+.projects-feed {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: $projects-gap;
+
+  // Two up as soon as there is width for it. Not three: the card is
+  // mostly screenshot, and a third column takes the picture below the
+  // size at which a site is recognisable.
+  @include up($bp-sm) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  // The filter hand-over. The bento staggers its leaving cards out one
+  // by one; a single column has no such order to read, so the set just
+  // crosses over. Kept under the 160ms the swap timer allows for it.
+  &[data-swapping] {
+    opacity: 0;
+    transition: opacity 140ms $ease-in-out;
+  }
+
+  @include reduced-motion {
+    &[data-swapping] {
+      opacity: 1;
+      transition: none;
+    }
+  }
+}
+
+// The card. Same field and ink the poster uses — a project keeps its
+// colour here — but the screenshot is the card's subject rather than
+// something it hides behind a hover the device cannot perform.
+.project-tile {
+  --field: #{$brand-deep};
+  --ink: #{$paper};
+
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 0.75rem;
+  text-align: left;
+  color: var(--ink);
+  cursor: pointer;
+  background-color: var(--field);
+  border: 0;
+  border-radius: $radius-md;
+
+  // No hover state anywhere in here on purpose: this layout only ever
+  // renders where there is no pointer to hover with, and a stuck hover
+  // after a tap is worse than none.
+  &:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+  }
+
+  &[data-tint="orange"] {
+    --field: #{$accent-orange};
+    --ink: #{$ink};
+  }
+
+  &[data-tint="blue"] {
+    --field: #{$accent-blue};
+    --ink: #{$paper};
+  }
+
+  &[data-tint="lime"] {
+    --field: #{$accent-lime};
+    --ink: #{$ink};
+  }
+
+  &[data-tint="violet"] {
+    --field: #{$brand-deep};
+    --ink: #{$paper};
+  }
+
+  &[data-tint="graphite"] {
+    --field: #{$field-graphite};
+    --ink: #{$paper};
+  }
+
+  &__shot {
+    // grid, not block: there is a <picture> between this frame and the
+    // image, and it is inline and auto-height, so `height: 100%` on the
+    // <img> had nothing to resolve against and the picture kept its own
+    // ratio — a 16:10 frame with a 16:9 screenshot sitting in the top of
+    // it and a band of tint underneath. A single grid cell stretches the
+    // <picture> to the frame in both axes, which is the definite height
+    // object-fit needs to do the cropping it says it does.
+    display: grid;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    // A shade of the card's own ink shows while the file decodes, so
+    // the frame never flashes page-white inside a coloured card.
+    background-color: rgba($ink, 0.18);
+    border-radius: 0.75rem;
+
+    picture {
+      min-width: 0;
+      min-height: 0;
+    }
+
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    // Every cover is a wide capture of a live site, so a 16:10 frame
+    // still throws width away — keep the edge that carries the logo.
+    img[data-align="left"] {
+      object-position: left center;
+    }
+
+    img[data-align="right"] {
+      object-position: right center;
+    }
+  }
+
+  &__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.75rem 0.25rem 0.25rem;
+  }
+
+  // The poster's own type, at the size a stacked card wants rather than
+  // the bento's. $card-title bottoms out at 1.3rem, which is most of a
+  // 16:10 card's remaining height once the screenshot has taken its
+  // share.
+  .project-card__title {
+    font-size: clamp(1.05rem, 0.9rem + 0.75vw, 1.5rem);
+  }
+
+  .project-card__sub {
+    // Two lines, then ellipsis. The subtitle is a teaser here — the
+    // sheet carries the full account — and letting it run to four lines
+    // is what pushed the card past the height a thumb can take in.
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+
+  // The one thing on the card that says it opens something. The bento
+  // relies on hover for that and has no equivalent here.
+  &__action {
+    display: inline-flex;
+    gap: 0.4rem;
+    align-items: center;
+    margin-top: 0.4rem;
+    font-size: $text-xs;
+    font-weight: $fw-semibold;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: inherit;
+
+    svg {
+      width: 1.1em;
+      height: 1.1em;
+    }
+  }
+
+  // No cover, or one that refused to load: the card falls back to the
+  // poster the bento draws, so it still reads as a project rather than
+  // as a hole.
+  &[data-poster] {
+    min-height: 11rem;
+
+    .project-tile__body {
+      justify-content: flex-end;
+      padding-top: 2.5rem;
+    }
+  }
+}
+
+:root[data-theme="dark"] .project-tile[data-tint="graphite"] {
+  --field: #{$field-graphite-dark};
+}
+
+// ---------------------------------------------- the sheet
+// A real <dialog> in the top layer, so the backdrop, the focus trap and
+// Escape are the platform's. What it replaces is the desktop detail
+// reflowing the grid in place — which on one column meant the list
+// jumped, the shot reveal painted a black frame across the width, and
+// the readout's per-line stagger left a hole under it for most of a
+// second. The list does not move at all now.
+.project-sheet {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: transparent;
+  border: 0;
+
+  &[open] {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  &::backdrop {
+    background-color: rgba($ink, 0.55);
+  }
+
+  &[open]::backdrop {
+    animation: project-sheet-scrim 240ms $ease-out both;
+  }
+
+  &__panel {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-height: 90svh;
+    overflow: hidden;
+    background-color: var(--surface);
+    border-radius: $radius-lg $radius-lg 0 0;
+  }
+
+  &[open] &__panel {
+    animation: project-sheet-in 240ms $ease-out both;
+  }
+
+  // The grab mark. Decorative — the close button beside it is the real
+  // control — but it is what says the panel came up from the bottom
+  // edge and can go back to it.
+  &__handle {
+    flex-shrink: 0;
+    width: 2.25rem;
+    height: 0.25rem;
+    margin: 0.625rem auto 0;
+    background-color: var(--border-strong);
+    border-radius: $radius-pill;
+  }
+
+  &__close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    color: var(--text);
+    cursor: pointer;
+    background-color: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+
+    @include focus-ring;
+
+    svg {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+  }
+
+  &__scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    // The sheet's scroll is its own: reaching either end must not hand
+    // the gesture to the list underneath.
+    overscroll-behavior: contain;
+  }
+
+  &__shot {
+    --field: #{$brand-deep};
+
+    // Same grid as the tile's frame, for the same reason — see
+    // .project-tile__shot.
+    display: grid;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background-color: var(--field);
+
+    picture {
+      min-width: 0;
+      min-height: 0;
+    }
+
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    img[data-align="left"] {
+      object-position: left center;
+    }
+
+    img[data-align="right"] {
+      object-position: right center;
+    }
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: $space-2xs;
+    align-items: flex-start;
+    padding: $space-md var(--gutter) $space-lg;
+  }
+
+  &__eyebrow {
+    @include eyebrow;
+  }
+
+  &__title {
+    @include display($display-sm, $fw-ultra);
+
+    font-size: clamp(1.5rem, 1.15rem + 1.6vw, 2.25rem);
+    color: var(--text);
+  }
+
+  &__sub {
+    font-size: $text-sm;
+    font-weight: $fw-medium;
+    color: var(--brand);
+  }
+
+  &__summary {
+    @include body-copy;
+
+    margin-top: $space-2xs;
+    font-size: $text-base;
+  }
+
+  &__cta,
+  &__note {
+    margin-top: $space-sm;
+  }
+
+  &__note {
+    font-size: $text-sm;
+    color: var(--text-muted);
+  }
+
+  // From $bp-md it stops being a sheet and becomes an ordinary centred
+  // modal — a panel pinned to the bottom edge of a tablet reads as a
+  // phone pattern stretched.
+  @include up($bp-md) {
+    &[open] {
+      align-items: center;
+    }
+
+    &__panel {
+      max-width: 40rem;
+      max-height: 85svh;
+      border-radius: $radius-lg;
+    }
+
+    // The handle says "this came up from the bottom edge and can be
+    // pushed back to it". A panel floating in the middle of the screen
+    // did neither, so it was promising a gesture that does not exist.
+    &__handle {
+      display: none;
+    }
+
+    &__body {
+      padding-inline: $space-lg;
+    }
+  }
+
+  @include reduced-motion {
+    &[open] &__panel,
+    &[open]::backdrop {
+      animation: none;
+    }
+  }
+}
+
+// Transform and opacity only — nothing here animates layout, so the
+// list behind the sheet is never asked to reflow.
+@keyframes project-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+}
+
+@keyframes project-sheet-scrim {
+  from {
+    opacity: 0;
+  }
+}
+
+// The CRM tab's nudge. One 6.5s cycle: about 0.6s of shaking with a ring
+// spreading off the tab, then stillness for the rest. The ring stops at 4px
+// because the bar clips anything past its own 4px of padding; the shake
+// is a few degrees and a few pixels, which reads as a buzz, not a wobble.
+@keyframes projects-crm-nudge {
+  0% {
+    transform: none;
+    box-shadow: 0 0 0 0 rgba($accent-cyan, 0.65);
+  }
+
+  1.5% {
+    transform: translateX(-3px) rotate(-3deg);
+  }
+
+  3% {
+    transform: translateX(3px) rotate(3deg);
+  }
+
+  4.5% {
+    transform: translateX(-2.5px) rotate(-2deg);
+  }
+
+  6% {
+    transform: translateX(2px) rotate(2deg);
+  }
+
+  7.5% {
+    transform: translateX(-1px) rotate(-1deg);
+  }
+
+  9% {
+    transform: none;
+  }
+
+  12%,
+  100% {
+    transform: none;
+    box-shadow: 0 0 0 4px rgba($accent-cyan, 0);
   }
 }

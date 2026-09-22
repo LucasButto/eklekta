@@ -63,6 +63,15 @@
     border-radius: $radius-pill;
 
     @include focus-ring;
+
+    // Below $bp-sm the wordmark is hidden and the brand is just the
+    // 36px isotype disc — a mouse target standing in for a thumb's.
+    // The disc keeps its size; the box around it grows.
+    @include down($bp-lg) {
+      justify-content: center;
+      min-width: 2.75rem;
+      min-height: 2.75rem;
+    }
   }
 
   &__mark {
@@ -176,6 +185,10 @@
 
     @include down($bp-lg) {
       display: grid;
+      // The burger only renders here, so this is its only size — a full
+      // touch target rather than the 40px it carried.
+      width: 2.75rem;
+      height: 2.75rem;
     }
   }
 

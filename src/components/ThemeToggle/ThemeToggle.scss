@@ -8,6 +8,14 @@
 
   @include focus-ring;
 
+  // The track is 62x32 and stays that way — this is the button's own
+  // box growing around it so a thumb has something to land on. Already
+  // wide enough; only the height was short.
+  @include down($bp-lg) {
+    justify-content: center;
+    min-height: 2.75rem;
+  }
+
   &__track {
     position: relative;
     display: flex;

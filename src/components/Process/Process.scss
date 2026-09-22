@@ -218,6 +218,8 @@
     line-height: 1.6;
     color: var(--text-muted);
     text-wrap: pretty;
+
+    @include hyphenated-copy;
   }
 
   @include hover {
