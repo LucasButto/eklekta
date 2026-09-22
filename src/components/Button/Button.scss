@@ -28,6 +28,14 @@
 
   @include focus-ring;
 
+  // The em padding sizes every pill off its own label, which lands the
+  // md size at 39px and the sm one at 33px on a phone. A floor rather
+  // than a fixed height: the padding still sets the shape wherever it
+  // already clears this, so nothing above $bp-lg moves.
+  @include down($bp-lg) {
+    min-height: 2.75rem;
+  }
+
   &__arrow {
     width: 1.15em;
     height: 1.15em;

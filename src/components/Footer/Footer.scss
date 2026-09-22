@@ -36,6 +36,12 @@
     border-radius: $radius-xs;
 
     @include focus-ring;
+
+    @include down($bp-lg) {
+      display: inline-flex;
+      align-items: center;
+      min-height: 2.75rem;
+    }
   }
 
   &__logo {
@@ -63,6 +69,16 @@
     @include hover {
       opacity: 0.75;
     }
+
+    // The underline here is this box's own bottom border, so the target
+    // has to grow UPWARD or the rule would detach and float a dozen px
+    // under the word. flex-end keeps the text — and the border right
+    // beneath it — on the floor of a 44px box.
+    @include down($bp-lg) {
+      display: inline-flex;
+      align-items: flex-end;
+      min-height: 2.75rem;
+    }
   }
 
   // ------------------------------------------------ link columns
@@ -70,18 +86,39 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: $space-lg;
+
+    // Two columns fit a phone, so this grid wraps to two rows there and
+    // each row is now five 44px link targets tall. The gap between them
+    // was set for short rows.
+    @include down($bp-lg) {
+      gap: $space-md;
+    }
   }
 
   &__column-title {
     @include eyebrow;
 
     margin-bottom: $space-sm;
+
+    // The first link under it carries 13px of its own touch padding
+    // now, so the full $space-sm reads as a hole between the title and
+    // its list.
+    @include down($bp-lg) {
+      margin-bottom: $space-2xs;
+    }
   }
 
   &__links {
     display: flex;
     flex-direction: column;
     gap: $space-2xs;
+
+    // The rows carry their own separation once each one is a 44px
+    // target — keeping the gap on top of that would only stretch the
+    // column for no gain.
+    @include down($bp-lg) {
+      gap: 0;
+    }
   }
 
   &__link {
@@ -94,6 +131,18 @@
     @include hover {
       color: var(--brand);
     }
+
+    // A 31x17 target in a stack of five. The label does not move — the
+    // row it sits in becomes a thumb's height, and `align-self: start`
+    // keeps it from stretching to the column's full width so the
+    // target still ends where the word does.
+    @include down($bp-lg) {
+      display: inline-flex;
+      align-self: flex-start;
+      align-items: center;
+      min-width: 2.75rem;
+      min-height: 2.75rem;
+    }
   }
 
   // ------------------------------------------------ bottom bar
@@ -105,6 +154,14 @@
     justify-content: space-between;
     padding-block: $space-md;
     border-top: 1px solid var(--border);
+
+    // "Volver arriba" is a 44px touch target here and carries 13px of
+    // its own padding on each side, so the bar's block padding was
+    // being paid twice. The rule above it keeps its air; the row just
+    // stops adding to it.
+    @include down($bp-lg) {
+      padding-block: $space-xs;
+    }
   }
 
   &__legal {
@@ -123,6 +180,12 @@
 
     @include hover {
       color: var(--brand);
+    }
+
+    @include down($bp-lg) {
+      display: inline-flex;
+      align-items: center;
+      min-height: 2.75rem;
     }
   }
 

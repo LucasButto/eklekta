@@ -225,6 +225,15 @@
     @include hover {
       opacity: 0.7;
     }
+
+    // Same move as .footer__email: the underline is this box's bottom
+    // border, so the target grows upward and flex-end keeps the rule
+    // sitting under the word rather than floating below it.
+    @include down($bp-lg) {
+      display: inline-flex;
+      align-items: flex-end;
+      min-height: 2.75rem;
+    }
   }
 
   // ------------------------------------------------ actions
@@ -260,6 +269,10 @@
 
     @include focus-ring;
 
+    @include down($bp-lg) {
+      min-height: 2.75rem;
+    }
+
     svg {
       width: 1.1rem;
       height: 1.1rem;
@@ -291,6 +304,13 @@
     transition: color $dur-base $ease-out;
 
     @include focus-ring;
+
+    // The round icon inside stays 36px; the link around it takes the
+    // extra 8 so the whole row — icon and handle together — is one
+    // thumb-sized target.
+    @include down($bp-lg) {
+      min-height: 2.75rem;
+    }
 
     @include hover {
       color: var(--brand);

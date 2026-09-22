@@ -240,6 +240,14 @@
     border-radius: $radius-sm;
     cursor: pointer;
 
+    // A list of rows that a thumb picks from, so each row is a thumb's
+    // height. The em padding alone lands them at 40px on a phone.
+    @include down($bp-lg) {
+      display: flex;
+      align-items: center;
+      min-height: 2.75rem;
+    }
+
     // One highlight for both pointer and keyboard: the list sets
     // data-active on hover as well as on arrow keys, so two rows never
     // look selected at once.

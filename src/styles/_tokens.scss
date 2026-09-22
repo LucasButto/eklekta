@@ -46,7 +46,15 @@ $fw-bold: 700;
 $fw-ultra: 800;
 
 // fluid type scale — min / preferred / max
-$text-xs: clamp(0.72rem, 0.7rem + 0.1vw, 0.78rem);
+//
+// $text-xs is every small label on the page: eyebrows, the footer's
+// column titles and legal line, the form's field labels, .button--sm.
+// Its old 0.72rem floor resolved to 11.6px on a phone, under the 12px
+// nobody should have to read a label at. The floor is the only term
+// that moved: the preferred curve crosses 12px at an 800px viewport, so
+// this changes nothing at 1024 and above — every desktop width was
+// already at 12.2px or on the 0.78rem ceiling.
+$text-xs: clamp(0.75rem, 0.7rem + 0.1vw, 0.78rem);
 $text-sm: clamp(0.82rem, 0.79rem + 0.14vw, 0.92rem);
 $text-base: clamp(0.95rem, 0.9rem + 0.22vw, 1.08rem);
 $text-md: clamp(1.05rem, 0.98rem + 0.34vw, 1.28rem);
