@@ -112,10 +112,32 @@
 // The ghost pill's background is --bg, so on the dark page it is a
 // near-black pill, not a white one, and $brand-deep on it would be
 // 3.9:1. The lifted brand is the token made for dark surfaces: 6.7:1.
-:root[data-theme='dark'] .button--ghost {
+//
+// This foreground is the one piece of the pill that is NOT a token, so
+// [data-skin] has to be spelled out here the way _theme.scss spells out
+// the rest: while the hero's theme circle sweeps, the outgoing skin's
+// pill is painted underneath the incoming one, and both values have to
+// be reachable on the same page at the same instant.
+:root[data-theme='dark'] .button--ghost,
+[data-skin='dark'] .button--ghost {
   --button-fg: #{$brand-lift};
 
   @include hover {
     --button-fg: #{$brand-lift};
   }
+}
+
+// …and the way back. The leading `:root` is not decoration: this has to
+// out-weigh `:root[data-theme='dark'] .button--ghost` above, which is
+// (0,3,0) because `:root` counts as a class. At a bare
+// `[data-skin='light'] .button--ghost` — (0,2,0) — a light-skin layer
+// sitting inside a dark page silently kept the dark foreground, and the
+// outgoing pill cross-faded its background while its label did not
+// move at all. Same weight now, declared later, so the nearer skin wins.
+//
+// Rest state only: the layer that carries a foreign skin is the
+// outgoing one, which is inert and pointer-events: none (see Hero.tsx),
+// so it has no hover to answer for.
+:root [data-skin='light'] .button--ghost {
+  --button-fg: #{$brand-deep};
 }

@@ -6,9 +6,22 @@
 //  is never dependent on a media query or a data attribute.
 //  Dark is opt-in: the user toggles it, we store it, and the
 //  inline script in index.html stamps data-theme before paint.
+//
+//  [data-skin] is the same two palettes addressed per SUBTREE
+//  rather than per page. The hero's theme change is a circle
+//  expanding from the toggle, and for the 1.8s it runs there are
+//  two skins on screen at once: the outgoing one underneath, the
+//  incoming one clipped to the circle on top (see Hero.scss). A
+//  token that only exists on :root cannot do that — both layers
+//  would read the same value and the pill would flip in one step
+//  while the photo behind it swept. Added to these two rules as
+//  extra selectors rather than copied into a block of their own,
+//  so there is exactly one place either palette is written down
+//  and the two can never drift apart.
 // =============================================================
 
-:root {
+:root,
+[data-skin="light"] {
   // layout — kept as custom properties (not just Sass) so a child can
   // measure its distance to the viewport edge and bleed out exactly.
   --gutter: #{$gutter};
@@ -75,7 +88,8 @@
   color-scheme: light;
 }
 
-:root[data-theme="dark"] {
+:root[data-theme="dark"],
+[data-skin="dark"] {
   --bg: #0b0b10;
   --bg-alt: #101017;
   --bg-band: #15151d;

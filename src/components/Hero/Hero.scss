@@ -97,11 +97,52 @@ $theme-sweep-dur: 1800ms;
     position: absolute;
     inset: 0;
     z-index: 2;
+    // The layout itself moved down to &__skin, which is what actually
+    // holds the wordmark and the pill now. This box keeps the scroll
+    // scrub (hero-masthead-out) and the stacking context, so both skins
+    // sink and fade together as one thing.
+  }
+
+  // One complete painting of the masthead's contents in one skin. There
+  // are two of them for the length of a theme change — the outgoing one
+  // flat underneath, the incoming one clipped to the expanding circle
+  // on top — and one the rest of the time. Identical boxes, so the
+  // circle's geometry needs no measuring: the layer is the same size
+  // and position as .hero__photo, which is where the same circle is
+  // already running.
+  &__skin {
+    position: absolute;
+    inset: 0;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
     align-items: flex-start;
     padding: 0 var(--gutter) clamp(2rem, 1.4rem + 3vh, 4.5rem);
+  }
+
+  &__skin--prev {
+    z-index: 0;
+    // A picture of the masthead, not a second one. `inert` in the markup
+    // already takes it out of the tab order and the a11y tree; this is
+    // the pointer half of the same statement.
+    pointer-events: none;
+  }
+
+  &__skin--current {
+    z-index: 1;
+
+    // Only where the CTA is. Above $bp-md the masthead is the wordmark
+    // alone, the outgoing layer is never mounted, and clipping this one
+    // would put the wordmark through a sweep it does not do today.
+    @include down($bp-md) {
+      clip-path: circle(
+        150% at var(--theme-origin-x, 100%) var(--theme-origin-y, 0%)
+      );
+
+      &.is-sweeping {
+        animation: hero-circle-reveal $theme-sweep-dur $ease-out both;
+      }
+    }
   }
 
   // The wash sits behind the wordmark, above the photo, and inside the
@@ -168,6 +209,22 @@ $theme-sweep-dur: 1800ms;
     margin: 0;
   }
 
+  // The call to action the navbar cannot carry below $bp-md — see the
+  // comment on it in Hero.tsx. Hidden everywhere else, so no rule is
+  // needed above the breakpoint to take it back out. It lives inside
+  // the masthead on purpose: it sinks and fades on the same scrub as
+  // the wordmark, and by the time it is invisible About (z-index 2,
+  // opaque) has already climbed over it, so there is never a faded
+  // pill left catching taps.
+  &__cta {
+    display: none;
+
+    @include down($bp-md) {
+      display: inline-flex;
+      margin-top: clamp(1rem, 0.5rem + 2vh, 1.75rem);
+    }
+  }
+
   &__wordmark {
     --logo-wordmark-size: auto;
 
@@ -177,6 +234,16 @@ $theme-sweep-dur: 1800ms;
     // in both without a swap here.
     color: var(--brand);
     animation: hero-mark-in 800ms $ease-out both;
+
+    // The current skin layer is remounted on every theme change so its
+    // circle replays from zero, and a remount would otherwise have the
+    // wordmark make its opening entrance again on each toggle. Once a
+    // sweep has happened the mark has long since arrived, so from the
+    // first toggle onward this simply holds it at its resting state.
+    .hero__skin.is-sweeping &,
+    .hero__skin--prev & {
+      animation: none;
+    }
 
     svg {
       // 3724 × 836 viewBox (~4.45:1), run to 80% of the screen from the
@@ -285,8 +352,12 @@ $theme-sweep-dur: 1800ms;
     }
 
     // Swap instantly rather than wipe — the resting state of both (no
-    // `.is-sweeping`) already renders fully revealed.
+    // `.is-sweeping`) already renders fully revealed. The masthead's
+    // skin layer goes with them: its circle sits at 150% with the
+    // animation off, so the incoming skin simply covers the outgoing
+    // one, which is the same instant swap the photo makes.
     &__photo-layer.is-sweeping,
+    &__skin--current.is-sweeping,
     &__wash.is-sweeping::after {
       animation: none;
     }
