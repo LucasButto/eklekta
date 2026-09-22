@@ -11,6 +11,14 @@ $peek-h: clamp(16.25rem, 24vw, 25rem);
 // move and has to match; kept in sync by eye.
 $travel: 850ms;
 
+// The corner catch-up (see &__slide's transition). Whichever pair of
+// corners is landing in a bleed this move stays at its rounded start
+// value until $radius-delay has passed, then snaps flat over this
+// short a window — ending exactly as $travel does, so the flattening
+// reads as the photo settling into place, not squaring off mid-flight.
+$radius-settle: $dur-fast;
+$radius-delay: $travel - $radius-settle;
+
 // One beat for the whole step change below $bp-lg: the photo, the title
 // and the body come in on the SAME animation, each $cascade-step after the
 // one before it (photo 0, title 1×, body 2×). What made it read as two
@@ -112,9 +120,24 @@ $cascade-step: 130ms;
     overflow: hidden;
     background-color: var(--surface-2);
     border-radius: $radius-md;
-    // Geometry belongs to the grid and to the FLIP; only the soft-focus
-    // half of the move is a transition.
-    transition: opacity $travel $ease-out;
+    // Geometry belongs to the grid and to the FLIP; the soft-focus half
+    // of the move is a transition, and so are the corners — the bleed
+    // sides (border-*-radius reset to 0 in the up($bp-lg) slot rules
+    // below) would otherwise snap to square the instant data-slot
+    // changes, a frame before the FLIP even starts moving the photo.
+    // $radius-settle here is the base (immediate) speed — the corner a
+    // slot change is UN-bleeding rounds off at this pace, right away.
+    // The two slot rules below override the delay on whichever pair is
+    // headed the other way, into a bleed, so THAT pair holds its round
+    // corner through the flight and only flattens at the very end (see
+    // $radius-delay) instead of squaring off before the photo has
+    // visibly gone anywhere.
+    transition:
+      opacity $travel $ease-out,
+      border-start-start-radius $radius-settle $ease-out,
+      border-end-start-radius $radius-settle $ease-out,
+      border-start-end-radius $radius-settle $ease-out,
+      border-end-end-radius $radius-settle $ease-out;
 
     // Which edge the photo slides in from below $bp-lg — the same
     // convention &__copy uses, and read from the same place (About.tsx
@@ -252,6 +275,11 @@ $cascade-step: 130ms;
         height: $stage-h;
         border-start-start-radius: 0;
         border-end-start-radius: 0;
+        // These two are bleeding to the left edge in this slot — held
+        // rounded (see the base transition) until $radius-delay, then
+        // flatten. Order matches the shorthand above: opacity,
+        // start-start, end-start, start-end, end-end.
+        transition-delay: 0s, $radius-delay, $radius-delay, 0s, 0s;
       }
 
       &[data-slot="next"],
@@ -262,6 +290,9 @@ $cascade-step: 130ms;
         height: $peek-h;
         border-start-end-radius: 0;
         border-end-end-radius: 0;
+        // Mirrored: these two bleed right in this slot, so they are the
+        // ones held rounded until the end here instead.
+        transition-delay: 0s, 0s, 0s, $radius-delay, $radius-delay;
       }
     }
   }
