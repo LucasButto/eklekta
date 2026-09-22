@@ -18,13 +18,21 @@ export function Team() {
               {/* Two anchored lines with a brand slab filling the room
                   each one leaves — first line left, its slab running off
                   the right; second line right, its slab off the left.
-                  See .team__line in Team.scss; below $bp-md it collapses
-                  back to a plain centred stack. */}
+                  See .team__line in Team.scss.
+
+                  Below $bp-md the title is three rows — "Hablás con" /
+                  "quien hace el" / "trabajo." — and the two outer rows
+                  each carry a slab: .team__lead is the first row, hung
+                  from the right with its slab on the left, and
+                  .team__tail is the last, hung from the left with its
+                  slab on the right. Both are `display: contents` from
+                  $bp-md up, so the wide layout still sees one unbroken
+                  run of text per line. */}
               <span className="team__line team__line--start">
-                Hablás con quien
-              </span>
+                <span className="team__lead">Hablás con</span> quien
+              </span>{" "}
               <span className="team__line team__line--end">
-                hace el trabajo.
+                hace el<span className="team__tail"> trabajo.</span>
               </span>
             </>
           }

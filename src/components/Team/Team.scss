@@ -93,10 +93,33 @@ $member-scrim: #191823;
         max-width: 62ch;
       }
     }
+
+    // The same title, anchored the same way, on a phone. --center sizes
+    // the title to its own content and centres it, which is what left
+    // the two blocks stacked mid-page with nowhere for a bar to run to.
+    // Full width here as well, so each block has an edge to reach for —
+    // the intro keeps --center's own centring.
+    @include down($bp-md) {
+      .section-heading__title {
+        width: 100%;
+        line-height: 1.08;
+        // --center would centre the rows; here they hang from the left.
+        text-align: left;
+        // Sized to the widest of the three rows, "quien hace el", which
+        // runs to about 9 times the font size: the size follows the line
+        // width (viewport minus both edges) so that row keeps the same
+        // share of the line at every phone width. Capped at 3.25rem, the
+        // size the shared curve reaches by the time it hands over to the
+        // wide layout at $bp-md, so there is no jump there.
+        font-size: clamp(1.75rem, calc((100vw - 2 * var(--edge)) * 0.098), 3.25rem);
+      }
+    }
   }
 
   &__line {
-    display: block;
+    // Inline below $bp-md, where the two blocks read as one run of text
+    // broken into rows by .team__break and .team__tail.
+    display: inline;
 
     @include up($bp-md) {
       display: flex;
@@ -121,8 +144,66 @@ $member-scrim: #191823;
     }
   }
 
-  // Below $bp-md the lines inherit --center's centring and just stack;
-  // the anchored/slabbed layout is all in the media queries.
+  // ---- the phone's rows -------------------------------------------
+  // Below $bp-md the title is three rows: "Hablás con" / "quien hace
+  // el" / "trabajo.". The two outer rows are flex rows of their own —
+  // .team__lead and .team__tail — and each carries a slab in the room
+  // its words leave: the first hung from the right with its slab off
+  // the left edge, the last hung from the left with its slab off the
+  // right, the same pair of moves the wide layout makes with its two
+  // lines. The middle row is plain text between them. The two
+  // .team__line blocks stop being blocks here and flow as one run.
+  //
+  // The breaks are not a change of shape: at every width from 320 to
+  // 430 the display face is too wide for the phrases to fit on fewer
+  // rows anyway — this only makes them the same ones every time.
+  &__lead {
+    display: contents;
+
+    @include down($bp-md) {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+
+      &::before {
+        content: "";
+        flex: 1 1 auto;
+        // Never a stub, even if the words grow.
+        min-width: clamp(1.5rem, 6vw, 4rem);
+        // Same slab as the last row's: in em, so it tracks the title.
+        height: 0.82em;
+        margin-inline: calc(-1 * var(--edge)) 0.4em;
+        background-color: var(--brand);
+      }
+    }
+  }
+
+  &__tail {
+    display: contents;
+
+    @include down($bp-md) {
+      display: flex;
+      align-items: center;
+
+      &::after {
+        content: "";
+        flex: 1 1 auto;
+        // Never a stub, even if the word grows.
+        min-width: clamp(1.5rem, 6vw, 4rem);
+        // In em, so it tracks the title it sits beside; 0.82 keeps it in
+        // the band the wide layout's own bar works out at (0.80–0.92).
+        height: 0.82em;
+        margin-inline: 0.4em calc(-1 * var(--edge));
+        background-color: var(--brand);
+        // "trabajo." is lowercase, so its ink sits high in the line box
+        // and a bar centred on the box reads low against it.
+        transform: translateY(-0.03em);
+      }
+    }
+  }
+
+  // The wide layout: one row per line, its slab in the room the line
+  // leaves.
   &__line--start {
     @include up($bp-md) {
       text-align: left;
@@ -173,6 +254,26 @@ $member-scrim: #191823;
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
+    // ---- the wrapping rows, below $bp-lg ---------------------------
+    // Twice the tracks the row actually shows, so a card spans two of
+    // them. That half-column is the whole trick: with five members the
+    // last row is always short, and an odd card left hanging on the
+    // left edge reads as a mistake rather than as the end of the list.
+    // On an even number of tracks there is nowhere to centre one card;
+    // on twice as many there is. Nothing else about the row changes —
+    // two across on a phone, three from $bp-sm, exactly as before.
+    @include down($bp-lg) {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      // The cell already stretches to its row; this is what says so out
+      // loud, since the card inside it is what has to fill that height
+      // (see .member below).
+      align-items: stretch;
+
+      @include up($bp-sm) {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+      }
+    }
+
     // The mockup's full five-across row waits for $bp-lg, not $bp-md.
     // Five columns inside a 768px tablet leaves each card 130px wide
     // under a 260px-tall photo — the same 1:2 sliver of a face the
@@ -204,6 +305,37 @@ $member-scrim: #191823;
   }
 
   &__cell {
+    // Two tracks each, on the double-width grid above. The rules that
+    // follow are the whole point of that grid: they centre whatever the
+    // last row has left over instead of letting it stack up on the left
+    // edge. Written against the count rather than against "the fifth
+    // card", so adding or removing a member keeps the same behaviour.
+    @include down($bp-lg) {
+      display: flex;
+      grid-column: span 2;
+
+      // Two across: one card over, so it takes the middle.
+      &:last-child:nth-child(odd) {
+        grid-column: 2 / span 2;
+      }
+
+      @include up($bp-sm) {
+        // Three across. One card over takes the middle of three; two
+        // over sit either side of it.
+        &:last-child:nth-child(3n + 1) {
+          grid-column: 3 / span 2;
+        }
+
+        &:nth-child(3n + 1):nth-last-child(2) {
+          grid-column: 2 / span 2;
+        }
+
+        &:last-child:nth-child(3n + 2) {
+          grid-column: 4 / span 2;
+        }
+      }
+    }
+
     // 2nd and 4th drop, as in the mockup. Only once the row is the
     // full five across — staggering a wrapping 2- or 3-up grid just
     // opens a hole in the next line.
@@ -272,6 +404,17 @@ $member-scrim: #191823;
   border-radius: $radius-lg;
   color: inherit;
 
+  // Below $bp-lg the card has to fill the cell its row stretched, or
+  // the two cards in a row end at different heights whenever one name
+  // runs to three lines and its neighbour to one — which is every row,
+  // with these five names. The cell stretches; this is what passes that
+  // height down through the frame to the caption, which absorbs it.
+  @include down($bp-lg) {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
   &:focus-visible {
     outline: 2px solid var(--focus);
     outline-offset: 4px;
@@ -289,6 +432,15 @@ $member-scrim: #191823;
     overflow: hidden;
     background-color: var(--surface-2);
     border-radius: $radius-md;
+
+    // The frame is the card below $bp-lg — picture on top, caption
+    // under it — so it is the frame that takes the stretched height and
+    // hands the slack to the caption.
+    @include down($bp-lg) {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+    }
 
     // Five across: the columns are narrow and near-equal at every
     // width, so a measured height reads more evenly than a ratio.
@@ -311,6 +463,19 @@ $member-scrim: #191823;
       aspect-ratio: 3 / 4;
       object-fit: cover;
       transition: transform $dur-slow $ease-out;
+
+      @include down($bp-lg) {
+        // The picture holds its ratio while the caption under it takes
+        // the row's slack — without this the stretched frame would
+        // stretch the photo with it and the five would stop matching.
+        flex: 0 0 auto;
+        // Two of the five source files are landscape (660x464 and
+        // 1280x1121) and two are taller than 3:4, so cover is really
+        // cropping here, not just fitting. Above the middle on the
+        // vertical axis, which is where a face sits in a portrait and
+        // costs the landscape pair nothing — their crop is horizontal.
+        object-position: 50% 25%;
+      }
 
       @include up($bp-lg) {
         height: 100%;
@@ -344,6 +509,19 @@ $member-scrim: #191823;
       opacity $dur-base $ease-out,
       transform $dur-base $ease-out;
 
+    // …except where there is no pointer to arrive. On touch the cue is
+    // the ONLY thing on the card that says it opens a LinkedIn profile —
+    // no underline, no button — and a hover-revealed affordance on a
+    // phone is an affordance nobody ever sees. So it simply sits there,
+    // at rest, whenever the device cannot hover. The hit area needs no
+    // help: the whole card is the <a>.
+    @include down($bp-lg) {
+      @media (hover: none) {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
     @supports (backdrop-filter: blur(1px)) {
       background-color: rgba($ink, 0.32);
       backdrop-filter: blur(6px);
@@ -365,6 +543,16 @@ $member-scrim: #191823;
     flex-direction: column;
     gap: $space-3xs;
     padding: $space-sm;
+
+    @include down($bp-lg) {
+      // Takes whatever height the row had left over, so every caption
+      // panel in a row is the same depth however many lines the name
+      // inside it runs to. The floor is a two-line name plus its role:
+      // without it a row of short names would give the panel nothing to
+      // work with and the type would sit cramped against the picture.
+      flex: 1;
+      min-height: 5.5rem;
+    }
   }
 
   &__name {
