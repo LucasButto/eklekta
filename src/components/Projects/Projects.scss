@@ -187,6 +187,11 @@ $field-graphite-dark: #262247;
     max-width: 100%;
     margin-bottom: clamp(16px, 10px + 1.6vw, 32px);
     padding: 4px;
+    // Sits between the pills so an active marker next to CRM's own fill
+    // doesn't read as fused to it. offsetLeft/offsetWidth in <Projects>
+    // measure the buttons live, so the marker keeps landing exactly on
+    // the active one with no change needed there.
+    gap: 4px;
     overflow-x: auto;
     background-color: var(--surface-2);
     border: 1px solid var(--border);
