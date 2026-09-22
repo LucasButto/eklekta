@@ -28,6 +28,16 @@
   gap: $space-xl;
   justify-items: center;
   text-align: center;
+
+  // The statement and the mark are one thought, and on a phone with no
+  // photographs between them $space-xl left the punchline standing a
+  // sentence's height away from the sentence it closes. Two rows now, so
+  // this is the whole distance between them. Phones only: a tablet's mark
+  // is far larger (up to ~88px against ~52px), and the same 24px there
+  // left the two line boxes 2px apart at 1023px.
+  @include down($bp-md) {
+    gap: $space-md;
+  }
 }
 
 // ---------------------------------------------- photographs
@@ -45,14 +55,6 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-  }
-
-  // Stacked in flow on small screens — the collage only works once
-  // there's room for the statement to sit across it.
-  @include down($bp-lg) {
-    img {
-      height: clamp(12.5rem, 44vw, 20rem);
-    }
   }
 }
 
@@ -79,6 +81,24 @@
   max-width: 18ch;
   color: var(--text);
 
+  // On a phone the size is not a curve at all: it is a share of the
+  // measure, because every length in the composition below is. Each row
+  // is given a slice of the column and its bar takes what the words
+  // leave, so the whole block only holds its proportions if the type
+  // scales with the column too — at a fixed curve the words would eat
+  // the bars on a narrow screen and swim on a wide one.
+  //
+  // /11.9 is what the longest line can carry: "herramientas." runs 9.62
+  // times the font size in this face, and what the measure has left over
+  // after it and the gap is the shortest bar on the page. At /11.9 that
+  // bar is 2.6 times the font size — still a bar. Past about /12 it drops
+  // under 2em and starts reading as a nick rather than a mark. The 8.9vh
+  // term is carried through for the same reason it exists above — a
+  // window held in landscape keeps the short-window trim.
+  @include down($bp-md) {
+    font-size: max(1.3rem, min(calc((100vw - 2 * var(--gutter)) / 11.9), 8.9vh));
+  }
+
   // ch scales with this element's own font-size, so shrinking the font
   // above shrinks the column by the same ratio and leaves the line
   // count untouched — 15ch was tuned against the old, much larger
@@ -91,6 +111,106 @@
   }
 }
 
+// ---------------------------------------------- the phone composition
+// Centred is a desktop decision. Up there the statement sits between
+// three photographs riding past it on either side, and the axis is what
+// holds it between them. On a phone the photographs are not rendered at
+// all (see Manifesto.tsx), so the centring had nothing left to answer
+// to: six short lines of a very wide face, every one a different length,
+// ragged on both edges at once.
+//
+// Anchored instead, the way the Equipo heading is — the first sentence
+// hangs off the left edge, the second off the right, and the mark closes
+// back on the left. Each block keeps its rag on one side, and the step
+// between the two is the composition rather than an accident of where
+// the words happened to break.
+@include down($bp-md) {
+  .manifesto__frame {
+    justify-items: start;
+    text-align: left;
+  }
+
+  .manifesto__text {
+    // Both edges have to be reachable for the two parts to anchor to
+    // opposite ones, and 18ch is narrower than the column at some
+    // widths — the second sentence would hang off the middle of the
+    // page rather than off the gutter.
+    width: 100%;
+    max-width: none;
+  }
+
+  .manifesto__part--two {
+    text-align: right;
+  }
+}
+
+// ---- the bars ----------------------------------------------------
+// One on every row, running off the gutter on the side that sentence is
+// anchored to: out the right edge on the first, in from the left edge on
+// the second. Same mark the Equipo heading makes, three to a sentence.
+//
+// Every row runs the full measure, so every bar reaches the edge of the
+// screen. The step is then in where each bar STARTS: the lines get
+// longer as a sentence goes down, so the bars get shorter, and the
+// staircase is the text's own rag answered in brand colour.
+//
+// `display: contents` from $bp-md up: the wrappers are then transparent
+// to layout, the runs and the spaces between them rejoin into one
+// sentence, and the wide statement renders exactly as it did before they
+// existed.
+.manifesto__row {
+  display: contents;
+
+  @include down($bp-md) {
+    display: flex;
+    align-items: center;
+
+    // Every row runs the full measure, so every bar reaches the edge of
+    // the screen. The step is then in where each bar STARTS: the lines
+    // get longer as the sentence goes down, so the bars get shorter, and
+    // the staircase is the text's own rag answered in brand colour.
+    width: 100%;
+
+    &::before,
+    &::after {
+      flex: 1 1 auto;
+      // Never a stub, whatever the row is left with.
+      min-width: clamp(1.25rem, 5vw, 3rem);
+      // In em, so it tracks the type it sits beside. Monument's caps are
+      // 0.717 of its font size, so this sits just under cap height —
+      // level with the letters rather than overtopping them.
+      height: 0.68em;
+      background-color: var(--brand);
+    }
+  }
+}
+
+// The left-anchored sentence: bars off the right gutter. --gutter, not
+// --edge: the frame's own padding is the container mixin's gutter, and
+// the bleed has to match it exactly.
+.manifesto__part--one .manifesto__row {
+  @include down($bp-md) {
+    &::after {
+      margin-inline: 0.42em calc(-1 * var(--gutter));
+      content: "";
+    }
+  }
+}
+
+// The right-anchored sentence: the mirror. `margin-left: auto` is what
+// hangs a part-width row off the right edge instead of the left.
+.manifesto__part--two .manifesto__row {
+  @include down($bp-md) {
+    justify-content: flex-end;
+    margin-left: auto;
+
+    &::before {
+      margin-inline: calc(-1 * var(--gutter)) 0.42em;
+      content: "";
+    }
+  }
+}
+
 // Each half of the statement on its own block, so the enhancement can
 // bring them in one at a time. The space between the two <span>s in the
 // markup collapses; this gap is what separates them.
@@ -99,6 +219,13 @@
 
   & + & {
     margin-top: 0.4em;
+
+    // Two lines to a part up there, three down here — at 0.4em the six
+    // lines closed into one grey block and the two sentences stopped
+    // reading as two. In em, so it holds as the type scales.
+    @include down($bp-md) {
+      margin-top: 0.6em;
+    }
   }
 }
 
@@ -124,6 +251,53 @@
   // One line always — it is a three-word mark, never a wrapping phrase.
   white-space: nowrap;
   color: var(--brand);
+
+  // The lead-in. "Eso es" belongs to the sentence above, not to the
+  // mark, so it takes the statement's face and its ink; only "eklekta."
+  // stays the logo drawn in brand colour. var(--text), not a literal, so
+  // it follows the statement into dark mode the way the rest does.
+  //
+  // 0.58em because this line is `white-space: nowrap` and already sized
+  // to the width it has: Monument is about half again as wide as Futura
+  // at the same body, so at full size the swap pushed the line 59px past
+  // the column at 375 and 421px at 1440. At 0.58 the whole line measures
+  // within a pixel or two of what it does today at every width — the
+  // change is the type, not the footprint.
+  .manifesto__closing-lead {
+    font-family: $font-display;
+    font-weight: $fw-ultra;
+    font-size: 0.58em;
+    color: var(--text);
+  }
+
+  // Below $bp-lg the mark scales with the screen instead of sitting on
+  // the clamp's 3rem floor, which is where every phone width was: it
+  // filled 90% of the line at 375px and a thinner slice of it the wider
+  // the phone. 13.8vw puts it at ~97% of the content width across
+  // 360–430px (it is one unbreakable line, about 6.2 times its own font
+  // size wide, so the width is the ceiling — a fatter mark would run
+  // past the gutters). `max()` against the value above, not a
+  // replacement for it: a tablet keeps the size it has, and only ever
+  // gets larger. From $bp-lg nothing here applies.
+  // …and never wider than the column it closes. The mark is one
+  // unbreakable line 6.24 times its own font size wide, so the size and
+  // the width are the same dial: at 320px the value below came out 299px
+  // against a 280px column — the one line on the page hanging into both
+  // gutters — and from there up to ~520px it was also wider than any
+  // line of the statement above it, which is what made the sign-off read
+  // as the headline. /7.05 holds it at ~88% of the column. It is a
+  // ceiling, not a replacement: the term stops binding around 600px,
+  // where the statement's own wrap opens out and the mark is the
+  // narrower of the two again on its own.
+  @include down($bp-lg) {
+    font-size: min(
+      max(
+        clamp(3rem, min(1rem + 7vw, 14vh), 8.5rem),
+        clamp(3rem, 13.8vw, 4.75rem)
+      ),
+      calc((100vw - 2 * var(--gutter)) / 7.05)
+    );
+  }
 }
 
 // ============================================================
