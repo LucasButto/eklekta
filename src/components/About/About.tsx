@@ -4,14 +4,34 @@ import {
   useRef,
   useState,
   type KeyboardEvent,
+  type PointerEvent as ReactPointerEvent,
 } from "react";
 import { Reveal } from "@/components/Reveal/Reveal";
 import { SectionHeading } from "@/components/SectionHeading/SectionHeading";
 import processData from "@/data/process.json";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import type { ProcessStep } from "@/types";
 import "./About.scss";
 
 const steps = processData as ProcessStep[];
+
+/**
+ * Below $bp-lg the carousel is one photo and a panel of controls — no
+ * peek slot, nothing to drag a card out of — so the photo itself is the
+ * only surface a thumb has to work with. Matches the `down($bp-lg)` in
+ * About.scss.
+ */
+const TOUCH_LAYOUT = "(max-width: 1023.98px)";
+
+/** How far a drag has to travel across the photo to count as a swipe. */
+const SWIPE_PX = 44;
+
+/**
+ * …and how much straighter than it is tall. A near-vertical drag is the
+ * reader scrolling the page with their thumb over the photo, and must
+ * never be read as a step change.
+ */
+const SWIPE_RATIO = 1.4;
 
 // How long the moving photo takes to travel between the peek slot and
 // the stage (either direction). Kept in sync by eye with $travel in
@@ -71,10 +91,19 @@ export function About() {
   // Read by the layout effect right after `go` fires, to decide which
   // slide gets the FLIP this time — see the effect below.
   const directionRef = useRef<"forward" | "backward">("forward");
+  // The same value again, as state, for the things that RENDER from it:
+  // which edge the copy and the photo slide in from. The ref cannot do
+  // that job — reading it while rendering is exactly what the compiler
+  // flags, and a ref does not schedule the render that would pick it up.
+  // Set in the same handler as `setIndex`, so it lands in one render.
+  const [stepDirection, setStepDirection] = useState<"forward" | "backward">(
+    "forward",
+  );
 
   function go(next: number, direction: "forward" | "backward" = "forward") {
     if (next === index) return;
     directionRef.current = direction;
+    setStepDirection(direction);
 
     if (!prefersReducedMotion()) {
       // Snapshot where every slide sits before React re-lays them out;
@@ -195,6 +224,57 @@ export function About() {
     prev.clear();
   }, [index]);
 
+  // ---- swipe --------------------------------------------------------
+  // On a phone the arrows and dots are small targets and nothing on the
+  // screen says the steps can be moved any other way. A horizontal drag
+  // ANYWHERE on the carousel — the photo, the title, the paragraph, the
+  // space between — walks the same two steps the arrows do. It used to be
+  // wired to the photo alone, so a swipe that started on the text (which
+  // is most of the carousel's height) did nothing. Pointer events, so one
+  // path covers touch and pen; `touch-action: pan-y` on .about__feature
+  // (About.scss) is what leaves the page's own vertical scroll alone.
+  // A mouse is left out: on a narrow desktop window a drag is a text
+  // selection, and it should stay one.
+  const isTouchLayout = useMediaQuery(TOUCH_LAYOUT);
+  const dragStart = useRef<{ x: number; y: number } | null>(null);
+  // Set when a drag turned into a step change, and read by the click
+  // handler on the very next event so the gesture does not ALSO fire
+  // the photo's own "go back" tap.
+  const swiped = useRef(false);
+
+  function onPointerDown(event: ReactPointerEvent) {
+    if (!isTouchLayout || !event.isPrimary || event.pointerType === "mouse") {
+      return;
+    }
+    // A press that lands on an arrow or a dot is that control's own tap,
+    // not the start of a swipe.
+    if ((event.target as Element).closest("button")) return;
+    dragStart.current = { x: event.clientX, y: event.clientY };
+    swiped.current = false;
+  }
+
+  function onPointerCancel() {
+    dragStart.current = null;
+  }
+
+  function onPointerUp(event: ReactPointerEvent) {
+    const start = dragStart.current;
+    dragStart.current = null;
+    if (!start) return;
+
+    const dx = event.clientX - start.x;
+    const dy = event.clientY - start.y;
+    if (Math.abs(dx) < SWIPE_PX || Math.abs(dx) < Math.abs(dy) * SWIPE_RATIO) {
+      return;
+    }
+
+    swiped.current = true;
+    // Dragging left pulls the next step in from the right, the same
+    // direction the peek photo travels on desktop.
+    if (dx < 0) go((index + 1) % steps.length);
+    else go((index - 1 + steps.length) % steps.length, "backward");
+  }
+
   const step = steps[index];
 
   return (
@@ -225,6 +305,9 @@ export function About() {
         onMouseLeave={() => setPaused(false)}
         onFocus={() => setPaused(true)}
         onBlur={() => setPaused(false)}
+        onPointerDown={onPointerDown}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerCancel}
       >
         {steps.map((entry, i) => {
           const slot = slotFor(i, index, out?.i ?? null, steps.length);
@@ -242,6 +325,7 @@ export function About() {
             <figure
               className="about__slide"
               data-slot={slot}
+              data-direction={stepDirection}
               key={entry.id}
               ref={(el) => {
                 slideRefs.current[i] = el;
@@ -263,7 +347,15 @@ export function About() {
                       role: "button" as const,
                       tabIndex: 0,
                       "aria-label": `Volver al paso ${steps[prevIndex].step}: ${steps[prevIndex].title}`,
-                      onClick: () => go(prevIndex, "backward" as const),
+                      onClick: () => {
+                        // A swipe that just changed the step must not
+                        // also count as the tap that goes back.
+                        if (swiped.current) {
+                          swiped.current = false;
+                          return;
+                        }
+                        go(prevIndex, "backward" as const);
+                      },
                       onKeyDown: (event: KeyboardEvent) => {
                         if (event.key !== "Enter" && event.key !== " ") return;
                         event.preventDefault();
@@ -288,9 +380,26 @@ export function About() {
           {/* The live region is the stable wrapper; the copy inside is
               keyed so each step remounts and replays about-copy-in. */}
           <div className="about__copy-slot" aria-live="polite">
+            {/* Below $bp-lg: an invisible copy of EVERY step, stacked in the
+                same grid cell as the real one (see .about__copy-slot). The
+                cell is then as tall as the longest of them, at this exact
+                width, so the arrows and dots under it stay put instead of
+                rising and falling with the word count. Not rendered from
+                $bp-lg up, where the slot reserves its own height. */}
+            {isTouchLayout &&
+              steps.map((entry) => (
+                <div
+                  className="about__copy about__copy--sizer"
+                  aria-hidden="true"
+                  key={entry.id}
+                >
+                  <h3 className="about__title">{entry.title}</h3>
+                  <p className="about__body">{entry.detail}</p>
+                </div>
+              ))}
             <div
               className="about__copy"
-              data-direction={directionRef.current}
+              data-direction={stepDirection}
               key={step.id}
             >
               <h3 className="about__title">{step.title}</h3>

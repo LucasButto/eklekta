@@ -5,6 +5,7 @@ import {
   type ElementType,
   type FocusEventHandler,
   type MouseEventHandler,
+  type PointerEventHandler,
   type ReactNode,
 } from 'react'
 import './Reveal.scss'
@@ -26,6 +27,11 @@ interface RevealProps {
   onMouseLeave?: MouseEventHandler
   onFocus?: FocusEventHandler
   onBlur?: FocusEventHandler
+  // Same idea for a swipe: the gesture has to be read on the element that
+  // owns the whole carousel, and a wrapper would break its grid.
+  onPointerDown?: PointerEventHandler
+  onPointerUp?: PointerEventHandler
+  onPointerCancel?: PointerEventHandler
 }
 
 /**
@@ -48,6 +54,9 @@ export function Reveal({
   onMouseLeave,
   onFocus,
   onBlur,
+  onPointerDown,
+  onPointerUp,
+  onPointerCancel,
 }: RevealProps) {
   const ref = useRef<HTMLElement>(null)
 
@@ -85,6 +94,9 @@ export function Reveal({
       onMouseLeave={onMouseLeave}
       onFocus={onFocus}
       onBlur={onBlur}
+      onPointerDown={onPointerDown}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerCancel}
       style={
         delay || style
           ? ({
