@@ -48,6 +48,8 @@
     font-size: $text-base;
     color: var(--text-muted);
     text-wrap: pretty;
+
+    @include hyphenated-copy;
   }
 
   &__email {

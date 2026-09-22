@@ -41,6 +41,10 @@
 
     .section-heading__intro {
       margin-inline: auto;
+      // The intro is justified on a phone (body-copy), and a justified
+      // block leaves its last line at the start edge. Keep that line on
+      // the heading's own axis instead.
+      text-align-last: center;
     }
   }
 
@@ -48,12 +52,20 @@
     align-items: flex-end;
     margin-inline-start: auto;
     text-align: right;
+
+    .section-heading__intro {
+      text-align-last: right;
+    }
   }
 
   @include down($bp-md) {
     &--right {
       align-items: flex-start;
       text-align: left;
+
+      .section-heading__intro {
+        text-align-last: left;
+      }
     }
   }
 }

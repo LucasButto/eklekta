@@ -113,6 +113,42 @@
   line-height: 1.6;
   color: var(--text-muted);
   text-wrap: pretty;
+
+  @include justified-copy;
+}
+
+// Running text on a phone, flush both sides. Justified in a measure this
+// narrow (25–35 characters) leaves visible gaps wherever a long word
+// won't fit, so it only works together with the other two: hyphens
+// break those words at the syllable instead of pushing them whole to the
+// next line, and text-wrap: pretty (set by body-copy) keeps the last
+// line from being a single word. `balance` is not used here — it is for
+// short display lines, and on a justified block it would only touch the
+// last line, which pretty already handles (it also gives up past six
+// lines, so it would apply to some paragraphs and not others).
+//
+// Below $bp-lg only.
+@mixin justified-copy {
+  @include hyphenated-copy;
+
+  @include down($bp-lg) {
+    text-align: justify;
+  }
+}
+
+// The hyphenation half on its own, for the paragraphs too narrow or too
+// short to justify (Process stages sit beside their number in about 24
+// characters; the footer claim is two lines) — there the gaps a justified
+// line would need are wider than the ragged edge it replaces. The
+// dictionary comes from the page's lang (es, on <html>). 5/2/2 —
+// words of five letters or more, never fewer than two on either side —
+// measured better than 6/3/3 at 320px (widest gap 9x the natural space
+// instead of 12x) because the line has more places to break.
+@mixin hyphenated-copy {
+  @include down($bp-lg) {
+    hyphens: auto;
+    hyphenate-limit-chars: 5 2 2;
+  }
 }
 
 // ---------------------------------------------- a11y
