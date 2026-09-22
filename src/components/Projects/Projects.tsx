@@ -11,11 +11,30 @@ import { Button } from '@/components/Button/Button'
 import { SectionHeading } from '@/components/SectionHeading/SectionHeading'
 import projectsData from '@/data/projects.json'
 import type { Project, ProjectGroup } from '@/types'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { KonektaCard } from './KonektaCard'
 import { ProjectCard } from './ProjectCard'
+import { ProjectSheet } from './ProjectSheet'
+import { ProjectsFeed } from './ProjectsFeed'
 import './Projects.scss'
 
 const groups = projectsData as ProjectGroup[]
+
+/**
+ * Below $bp-lg the section is a vertical feed and a bottom sheet rather
+ * than the bento and its in-place detail — see ProjectsFeed /
+ * ProjectSheet. Matches the `down($bp-lg)` the stylesheet uses.
+ */
+const FEED = '(max-width: 1023.98px)'
+
+/**
+ * The filter tab the section is steering people toward. konekta, the CRM,
+ * is the one thing on this tab bar that is a product and not a piece of
+ * past work, so it is dressed and nudged apart from the other two (see
+ * &__filter[data-highlight] in Projects.scss). Named by kind rather than by
+ * position so reordering the tabs in projects.json does not move it.
+ */
+const HIGHLIGHT = 'crm'
 
 /** The filter bar, in the JSON's order. `id` is the group's `kind`. */
 const FILTERS = groups.map((group) => ({ id: group.kind, label: group.label }))
@@ -32,6 +51,13 @@ const byKind = new Map<string, Project[]>(
 // Long enough for the last card's stagger (index * 30ms) plus the
 // card-out keyframe (see Projects.scss). Kept in sync by eye.
 const SWAP_MS = 420
+/**
+ * The same hand-over on the feed. The bento's leaving cards stagger out
+ * one after another; a single column of full-width cards has no such
+ * order to read, so the set just crosses over — short enough that the
+ * tap on a filter and the list it produces feel like one thing.
+ */
+const FEED_SWAP_MS = 140
 
 // The FLIP between the grid and the master-detail layout. One curve;
 // every card travels from its old box to its new one — the rail cards
@@ -82,11 +108,45 @@ export function Projects() {
   const [shown, setShown] = useState<string>(FILTERS[0].id)
   const swapping = filter !== shown
 
+  // Whether the reader has opened the highlighted tab yet. The nudge that
+  // draws the eye to it (a periodic shake) is a way of saying "look here",
+  // and it stops the first time they have: a tab someone has already
+  // visited does not need to keep shaking at them. Colour stays.
+  const [highlightSeen, setHighlightSeen] = useState(false)
+
   const swapTimer = useRef<number | undefined>(undefined)
   const latest = useRef(filter)
 
   // The opened project, or null for the plain grid.
   const [openId, setOpenId] = useState<string | null>(null)
+
+  // Below $bp-lg the same "which project is open" question is answered
+  // by the sheet instead, and every piece of machinery below this line —
+  // the FLIP, the rail, the readout, the outside-press close — belongs
+  // to the desktop detail. Keeping `openId` at null there is what leaves
+  // all of it dormant rather than half-running against a layout it was
+  // never written for.
+  const isFeed = useMediaQuery(FEED)
+  const [sheetId, setSheetId] = useState<string | null>(null)
+  // The card that opened the sheet, so focus can go back to it.
+  const sheetTrigger = useRef<HTMLElement | null>(null)
+  // Derived from the set actually on screen, so changing the filter (or
+  // crossing $bp-lg) closes the sheet on its own rather than leaving it
+  // holding a project the list no longer contains.
+  const sheetProject = sheetId
+    ? ((byKind.get(shown) ?? []).find((p) => p.id === sheetId) ?? null)
+    : null
+
+  // Back to the card that opened it. <ProjectSheet> is a child, so its
+  // effect — the one that actually calls dialog.close() — has already
+  // run by the time this does.
+  useEffect(() => {
+    if (sheetId !== null) return
+    const trigger = sheetTrigger.current
+    if (!trigger) return
+    sheetTrigger.current = null
+    trigger.focus()
+  }, [sheetId])
 
   const list = useMemo(() => byKind.get(shown) ?? [], [shown])
   const leadProject = useMemo(
@@ -322,6 +382,7 @@ export function Projects() {
     (next: string) => {
       if (next === latest.current) return
       latest.current = next
+      if (next === HIGHLIGHT) setHighlightSeen(true)
 
       // Runs the section swap: the leaving cards stagger out
       // (`data-swapping`), then `shown` catches up and the new set mounts.
@@ -329,15 +390,23 @@ export function Projects() {
         if (latest.current !== next) return
         setFilter(next)
         window.clearTimeout(swapTimer.current)
-        swapTimer.current = window.setTimeout(() => {
-          if (latest.current === next) setShown(next)
-        }, SWAP_MS)
+        swapTimer.current = window.setTimeout(
+          () => {
+            if (latest.current === next) setShown(next)
+          },
+          isFeed ? FEED_SWAP_MS : SWAP_MS,
+        )
       }
 
       window.clearTimeout(filterAfterClose.current)
       // Focus belongs on the filter the reader just clicked, not back on
       // the project card the close would otherwise return it to.
       restoreFocus.current = null
+      // Same on the feed: the sheet's project is about to leave the
+      // list, so the sheet goes with it and its card is no longer where
+      // focus should land.
+      sheetTrigger.current = null
+      setSheetId(null)
 
       if (openId !== null && !prefersReducedMotion()) {
         // Close the open project first — the cards FLIP home (quicker
@@ -350,7 +419,7 @@ export function Projects() {
         swapSection()
       }
     },
-    [openId, select],
+    [openId, select, isFeed],
   )
 
   useEffect(
@@ -446,6 +515,10 @@ export function Projects() {
                 type="button"
                 className="projects__filter"
                 aria-current={f.id === filter ? 'true' : undefined}
+                data-highlight={f.id === HIGHLIGHT ? '' : undefined}
+                data-nudge={
+                  f.id === HIGHLIGHT && !highlightSeen ? '' : undefined
+                }
                 onClick={() => selectFilter(f.id)}
               >
                 {f.label}
@@ -453,6 +526,27 @@ export function Projects() {
             ))}
           </div>
 
+        {isFeed ? (
+          shown === 'crm' ? (
+            // The CRM tab is one panel and not a list, here as on the
+            // desktop grid — it opens no sheet.
+            <div
+              className="projects-feed"
+              data-swapping={swapping ? '' : undefined}
+            >
+              <KonektaCard />
+            </div>
+          ) : (
+            <ProjectsFeed
+              projects={list}
+              swapping={swapping}
+              onOpen={(project, trigger) => {
+                sheetTrigger.current = trigger
+                setSheetId(project.id)
+              }}
+            />
+          )
+        ) : (
         <div className="projects__stage" data-mode={mode} ref={stageRef}>
           {leadProject && (
             <ProjectCard
@@ -594,8 +688,15 @@ export function Projects() {
             )}
           </div>
         </div>
+        )}
         </div>
       </div>
+
+      {/* Top layer, so where it sits in the tree makes no difference to
+          what it covers. Rendered only alongside the feed. */}
+      {isFeed && (
+        <ProjectSheet project={sheetProject} onClose={() => setSheetId(null)} />
+      )}
     </section>
   )
 }
