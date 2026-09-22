@@ -160,7 +160,7 @@ export function ProjectCard({
         aria-label={
           isLead
             ? `Cerrar ${project.title}`
-            : `${project.title} — ver el proyecto de ${project.client}`
+            : `${project.title}, ver el proyecto de ${project.client}`
         }
       >
         {/* The opened panel carries no type of its own — the readout

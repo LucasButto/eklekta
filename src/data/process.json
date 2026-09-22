@@ -4,7 +4,7 @@
     "step": "01",
     "title": "Diagnóstico",
     "description": "Miramos cómo trabajás hoy: herramientas, planillas, quién toca qué. Salimos con un mapa de los cuellos de botella y una estimación honesta de qué conviene resolver primero.",
-    "detail": "Nos sentamos con el equipo que usa el proceso todos los días, no solo con quien nos contrató. Relevamos las planillas paralelas, los mails que se reenvían a mano y los pasos que nadie anotó porque \"siempre se hicieron así\". De ahí sale un mapa del proceso real — no el del manual — y una lista priorizada por impacto y esfuerzo, no por lo que suena más atractivo.",
+    "detail": "Nos sentamos con el equipo que usa el proceso todos los días, no solo con quien nos contrató. Relevamos las planillas paralelas, los mails que se reenvían a mano y los pasos que nadie anotó porque \"siempre se hicieron así\". De ahí sale un mapa del proceso real, no el del manual, y una lista priorizada por impacto y esfuerzo, no por lo que suena más atractivo.",
     "duration": "1 semana",
     "image": "/images/editorial/about0.jpg"
   },
@@ -22,7 +22,7 @@
     "step": "03",
     "title": "Implementación",
     "description": "Construimos, integramos y probamos con datos reales. Entregamos por partes para que el equipo vea avances cada semana en lugar de esperar al final.",
-    "detail": "Programamos en ciclos cortos y te mostramos algo funcionando cada semana, nunca un entregable único al final del proyecto. Probamos con tus datos reales — no con datos de ejemplo — para que los problemas aparezcan durante el desarrollo y no el día del lanzamiento. Vos decidís qué se prioriza en cada ciclo según lo que vas viendo.",
+    "detail": "Programamos en ciclos cortos y te mostramos algo funcionando cada semana, nunca un entregable único al final del proyecto. Probamos con tus datos reales, no con datos de ejemplo, para que los problemas aparezcan durante el desarrollo y no el día del lanzamiento. Vos decidís qué se prioriza en cada ciclo según lo que vas viendo.",
     "duration": "4 a 8 semanas",
     "image": "/images/services/desarrollo-web-1200.webp"
   },
@@ -31,7 +31,7 @@
     "step": "04",
     "title": "Escala",
     "description": "Capacitamos al equipo, dejamos la documentación y medimos el resultado. Después seguimos ajustando, porque el proceso cambia cuando el negocio crece.",
-    "detail": "El lanzamiento no es la línea de llegada: es cuando empezamos a medir de verdad. Capacitamos a tu equipo, documentamos cada decisión técnica que tomamos y nos quedamos mirando los números de cerca las primeras semanas. Cuando el negocio crece o cambia de rumbo, el sistema se ajusta junto con vos — no se vuelve a construir de cero cada vez.",
+    "detail": "El lanzamiento no es la línea de llegada: es cuando empezamos a medir de verdad. Capacitamos a tu equipo, documentamos cada decisión técnica que tomamos y nos quedamos mirando los números de cerca las primeras semanas. Cuando el negocio crece o cambia de rumbo, el sistema se ajusta junto con vos, no se vuelve a construir de cero cada vez.",
     "duration": "Continuo",
     "image": "/images/editorial/manifesto-20.jpg"
   }

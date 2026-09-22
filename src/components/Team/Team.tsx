@@ -87,7 +87,7 @@ export function Team() {
                 <div className="member__body">
                   <h3 className="member__name">{member.name}</h3>
                   <p className="member__role">{member.role}</p>
-                  <span className="sr-only"> — abrir su perfil de LinkedIn</span>
+                  <span className="sr-only">. Abrir su perfil de LinkedIn.</span>
                 </div>
               </div>
             </a>

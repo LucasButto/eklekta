@@ -517,7 +517,7 @@ export function Projects() {
                 </Button>
               ) : (
                 <p className="projects__readout-note">
-                  Trabajo interno — sin sitio público.
+                  Trabajo interno, sin sitio público.
                 </p>
               )}
             </div>
