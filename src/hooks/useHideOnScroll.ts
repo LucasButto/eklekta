@@ -43,6 +43,12 @@ export function useHideOnScroll({
       last = y
       if (delta === 0) return
 
+      // A services-sequence hold is correcting scroll on its own — see
+      // useScrollSequence's setHolding — so this frame's delta is that
+      // correction, not the reader, and must not move `travel` or
+      // re-evaluate hidden/visible.
+      if (document.documentElement.dataset.seqHolding) return
+
       // Always show near the top.
       if (y <= offset) {
         travel = 0
