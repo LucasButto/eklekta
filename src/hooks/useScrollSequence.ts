@@ -139,6 +139,19 @@ export function useScrollSequence<
      */
     let offsets: number[] = [];
 
+    /**
+     * Mirrors `held` onto the root as a data attribute — the same
+     * convention the navbar uses for `data-nav-scrolling` (see
+     * Navbar.tsx) — so useHideOnScroll can ignore the scroll deltas a
+     * hold's own corrective `scrollTo` produces instead of reading them
+     * as the reader scrolling up.
+     */
+    const setHolding = (value: boolean) => {
+      const root = document.documentElement;
+      if (value) root.dataset.seqHolding = "1";
+      else delete root.dataset.seqHolding;
+    };
+
     const update = () => {
       frame = 0;
 
@@ -155,6 +168,7 @@ export function useScrollSequence<
         if (held !== -1) {
           spent = held;
           held = -1;
+          setHolding(false);
         }
       }
 
@@ -259,6 +273,7 @@ export function useScrollSequence<
           holdStart = nowFrame;
           holdAt = Math.round(window.scrollY + current[crossed]);
           abortDelta = 0;
+          setHolding(true);
           if (!holdFrame) holdFrame = requestAnimationFrame(runHold);
         }
       }
@@ -285,6 +300,7 @@ export function useScrollSequence<
       if (abortDelta >= ABORT_PX) {
         spent = held;
         held = -1;
+        setHolding(false);
         return;
       }
       if (event.cancelable) event.preventDefault();
@@ -305,6 +321,7 @@ export function useScrollSequence<
       if (performance.now() - holdStart >= HOLD_MS) {
         spent = held;
         held = -1;
+        setHolding(false);
         return;
       }
 
@@ -342,6 +359,7 @@ export function useScrollSequence<
       window.removeEventListener("wheel", onWheel);
       if (frame) cancelAnimationFrame(frame);
       if (holdFrame) cancelAnimationFrame(holdFrame);
+      setHolding(false);
       clear();
     };
   }, [count]);

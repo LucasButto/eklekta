@@ -92,6 +92,21 @@ $head-max-wide: 40%;
 $field-graphite: #141031;
 $field-graphite-dark: #262247;
 
+// The CRM filter's own preview of the konekta background (see
+// &__filter-marker and &__filter[data-highlight]). The source is a
+// 400px-wide photo of scattered, sparse icons, already low-contrast by
+// design for a full-width panel. Two problems compound at the filter
+// pill's actual ~63×29px size: `cover` was shrinking the whole 400px
+// photo down to fit, softening the icons further on top of their own
+// low contrast; and centring landed the crop on one of the image's
+// emptier patches. Sized in native px (no shrink) rather than `cover`,
+// and positioned at the densest icon cluster found by scanning the
+// source — the window with the most non-background pixels — so both
+// elements (the static tab, the wider sliding marker) show the same
+// close-up of actual icons instead of a near-flat swatch.
+$crm-preview-size: 400px auto;
+$crm-preview-position: -126px -164px;
+
 .projects {
   // Top and bottom split on purpose (not one padding-block value): the
   // fixed navbar only eats into the top, so only the top needs to clear
@@ -187,6 +202,11 @@ $field-graphite-dark: #262247;
     max-width: 100%;
     margin-bottom: clamp(16px, 10px + 1.6vw, 32px);
     padding: 4px;
+    // Sits between the pills so an active marker next to CRM's own fill
+    // doesn't read as fused to it. offsetLeft/offsetWidth in <Projects>
+    // measure the buttons live, so the marker keeps landing exactly on
+    // the active one with no change needed there.
+    gap: 4px;
     overflow-x: auto;
     background-color: var(--surface-2);
     border: 1px solid var(--border);
@@ -208,25 +228,54 @@ $field-graphite-dark: #262247;
     left: 0;
     z-index: 0;
     width: var(--marker-w, 0);
+    // Clips &::before below to the pill's own rounded shape.
+    overflow: hidden;
     background-color: var(--brand-deep);
     border-radius: $radius-pill;
     transform: translateX(var(--marker-x, 4px));
-    // Only the glide is animated — the width snaps to the new label so
-    // the pill is never a wrong size, even if a slide is cut short. (The
-    // colour eases as well, for the one tab that has its own — below.)
+    // A touch slower than the label/colour transitions elsewhere in the
+    // bar — this is the one thing in it the reader is actually watching
+    // move, so it reads better with a little more travel time. (The
+    // colour eases too, for the one tab that has its own — below.)
     transition:
-      transform $dur-base $ease-spring,
-      background-color $dur-base $ease-out;
+      transform $dur-mid $ease-spring,
+      background-color $dur-mid $ease-out;
 
-    // Sitting under the highlighted tab, the pill takes that tab's colour
-    // instead of the brand violet, so selecting it reads as the tab
-    // lighting up and not as a violet pill being dropped on a cyan one.
+    // Sitting under the highlighted tab, the pill takes that tab's own
+    // look instead of the brand violet. The colour underneath still
+    // eases from brand-deep to --accent-cyan (the transition above);
+    // this layer — the same photo the CRM panel itself sits on — fades
+    // in over it at the same pace, so selecting the tab reads as the
+    // pill settling into that look rather than a hard cut to an image.
+    &::before {
+      position: absolute;
+      inset: 0;
+      background-image: url("/images/projects/Fondo_KONEKTA-400.jpg");
+      background-image: image-set(
+        url("/images/projects/Fondo_KONEKTA-400.webp") type("image/webp"),
+        url("/images/projects/Fondo_KONEKTA-400.jpg") type("image/jpeg")
+      );
+      background-position: $crm-preview-position;
+      background-size: $crm-preview-size;
+      opacity: 0;
+      transition: opacity $dur-mid $ease-out;
+      content: "";
+    }
+
     .projects__filters:has(.projects__filter[data-highlight][aria-current="true"]) & {
       background-color: var(--accent-cyan);
+
+      &::before {
+        opacity: 1;
+      }
     }
 
     .projects__filters[data-static] & {
       transition: none;
+
+      &::before {
+        transition: none;
+      }
     }
   }
 
@@ -290,6 +339,16 @@ $field-graphite-dark: #262247;
       // white on this cyan is 1.6:1. The pair is theme-independent, the
       // same way the panel it stands for is.
       color: $ink;
+      // The same photo the CRM panel itself sits on, so the tab reads as
+      // a preview of that panel rather than a flat --accent-cyan fill —
+      // which, on its own, was the loudest thing in the bar.
+      background-image: url("/images/projects/Fondo_KONEKTA-400.jpg");
+      background-image: image-set(
+        url("/images/projects/Fondo_KONEKTA-400.webp") type("image/webp"),
+        url("/images/projects/Fondo_KONEKTA-400.jpg") type("image/jpeg")
+      );
+      background-position: $crm-preview-position;
+      background-size: $crm-preview-size;
       background-color: var(--accent-cyan);
 
       // Selected, the sliding pill (cyan as well — see the marker) does the
@@ -298,6 +357,7 @@ $field-graphite-dark: #262247;
       &[aria-current="true"] {
         color: $ink;
         background-color: transparent;
+        background-image: none;
       }
 
       // The generic hover above turns an unselected label to --text, which

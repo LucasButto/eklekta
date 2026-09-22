@@ -343,6 +343,21 @@
       0 0 0.32em var(--bg),
       0 0 0.32em var(--bg),
       0 0 0.7em var(--bg);
+
+    // --bg is near-white in light mode (#eeedf7), so the same stack
+    // that reads as a soft glow against dark mode's near-black photos
+    // reads as a hard white blur here. Fewer, tighter layers — the
+    // large 0.7em/0.32em passes dropped rather than just dimmed, so the
+    // photo stays visible right up to the letterforms — keep the text
+    // legible without the wash. Dark mode is untouched.
+    :root[data-theme="light"] & {
+      text-shadow:
+        0 0 0.08em var(--bg),
+        0 0 0.08em var(--bg),
+        0 0 0.12em var(--bg),
+        0 0 0.12em var(--bg),
+        0 0 0.22em var(--bg);
+    }
   }
 
   .manifesto__figure {
