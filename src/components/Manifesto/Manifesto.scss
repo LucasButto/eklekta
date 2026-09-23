@@ -10,6 +10,11 @@
 //  every move. Browsers without scroll-driven animations — and
 //  anyone on reduced motion — get the static collage, which is
 //  already a finished look.
+//
+//  The one exception is below $bp-lg (phones and tablets), where the
+//  section is just the statement: there its words light up as it
+//  scrolls into view — see "the words lighting up" below and
+//  Manifesto.tsx. Desktop has none of that.
 // =============================================================
 
 .manifesto {
@@ -297,6 +302,35 @@
       ),
       calc((100vw - 2 * var(--gutter)) / 7.05)
     );
+  }
+}
+
+// ---------------------------------------------- the words lighting up
+// Manifesto.tsx splits the statement and the closing line into words and
+// lights them first to last as the section scrolls through. Every word is
+// on the page from the start, just dim; only its colour ever changes.
+//
+// --word-ink is the colour each run already has — the statement's text,
+// the lead-in's text, the mark's brand — so lit is exactly the colour
+// the line had before, and dim is that same ink thinned toward the page
+// in either theme. The halo above is untouched: it paints under a dim
+// glyph just as it does under a lit one. Reduced motion never gets the
+// word spans at all, so it sees the text as it was.
+.manifesto__text,
+.manifesto__closing-lead {
+  --word-ink: var(--text);
+}
+
+.manifesto__closing-line {
+  --word-ink: var(--brand);
+}
+
+.manifesto__word {
+  color: color-mix(in srgb, var(--word-ink) 35%, transparent);
+  transition: color $dur-mid $ease-in-out;
+
+  &.is-active {
+    color: var(--word-ink);
   }
 }
 
