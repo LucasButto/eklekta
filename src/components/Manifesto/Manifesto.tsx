@@ -1,5 +1,32 @@
+import { Fragment, useEffect, useRef } from "react";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import "./Manifesto.scss";
+
+const STILL = "(prefers-reduced-motion: reduce)";
+
+/**
+ * The words light up one after another as the section scrolls through,
+ * first to last — below $bp-lg only. From there up the text is the plain
+ * statement the pinned photo sequence fades in (see the enhancement in
+ * Manifesto.scss) and none of this applies.
+ *
+ * The block scrolls normally here, so the sweep is measured against the
+ * viewport. It ends when the block's centre reaches READ — the middle of
+ * the screen, where the reader is looking — so the whole statement has to
+ * be lit by then, not after it has gone past.
+ */
+const READ = 0.5;
+
+/**
+ * Where it starts, relative to the block being entirely on screen (its
+ * bottom edge at the viewport's), as a share of the viewport height:
+ * positive waits that much further, negative starts that much sooner —
+ * while the closing line is still coming in. The sweep's length is the
+ * distance between this start and READ, and since READ is fixed at the
+ * middle, starting sooner is what gives the fourteen words more scroll
+ * to spread over.
+ */
+const HOLD = -0.06;
 
 /**
  * Below $bp-lg the section is the statement and nothing else. The photographs
@@ -35,10 +62,99 @@ export function Manifesto() {
   // Not rendered below $bp-lg rather than hidden with CSS: the three files
   // come to about 5 MB, and a display: none on a lazy image leaves it to
   // each browser to decide not to fetch it. Unmounted, nothing is asked for.
-  const showCollage = !useMediaQuery(PHONE);
+  const phone = useMediaQuery(PHONE);
+  const showCollage = !phone;
+  // The words only light up below $bp-lg, and reduced motion gets the
+  // plain text in its final colour: either way, no word spans and no
+  // scroll listener.
+  const still = useMediaQuery(STILL);
+  const lighting = phone && !still;
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!lighting || !section) return;
+
+    const text = section.querySelector<HTMLElement>(".manifesto__text");
+    const closing = section.querySelector<HTMLElement>(
+      ".manifesto__closing-line",
+    );
+    const spans = Array.from(
+      section.querySelectorAll<HTMLElement>(".manifesto__word"),
+    );
+    if (!text || !closing || spans.length === 0) return;
+
+    /** How many words are lit — the DOM is only touched when it moves. */
+    let lit = -1;
+    let raf = 0;
+
+    const update = () => {
+      raf = 0;
+      const viewport = window.innerHeight;
+      const top = text.getBoundingClientRect().top;
+      const height = closing.getBoundingClientRect().bottom - top;
+      // The block's own top when its bottom edge just reaches the
+      // viewport's — the moment it is entirely on screen — offset by
+      // HOLD. (If the block is taller than the viewport it never is
+      // fully on screen; fall through to already-lit rather than leave
+      // it dim and unreadable.)
+      const from = viewport - height - HOLD * viewport;
+      const to = READ * viewport - height / 2;
+      const span = from - to;
+      const progress = span > 0 ? (from - top) / span : 1;
+
+      const count = Math.round(
+        Math.min(1, Math.max(0, progress)) * spans.length,
+      );
+      if (count === lit) return;
+      lit = count;
+      spans.forEach((word, index) =>
+        word.classList.toggle("is-active", index < count),
+      );
+    };
+
+    const schedule = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+
+    schedule();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+
+    return () => {
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [lighting]);
+
+  /**
+   * One run of text split into word spans. The words sit inside one
+   * inline wrapper rather than straight in the row: below $bp-md a
+   * .manifesto__row is a flex container, which drops the whitespace
+   * between its children — the wrapper stays a single flex item, laid
+   * out exactly as the bare text was.
+   */
+  const words = (run: string) =>
+    !lighting ? (
+      run
+    ) : (
+      <span className="manifesto__words">
+        {run.split(" ").map((word, index) => (
+          <Fragment key={index}>
+            {index > 0 && " "}
+            <span className="manifesto__word">{word}</span>
+          </Fragment>
+        ))}
+      </span>
+    );
 
   return (
-    <section className="manifesto" aria-labelledby="manifesto-title">
+    <section
+      className="manifesto"
+      aria-labelledby="manifesto-title"
+      ref={sectionRef}
+    >
       <div className="manifesto__frame">
         {showCollage && (
           <div className="manifesto__collage" aria-hidden="true">
@@ -76,14 +192,14 @@ export function Manifesto() {
               statement wraps and renders exactly as it did before these
               wrappers existed. */}
           <span className="manifesto__part manifesto__part--one">
-            <span className="manifesto__row">Automatizar</span>{" "}
-            <span className="manifesto__row">no es sumar</span>{" "}
-            <span className="manifesto__row">herramientas.</span>
+            <span className="manifesto__row">{words("Automatizar")}</span>{" "}
+            <span className="manifesto__row">{words("no es sumar")}</span>{" "}
+            <span className="manifesto__row">{words("herramientas.")}</span>
           </span>{" "}
           <span className="manifesto__part manifesto__part--two">
-            <span className="manifesto__row">Es sacar</span>{" "}
-            <span className="manifesto__row">del medio</span>{" "}
-            <span className="manifesto__row">lo repetitivo.</span>
+            <span className="manifesto__row">{words("Es sacar")}</span>{" "}
+            <span className="manifesto__row">{words("del medio")}</span>{" "}
+            <span className="manifesto__row">{words("lo repetitivo.")}</span>
           </span>
         </h2>
 
@@ -92,7 +208,8 @@ export function Manifesto() {
             name keeps the logo's face and brand colour — see
             .manifesto__closing-lead. */}
         <p className="manifesto__closing-line">
-          <span className="manifesto__closing-lead">Eso es</span> eklekta.
+          <span className="manifesto__closing-lead">{words("Eso es")}</span>{" "}
+          {words("eklekta.")}
         </p>
       </div>
     </section>
