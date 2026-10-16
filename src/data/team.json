@@ -4,7 +4,7 @@
     "name": "Valentín González Iturbe",
     "role": "Diseñador UX & UI",
     "focus": "Diseña interfaces que se entienden sin manual.",
-    "photo": "/images/team/team-valen.jpeg",
+    "photo": "/images/team/member-1.jpg",
     "linkedin": "https://www.linkedin.com/in/valentingonzaleziturbe/"
   },
   {
@@ -12,7 +12,7 @@
     "name": "Pedro Burdisso",
     "role": "Gestión comercial",
     "focus": "Ordena la relación con el cliente y el avance del proyecto.",
-    "photo": "/images/team/team-pedro.jpeg",
+    "photo": "/images/team/member-2.jpg",
     "linkedin": "https://www.linkedin.com/in/pedro-burdisso/"
   },
   {
@@ -20,7 +20,7 @@
     "name": "Constanza Martinez",
     "role": "Automatizaciones / Análisis de Datos",
     "focus": "Encuentra el paso manual que nadie mira y lo hace desaparecer.",
-    "photo": "/images/team/team-coty.png",
+    "photo": "/images/team/member-3.jpg",
     "linkedin": "https://www.linkedin.com/in/coty-martinez/"
   },
   {
@@ -28,7 +28,7 @@
     "name": "Lucas Butto",
     "role": "Desarrollador Fullstack",
     "focus": "Escribe el código que va a seguir siendo legible dentro de dos años.",
-    "photo": "/images/team/team-lucas.jpeg",
+    "photo": "/images/team/member-4.jpg",
     "linkedin": "https://www.linkedin.com/in/lucas-butto/"
   },
   {
@@ -36,7 +36,7 @@
     "name": "Agustin Peisino",
     "role": "Analista de calidad",
     "focus": "Encuentra lo que se rompe antes de que lo encuentre el cliente.",
-    "photo": "/images/team/team-agustin.jpeg",
+    "photo": "/images/team/member-5.jpg",
     "linkedin": "https://www.linkedin.com/in/peisinoagustin/"
   }
 ]
