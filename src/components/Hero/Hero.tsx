@@ -200,9 +200,16 @@ export function Hero() {
             }`}
           >
             <h1 className="hero__title">
-              {/* Logo renders role="img" + aria-label itself, so this is
-                  the h1's only content — no separate sr-only text needed. */}
-              <Logo variant="wordmark" className="hero__wordmark" title="eklekta" />
+              {/* The wordmark is only an SVG, so on its own the h1 would
+                  have no text for a crawler to read. The real, descriptive
+                  heading lives in the sr-only span (and is what search
+                  engines and screen readers get); the logo is marked
+                  decorative so "eklekta" isn't announced twice. */}
+              <Logo variant="wordmark" className="hero__wordmark" decorative />
+              <span className="sr-only">
+                eklekta — estudio de automatización, CRM y desarrollo web en
+                Argentina
+              </span>
             </h1>
 
             {/* The navbar's own CTA, which cannot be shown below $bp-md —
