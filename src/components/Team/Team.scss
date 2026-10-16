@@ -454,6 +454,16 @@ $member-scrim: #191823;
       height: $member-photo-h;
     }
 
+    // The <picture> is only there to offer WebP; for layout it must not
+    // exist. Left as the block the reset makes it, it would sit between
+    // the frame and the img — and the five-across img's `height: 100%`
+    // would resolve against a picture of auto height instead of the
+    // frame, and below $bp-lg the img would stop being the flex item the
+    // rules below size. `contents` hands the img back to the frame.
+    picture {
+      display: contents;
+    }
+
     img {
       width: 100%;
       // While the row wraps, the cell is a fraction of the container

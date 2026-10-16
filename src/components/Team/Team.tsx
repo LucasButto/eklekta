@@ -1,3 +1,4 @@
+import { coverSet } from "@/components/Projects/coverSet";
 import { Reveal } from "@/components/Reveal/Reveal";
 import { SectionHeading } from "@/components/SectionHeading/SectionHeading";
 import teamData from "@/data/team.json";
@@ -5,6 +6,24 @@ import type { TeamMember } from "@/types";
 import "./Team.scss";
 
 const team = teamData as TeamMember[];
+
+// The steps scripts/make-team-photos.mjs writes for every member — same
+// `${stem}-${w}.{webp,jpg}` scheme as the project covers, so coverSet
+// builds the srcsets. The middle step is the <img src> fallback.
+const PHOTO_WIDTHS = [400, 640, 880] as const;
+// Intrinsic size of those files (3:4). Only reserves the box before the
+// image arrives; the frame's own aspect-ratio / height decides what shows.
+const PHOTO_HEIGHT = 1173;
+
+// Static data, so the srcsets are built once rather than on every render.
+const photos = team.map((member) => coverSet(member.photo, PHOTO_WIDTHS));
+
+// How wide the picture really is, per the row in Team.scss: five across
+// from $bp-lg (a fifth of the 104rem-capped row, so ~18vw up to 20rem),
+// three across from $bp-sm, two across below it. A hair over each so the
+// browser never settles for a step narrower than the frame it fills.
+const PHOTO_SIZES =
+  "(min-width: 1024px) min(18vw, 20rem), (min-width: 640px) 31vw, 46vw";
 
 export function Team() {
   return (
@@ -63,14 +82,23 @@ export function Team() {
                 {/* Name and role are printed right next to the photo,
                     inside the same link, so the alt stays short: a
                     screen reader would otherwise read them twice. */}
-                <img
-                  src={member.photo}
-                  alt={`Retrato de ${member.name}`}
-                  loading="lazy"
-                  decoding="async"
-                  width={900}
-                  height={1200}
-                />
+                <picture>
+                  <source
+                    type="image/webp"
+                    srcSet={photos[index].webp}
+                    sizes={PHOTO_SIZES}
+                  />
+                  <img
+                    src={photos[index].src}
+                    srcSet={photos[index].jpg}
+                    sizes={PHOTO_SIZES}
+                    alt={`Retrato de ${member.name}`}
+                    loading="lazy"
+                    decoding="async"
+                    width={PHOTO_WIDTHS[2]}
+                    height={PHOTO_HEIGHT}
+                  />
+                </picture>
 
                 {/* The only visible sign the card is a link — no
                     underline, no button. Fades in top-right on hover /
