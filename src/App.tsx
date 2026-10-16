@@ -10,8 +10,13 @@ import { Projects } from "@/components/Projects/Projects";
 import { Services } from "@/components/Services/Services";
 import { Team } from "@/components/Team/Team";
 import { ThemeProvider } from "@/context/ThemeProvider";
+import { useClearPrerenderFlag } from "@/hooks/useClearPrerenderFlag";
 
 export default function App() {
+  // Reveals the live tree once it has replaced the pre-rendered HTML in
+  // #root — see the hook.
+  useClearPrerenderFlag();
+
   return (
     <ThemeProvider>
       <a className="skip-link" href="#contenido">
