@@ -12,6 +12,14 @@ dist
 dist-ssr
 *.local
 
+# Contraseña del buzón de Hostinger: vive solo en el servidor, nunca en el repo.
+# Los patrones sin carpeta cubren también una config de prueba local: con
+# `php -S` sobre dist/, contact.php la busca en la raíz del repo (dos niveles
+# arriba de dist/api/), y ahí también deja sus contadores de rate limit.
+server/eklekta-mail-config.php
+eklekta-mail-config.php
+eklekta-mail-data/
+
 # graphify
 graphify-out/
 

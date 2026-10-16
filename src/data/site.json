@@ -38,10 +38,10 @@
     "href": "#contacto"
   },
   "contact": {
-    "email": "hola@eklekta.studio",
-    "location": "Trabajamos en remoto, con equipos de toda Latinoamérica y España.",
+    "email": "contacto@eklekta.com.ar",
+    "location": "Estamos en Argentina y trabajamos en remoto con equipos de toda Latinoamérica y España.",
     "availability": "Agenda abierta para proyectos que arrancan este trimestre.",
-    "formEndpoint": ""
+    "formEndpoint": "/api/contact.php"
   },
   "socials": [
     {

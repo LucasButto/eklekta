@@ -60,9 +60,12 @@ export function Team() {
               rel="noreferrer noopener"
             >
               <div className="member__photo">
+                {/* Name and role are printed right next to the photo,
+                    inside the same link, so the alt stays short: a
+                    screen reader would otherwise read them twice. */}
                 <img
                   src={member.photo}
-                  alt=""
+                  alt={`Retrato de ${member.name}`}
                   loading="lazy"
                   decoding="async"
                   width={900}

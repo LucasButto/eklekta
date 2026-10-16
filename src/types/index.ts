@@ -152,10 +152,11 @@ export interface SiteData {
     location: string
     availability: string
     /**
-     * Where the contact form POSTs its JSON (Formspree, Web3Forms, a
-     * serverless function — anything that accepts a JSON body). Leave
-     * empty and the form falls back to opening the visitor's mail
-     * client with every field already filled in.
+     * Where the contact form POSTs its JSON. In production that is
+     * `/api/contact.php` (public/api/contact.php, which relays it by SMTP);
+     * it has to answer `{"ok": true}` on success. Leave empty and the form
+     * falls back to opening the visitor's mail client with every field
+     * already filled in.
      */
     formEndpoint: string
   }

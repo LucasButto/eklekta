@@ -121,7 +121,7 @@ export function ProjectSheet({ project, onClose }: ProjectSheetProps) {
                 src={set.src}
                 srcSet={set.jpg}
                 sizes="(min-width: 768px) 40rem, 100vw"
-                alt=""
+                alt={`${project.title}: ${project.subtitle}`}
                 decoding="async"
                 fetchPriority="high"
                 data-align={project.alignImg ?? "center"}

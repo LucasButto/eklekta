@@ -12,8 +12,12 @@ const services = servicesData as Service[];
 type FieldName = "nombre" | "email" | "mensaje";
 type Errors = Partial<Record<FieldName, string>>;
 
-/** idle → sending → sent | error, plus `mail` for the no-endpoint path. */
-type Status = "idle" | "sending" | "sent" | "error" | "mail";
+/**
+ * idle → sending → sent | error | limited, plus `mail` for the no-endpoint
+ * path. `limited` is the server's 429: it has its own message because
+ * "try again" is useful advice there and misleading for any other error.
+ */
+type Status = "idle" | "sending" | "sent" | "error" | "limited" | "mail";
 
 interface Values {
   nombre: string;
@@ -113,9 +117,24 @@ export function ContactForm() {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify(values),
+        // `empresa` is always empty by this point (a filled one returned
+        // above) but goes along anyway so the server runs its own
+        // honeypot check too — it can't trust that the client did.
+        body: JSON.stringify({ ...values, empresa: String(raw.get("empresa") ?? "") }),
       });
-      if (!response.ok) throw new Error(String(response.status));
+      if (response.status === 429) {
+        setStatus("limited");
+        return;
+      }
+      // Requiring `ok: true` in the body, not just a 2xx: a server that
+      // answers with something other than our endpoint (an HTML fallback
+      // page, say) must not read as "sent".
+      const result: unknown = await response.json().catch(() => null);
+      const accepted =
+        typeof result === "object" &&
+        result !== null &&
+        (result as { ok?: unknown }).ok === true;
+      if (!response.ok || !accepted) throw new Error(String(response.status));
       setStatus("sent");
       form.reset();
     } catch {
@@ -232,6 +251,13 @@ export function ContactForm() {
           {status === "sent" &&
             "Listo. Te respondemos dentro de las próximas 24 h hábiles."}
           {status === "mail" && "Te abrimos el mail con el mensaje ya escrito."}
+          {status === "limited" && (
+            <>
+              Recibimos varios mensajes seguidos desde tu conexión. Probá de
+              nuevo en un rato o escribinos a{" "}
+              <a href={`mailto:${data.contact.email}`}>{data.contact.email}</a>.
+            </>
+          )}
           {status === "error" && (
             <>
               No pudimos enviarlo. Escribinos a{" "}

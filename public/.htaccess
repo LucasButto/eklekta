@@ -1,0 +1,13 @@
+# Sin listado de carpetas: si alguien pide /images/ no ve el contenido.
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # www → sin www (301), conservando la ruta. Una sola versión del sitio
+  # evita contenido duplicado ante Google. No hay regla http → https a
+  # propósito: el CDN de Hostinger ya la aplica y repetirla acá puede
+  # generar un bucle de redirecciones.
+  RewriteCond %{HTTP_HOST} ^www\.eklekta\.com\.ar$ [NC]
+  RewriteRule ^(.*)$ https://eklekta.com.ar/$1 [R=301,L]
+</IfModule>

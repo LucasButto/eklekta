@@ -81,7 +81,7 @@ export function Footer() {
           </div>
 
           <div className="footer__bottom">
-            <p className="footer__legal">© {year} eklekta. Todos los derechos reservados.</p>
+            <p className="footer__legal">© {year} eklekta · Argentina. Todos los derechos reservados.</p>
             <a className="footer__top-link" href="#inicio">
               Volver arriba
             </a>
