@@ -1,0 +1,4 @@
+# Nadie tiene que poder pedir estos archivos por HTTP: son librerías que
+# solo carga contact.php desde el servidor. (contact.php, un nivel más
+# arriba, sigue siendo accesible.)
+Require all denied
