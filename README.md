@@ -26,7 +26,8 @@ public/                  se copia tal cual a dist/ (y de ahí a public_html)
     lib/PHPMailer/       PHPMailer 7.1.1 (solo 3 archivos + LICENSE)
     lib/.htaccess        «Require all denied»: las librerías no se piden por HTTP
   fonts/                 Poppins y Monument Extended en .woff2
-  images/                placeholders de proyectos, equipo y editoriales, og.jpg, logo-512.png
+  images/                proyectos, equipo y editoriales, og.jpg, logo-512.png
+    team/                fotos del equipo ya generadas: member-N-{400,640,880}.{webp,jpg}
   .htaccess              redirección www → sin www, sin listado de carpetas
   robots.txt
   favicon.svg
@@ -34,6 +35,8 @@ public/                  se copia tal cual a dist/ (y de ahí a public_html)
 scripts/
   postbuild.mjs          sitemap.xml + pre-render del HTML (corre dentro de `npm run build`)
   make-logo-png.mjs      regenera public/images/logo-512.png desde el isotipo (a mano)
+  make-team-photos.mjs   genera las fotos del equipo (WebP + JPG, 3 anchos) desde
+                         brand-assets/team-src/ (a mano; necesita `npm i --no-save sharp`)
 
 server/
   eklekta-mail-config.example.php   plantilla de la config del mail; NO se publica
@@ -41,6 +44,7 @@ server/
 brand-assets/
   fonts-src/             los .zip originales de las fuentes (fuera del deploy)
   logos/                 archivos de marca originales (fuera del deploy)
+  team-src/              fotos originales del equipo, member-N.jpg (fuera del deploy)
 
 src/
   assets/brand/          wordmark.svg e isotype.svg vectorizados desde el PNG
@@ -70,7 +74,7 @@ para actualizarlo.
 | Archivo | Qué controla |
 | --- | --- |
 | `projects.json` | Los proyectos. Alimenta la cinta del hero **y** la grilla de Proyectos. |
-| `team.json` | Las personas del equipo. |
+| `team.json` | Las personas del equipo. `photo` es el prefijo (`/images/team/member-1`); los archivos reales son `member-1-{400,640,880}.{webp,jpg}`. |
 | `services.json` | Los cinco servicios y sus entregables. |
 | `process.json` | Las etapas del proceso. |
 | `site.json` | Navegación, CTA, email, disponibilidad y redes. |
@@ -163,9 +167,9 @@ adentro de una grilla.
 
 ## Qué falta reemplazar
 
-1. **Fotos reales.** Todo `public/images/**` son placeholders gráficos generados
-   con la marca. Los tamaños esperados: proyectos 1200×1500 (4:5), equipo
-   900×1200 (3:4), editoriales verticales.
+1. **Fotos reales.** Casi todo `public/images/**` son placeholders gráficos
+   generados con la marca (las fotos del equipo ya son reales). Los tamaños
+   esperados: proyectos 1200×1500 (4:5), editoriales verticales.
 2. **Proyectos y equipo reales** en los JSON.
 3. **Link de agenda.** El CTA "Date un upgrade" apunta a `#contacto`. Si tenés
    Calendly o similar, va en `site.json → cta.href`.
