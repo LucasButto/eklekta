@@ -8,8 +8,10 @@ sistema visual vive en `src/styles`.
 
 ```bash
 npm install
+npx playwright install chromium   # una vez: lo usa el pre-render del build
 npm run dev      # http://localhost:5173
-npm run build    # typecheck + build a dist/
+npm run build    # typecheck + build + sitemap + pre-render, todo a dist/
+npm run preview  # sirve dist/ en http://localhost:4173
 npm run lint
 ```
 
@@ -18,14 +20,27 @@ npm run lint
 ## Estructura
 
 ```
-public/
+public/                  se copia tal cual a dist/ (y de ahí a public_html)
+  api/
+    contact.php          endpoint del formulario (PHP, ver «Formulario (PHP)»)
+    lib/PHPMailer/       PHPMailer 7.1.1 (solo 3 archivos + LICENSE)
+    lib/.htaccess        «Require all denied»: las librerías no se piden por HTTP
   fonts/                 Poppins y Monument Extended en .woff2
-  images/                placeholders de proyectos, equipo y editoriales
-  Logos/                 archivos de marca originales (no se usan en el build)
+  images/                placeholders de proyectos, equipo y editoriales, og.jpg, logo-512.png
+  .htaccess              redirección www → sin www, sin listado de carpetas
+  robots.txt
   favicon.svg
+
+scripts/
+  postbuild.mjs          sitemap.xml + pre-render del HTML (corre dentro de `npm run build`)
+  make-logo-png.mjs      regenera public/images/logo-512.png desde el isotipo (a mano)
+
+server/
+  eklekta-mail-config.example.php   plantilla de la config del mail; NO se publica
 
 brand-assets/
   fonts-src/             los .zip originales de las fuentes (fuera del deploy)
+  logos/                 archivos de marca originales (fuera del deploy)
 
 src/
   assets/brand/          wordmark.svg e isotype.svg vectorizados desde el PNG
@@ -152,14 +167,102 @@ adentro de una grilla.
    con la marca. Los tamaños esperados: proyectos 1200×1500 (4:5), equipo
    900×1200 (3:4), editoriales verticales.
 2. **Proyectos y equipo reales** en los JSON.
-3. **Email de contacto** — hoy dice `hola@eklekta.studio` en `site.json`.
-4. **Link de agenda.** El CTA "Date un upgrade" apunta a `#contacto`. Si tenés
+3. **Link de agenda.** El CTA "Date un upgrade" apunta a `#contacto`. Si tenés
    Calendly o similar, va en `site.json → cta.href`.
-5. **Formulario de contacto**, si lo querés. Hoy la sección ofrece canales
-   directos (email, Instagram, LinkedIn) porque un formulario sin backend no
-   envía nada.
-6. **Dominio real** en el `canonical` y los `og:` de `index.html`.
 
-`public/Logos/` pesa ~17 MB (`banner linkedin.png` sola son 10 MB) y hoy se
-copiaría entera al deploy. El sitio no la usa: los logos que ve el usuario son
-los SVG de `src/assets/brand/`. Conviene sacarla de `public/` antes de publicar.
+Resuelto:
+
+- ~~Email de contacto~~ → `contacto@eklekta.com.ar` (`site.json`).
+- ~~Formulario de contacto~~ → manda mails reales por `public/api/contact.php`
+  (ver «Formulario (PHP)»).
+- ~~Dominio real~~ → `https://eklekta.com.ar/` en el `canonical`, los `og:` y el
+  JSON-LD de `index.html` (ver «SEO»).
+- ~~`public/Logos/` (~17 MB) en el deploy~~ → movida a `brand-assets/logos/`.
+
+---
+
+## Deploy a Hostinger
+
+1. `npm run build`
+2. Subir el **contenido** de `dist/` (no la carpeta `dist` en sí) a `public_html`,
+   sin olvidar los archivos que empiezan con punto (`.htaccess`) ni la carpeta
+   `api/`.
+3. Crear `eklekta-mail-config.php` **un nivel arriba de `public_html`** (en la
+   carpeta que contiene `public_html`, no dentro) a partir de
+   `server/eklekta-mail-config.example.php`, y pegar la contraseña del buzón
+   `contacto@eklekta.com.ar`. Ese archivo nunca va dentro de `public_html` ni
+   al repo (está en el `.gitignore`).
+4. Vaciar el caché del CDN en hPanel, para que no sirva el `index.html` viejo.
+
+Para comprobar que PHP corre, abrir `https://eklekta.com.ar/api/contact.php` en
+el navegador: tiene que mostrar `{"ok":false,"error":"method_not_allowed"}`.
+
+---
+
+## SEO
+
+- **Pre-render.** El sitio es una SPA, así que el HTML que sirve Vite trae un
+  `#root` vacío. `npm run build` termina con `scripts/postbuild.mjs`, que abre
+  la página en Chromium (Playwright), toma el HTML ya armado de `#root` y lo
+  inyecta en `dist/index.html` como `<div id="root" data-prerendered>`. Google,
+  LinkedIn, WhatsApp y cualquier bot que no ejecute JS leen el contenido sin
+  esperar a React. Con JS activo ese markup nunca se ve: se oculta por CSS y
+  React lo reemplaza en su primer commit (`src/hooks/useClearPrerenderFlag.ts`);
+  sin JS, un `<noscript>` lo muestra. No es hidratación (`hydrateRoot`): el
+  estado que depende de `localStorage` y `matchMedia` generaría diferencias.
+  Si falta el Chromium de Playwright (`npx playwright install chromium`) el
+  build **no se rompe**: avisa, genera igual el sitemap y deja el `#root` vacío.
+- **JSON-LD.** Está en el `<head>` de `index.html`: un `@graph` con
+  `Organization` + `WebSite`. Es `Organization` y no `LocalBusiness` porque no hay
+  dirección pública. El logo es `public/images/logo-512.png`.
+- **Sitemap.** `dist/sitemap.xml` se genera solo en cada build, con la URL
+  `https://eklekta.com.ar/` y `lastmod` con la fecha del build. No hay que tocarlo.
+  `public/robots.txt` lo apunta.
+- **Canonical.** `https://eklekta.com.ar/`, sin `www`. El `.htaccess` redirige
+  `www.eklekta.com.ar` → `eklekta.com.ar` con un 301. No hay regla http → https a
+  propósito: el CDN de Hostinger ya la aplica y duplicarla puede hacer un bucle.
+- **Textos.** El `<h1>` lleva un texto real (`sr-only`) además del wordmark SVG,
+  y las imágenes de proyectos y equipo tienen `alt` descriptivo.
+
+---
+
+## Formulario (PHP)
+
+`src/components/ContactForm` hace `POST` de un JSON a `/api/contact.php`
+(`site.json → contact.formEndpoint`). El endpoint valida, aplica un rate limit y
+reenvía por SMTP a `contacto@eklekta.com.ar` con PHPMailer **7.1.1** (copiados
+solo `PHPMailer.php`, `SMTP.php`, `Exception.php` y `LICENSE`; sin Composer porque
+en el servidor no hay paso de build).
+
+La configuración (SMTP y destino) **no está en el repo ni en `dist/`**: se lee de
+`eklekta-mail-config.php`, un nivel arriba de `public_html`. La plantilla está en
+`server/eklekta-mail-config.example.php`.
+
+Respuestas (siempre JSON):
+
+| Código | `error` | Cuándo |
+| --- | --- | --- |
+| 200 | — | Enviado. También cuando el honeypot `empresa` viene con algo (no se envía). |
+| 200 | — (`"dry_run": true`) | Config con `dry_run: true`: valida todo, no envía. |
+| 400 | `invalid_input` (+ `fields`) | Campo inválido: `nombre` 2–100, `email` válido ≤254, `interes` ≤100 (opcional), `mensaje` 10–5000. Saltos de línea en `nombre`/`email`/`interes` se rechazan. |
+| 403 | `forbidden_origin` | `Origin` que no es `eklekta.com.ar` ni `www.eklekta.com.ar`. |
+| 405 | `method_not_allowed` | Cualquier método que no sea `POST` (con `Allow: POST`). |
+| 413 | `payload_too_large` | Cuerpo de más de 20 KB. |
+| 429 | `rate_limited` | Más de 5 envíos cada 10 min por cliente, o más de 60 por hora en total. |
+| 500 | `config_missing` / `server_error` | Falta o está mal la config; o no se puede escribir la carpeta del rate limit. El detalle va a `error_log`, nunca a la respuesta. |
+| 502 | `send_failed` | El SMTP rechazó o no respondió (detalle en `error_log`). |
+
+- **`dry_run`.** Poné `'dry_run' => true` en `eklekta-mail-config.php` para probar
+  en el servidor sin mandar mails: el envío responde `{"ok":true,"dry_run":true}` y
+  el resumen queda en el log de PHP. Volver a `false` para producción.
+- **Rate limit.** Los contadores viven en `eklekta-mail-data/` (también fuera de
+  `public_html`, modo 0700, con `flock`). Para identificar al cliente se usa el
+  primer IP de `X-Forwarded-For` y, si no hay, `REMOTE_ADDR`: detrás del CDN de
+  Hostinger este último puede ser el del CDN. Ese encabezado lo puede falsear
+  quien llame directo, y por eso existe también el tope global por hora.
+- **Por qué no funciona con `npm run dev`.** Vite no ejecuta PHP: el `POST` a
+  `/api/contact.php` da 404 y el formulario muestra «No pudimos enviarlo. Escribinos
+  a contacto@eklekta.com.ar.». Es lo esperado. Para probar el envío hay que correr
+  el sitio contra PHP (por ejemplo `php -S 127.0.0.1:8080 -t dist`, con una config
+  de prueba con `dry_run: true` en la raíz del repo, dos niveles arriba de
+  `dist/api/`; está en el `.gitignore`), o probarlo ya publicado.
