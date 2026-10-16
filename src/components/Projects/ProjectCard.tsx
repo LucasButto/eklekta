@@ -183,7 +183,9 @@ export function ProjectCard({
         )}
 
         {/* Opened, the card *is* the screenshot; in the bento only part
-            of it shows, and only on hover. */}
+            of it shows, and only on hover. The wrapper is aria-hidden
+            (the button already has its own label), so the alt below is
+            for crawlers and image search rather than for screen readers. */}
         {(isLead || isGrid) && (
           <span
             className={isLead ? "project-card__shot" : "project-card__peek"}
@@ -199,7 +201,7 @@ export function ProjectCard({
                 src={set.src}
                 srcSet={set.jpg}
                 sizes={isLead ? SHOT_SIZES : peekSizes}
-                alt=""
+                alt={`${project.title}: ${project.subtitle}`}
                 loading={isLead ? "eager" : "lazy"}
                 decoding="async"
                 fetchPriority={isLead ? "high" : undefined}

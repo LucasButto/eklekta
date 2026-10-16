@@ -59,7 +59,7 @@ export function ProjectsFeed({ projects, swapping, onOpen }: ProjectsFeedProps) 
                       src={set.src}
                       srcSet={set.jpg}
                       sizes="(min-width: 640px) 46vw, 88vw"
-                      alt=""
+                      alt={`${project.title}: ${project.subtitle}`}
                       loading="lazy"
                       decoding="async"
                       data-align={project.alignImg ?? "center"}
