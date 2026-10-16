@@ -84,6 +84,11 @@ export interface TeamMember {
   name: string
   role: string
   focus: string
+  /**
+   * Path stem — `${photo}-{400,640,880}.{webp,jpg}` are the real files
+   * (see Team.tsx). Generated from `brand-assets/team-src/` by
+   * `scripts/make-team-photos.mjs`.
+   */
   photo: string
   linkedin: string
 }
