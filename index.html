@@ -1,13 +1,13 @@
 <!doctype html>
-<html lang="es">
+<html lang="es-AR">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>eklekta</title>
+    <title>eklekta | Automatización, CRM y desarrollo web en Argentina</title>
     <meta
       name="description"
-      content="Estudio digital. Automatizamos procesos, implementamos CRM y diseñamos productos que se entienden solos."
+      content="Estudio digital en Argentina. Automatizamos procesos, implementamos CRM y desarrollamos sitios y sistemas a medida para pymes. Pedí tu diagnóstico."
     />
     <meta
       name="theme-color"
@@ -21,21 +21,86 @@
     />
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="canonical" href="https://eklekta.studio/" />
+    <!-- Una sola URL canónica: el dominio sin www. El .htaccess redirige
+         www → sin www, así Google no indexa el mismo sitio dos veces. -->
+    <link rel="canonical" href="https://eklekta.com.ar/" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
 
+    <!-- Open Graph / Twitter: las URLs tienen que ser absolutas, los
+         scrapers de LinkedIn y WhatsApp no resuelven rutas relativas. -->
     <meta property="og:type" content="website" />
-    <meta property="og:locale" content="es_ES" />
+    <meta property="og:locale" content="es_AR" />
     <meta property="og:site_name" content="eklekta" />
+    <meta property="og:url" content="https://eklekta.com.ar/" />
     <meta
       property="og:title"
-      content="eklekta — Automatización, CRM, desarrollo web y UX/UI"
+      content="eklekta | Automatización, CRM y desarrollo web en Argentina"
     />
     <meta
       property="og:description"
-      content="Automatizamos procesos, implementamos CRM y diseñamos productos que se entienden solos."
+      content="Automatizamos procesos, implementamos CRM y desarrollamos sitios y sistemas a medida para pymes."
     />
-    <meta property="og:image" content="/images/og.jpg" />
+    <meta property="og:image" content="https://eklekta.com.ar/images/og.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="eklekta — estudio de automatización, CRM y desarrollo web"
+    />
+
     <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="eklekta | Automatización, CRM y desarrollo web en Argentina"
+    />
+    <meta
+      name="twitter:description"
+      content="Automatizamos procesos, implementamos CRM y desarrollamos sitios y sistemas a medida para pymes."
+    />
+    <meta name="twitter:image" content="https://eklekta.com.ar/images/og.jpg" />
+
+    <!-- Datos estructurados. Organization y no LocalBusiness: el sitio no
+         publica una dirección, y esos tipos la piden (`address`). -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://eklekta.com.ar/#organization",
+            "name": "eklekta",
+            "url": "https://eklekta.com.ar/",
+            "logo": "https://eklekta.com.ar/images/logo-512.png",
+            "image": "https://eklekta.com.ar/images/og.jpg",
+            "email": "contacto@eklekta.com.ar",
+            "description": "Estudio digital en Argentina: automatización de procesos, implementación de CRM, desarrollo web a medida y diseño UX/UI.",
+            "areaServed": [
+              { "@type": "Country", "name": "Argentina" },
+              { "@type": "Place", "name": "Latinoamérica" },
+              { "@type": "Country", "name": "España" }
+            ],
+            "knowsAbout": [
+              "Automatización de procesos",
+              "Implementación de CRM",
+              "Desarrollo web a medida",
+              "Diseño UX/UI"
+            ],
+            "sameAs": [
+              "https://www.instagram.com/eklekta.estudio/",
+              "https://www.linkedin.com/company/112493054/"
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://eklekta.com.ar/#website",
+            "url": "https://eklekta.com.ar/",
+            "name": "eklekta",
+            "inLanguage": "es-AR",
+            "publisher": { "@id": "https://eklekta.com.ar/#organization" }
+          }
+        ]
+      }
+    </script>
 
     <link
       rel="preload"
@@ -51,6 +116,25 @@
       type="font/woff2"
       crossorigin
     />
+
+    <!-- El build (scripts/postbuild.mjs) inyecta el HTML ya renderizado
+         dentro de #root con `data-prerendered`, para que los bots lean el
+         contenido sin ejecutar JS. Con JS activo ese markup no se tiene
+         que ver nunca: se oculta acá y main.tsx saca el atributo en el
+         primer commit de React, antes del primer pintado. Sin JS (o con
+         JS bloqueado) el <noscript> lo vuelve a mostrar. -->
+    <style>
+      #root[data-prerendered] > * {
+        visibility: hidden;
+      }
+    </style>
+    <noscript>
+      <style>
+        #root[data-prerendered] > * {
+          visibility: visible;
+        }
+      </style>
+    </noscript>
 
     <!-- Applies the stored theme before first paint so the page never
          flashes, then preloads the matching hero photo (day vs night —
