@@ -16,6 +16,19 @@ import "./About.scss";
 const steps = processData as ProcessStep[];
 
 /**
+ * Each step's photo is a path stem: `${image}-{800,1200,1480}.{webp,jpg}`
+ * are the real files (see scripts/make-section-photos.mjs).
+ */
+const IMAGE_WIDTHS = [800, 1200, 1480];
+
+const imageSet = (stem: string, ext: "webp" | "jpg") =>
+  IMAGE_WIDTHS.map((w) => `${stem}-${w}.${ext} ${w}w`).join(", ");
+
+// The stage is the photo's biggest frame: full width of the column below
+// $bp-lg, and about half the viewport (bleeding to the edge) above it.
+const STAGE_SIZES = "(min-width: 1024px) 55vw, 100vw";
+
+/**
  * Below $bp-lg the carousel is one photo and a panel of controls — no
  * peek slot, nothing to drag a card out of — so the photo itself is the
  * only surface a thumb has to work with. Matches the `down($bp-lg)` in
@@ -364,14 +377,23 @@ export function About() {
                     }
                   : {})}
             >
-              <img
-                src={entry.image}
-                alt=""
-                loading={i === 0 ? "eager" : "lazy"}
-                decoding="async"
-                width={1200}
-                height={900}
-              />
+              <picture>
+                <source
+                  type="image/webp"
+                  srcSet={imageSet(entry.image, "webp")}
+                  sizes={STAGE_SIZES}
+                />
+                <img
+                  src={`${entry.image}-1200.jpg`}
+                  srcSet={imageSet(entry.image, "jpg")}
+                  sizes={STAGE_SIZES}
+                  alt=""
+                  loading={i === 0 ? "eager" : "lazy"}
+                  decoding="async"
+                  width={1200}
+                  height={900}
+                />
+              </picture>
             </figure>
           );
         })}
