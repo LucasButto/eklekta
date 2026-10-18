@@ -37,24 +37,38 @@ const HOLD = -0.06;
  */
 const PHONE = "(max-width: 1023.98px)";
 
+/**
+ * The three photographs, as path stems: `${src}-{480,800,1024}.{webp,jpg}`
+ * are the real files (see scripts/make-section-photos.mjs). Listed in the
+ * order they sit on the page — lead, mid, trail.
+ */
+const WIDTHS = [480, 800, 1024];
+
+const srcSet = (stem: string, ext: "webp" | "jpg") =>
+  WIDTHS.map((w) => `${stem}-${w}.${ext} ${w}w`).join(", ");
+
+// The widest figure is ~29rem wide at its biggest (see the .manifesto__figure
+// rules), about 27vw of the viewport from $bp-lg up.
+const FIGURE_SIZES = "(min-width: 2400px) 850px, 27vw";
+
 const figures = [
   {
-    src: "/images/editorial/manifesto-100.jpg",
+    src: "/images/manifesto/ultimo-bloque-3",
     position: "lead",
-    width: 900,
-    height: 1100,
+    width: 1024,
+    height: 1536,
   },
   {
-    src: "/images/editorial/manifesto-200.jpg",
+    src: "/images/manifesto/ultimo-bloque-1",
     position: "mid",
-    width: 1100,
-    height: 1200,
+    width: 1122,
+    height: 1402,
   },
   {
-    src: "/images/editorial/manifesto-300.jpg",
+    src: "/images/manifesto/ultimo-bloque-2",
     position: "trail",
-    width: 900,
-    height: 1100,
+    width: 1122,
+    height: 1402,
   },
 ];
 
@@ -163,14 +177,23 @@ export function Manifesto() {
                 className={`manifesto__figure manifesto__figure--${figure.position}`}
                 key={figure.src}
               >
-                <img
-                  src={figure.src}
-                  alt=""
-                  loading="lazy"
-                  decoding="async"
-                  width={figure.width}
-                  height={figure.height}
-                />
+                <picture>
+                  <source
+                    type="image/webp"
+                    srcSet={srcSet(figure.src, "webp")}
+                    sizes={FIGURE_SIZES}
+                  />
+                  <img
+                    src={`${figure.src}-800.jpg`}
+                    srcSet={srcSet(figure.src, "jpg")}
+                    sizes={FIGURE_SIZES}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    width={figure.width}
+                    height={figure.height}
+                  />
+                </picture>
               </div>
             ))}
           </div>

@@ -30,7 +30,7 @@ const FEED = '(max-width: 1023.98px)'
 /**
  * The filter tab the section is steering people toward. konekta, the CRM,
  * is the one thing on this tab bar that is a product and not a piece of
- * past work, so it is dressed and nudged apart from the other two (see
+ * past work, so it is dressed and nudged apart from the others (see
  * &__filter[data-highlight] in Projects.scss). Named by kind rather than by
  * position so reordering the tabs in projects.json does not move it.
  */
@@ -495,7 +495,7 @@ export function Projects() {
       <div className="projects__inner">
         <SectionHeading
           title="Trabajo hecho, no casos hipotéticos."
-          intro="Sitios, automatizaciones, CRM. Elegí un tipo de trabajo y abrí cualquiera para leer qué construimos."
+          intro="Sitios, automatizaciones, software, CRM. Elegí un tipo de trabajo y abrí cualquiera para leer qué construimos."
           className="projects__heading"
         />
 

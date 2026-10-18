@@ -127,8 +127,9 @@ export interface ProcessStep {
   detail: string
   duration: string
   /**
-   * The stage photo for the About carousel, which walks these same four
-   * steps one at a time (see About.tsx). One process, two views — the
+   * Path stem of the stage photo for the About carousel, which walks these
+   * same four steps one at a time (see About.tsx) — `${image}-{800,1200,1480}.{webp,jpg}`
+   * are the real files, from scripts/make-section-photos.mjs. One process, two views — the
    * Proceso section reads `description` and ignores this and `detail`.
    */
   image: string

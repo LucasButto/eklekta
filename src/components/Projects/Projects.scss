@@ -92,21 +92,6 @@ $head-max-wide: 40%;
 $field-graphite: #141031;
 $field-graphite-dark: #262247;
 
-// The CRM filter's own preview of the konekta background (see
-// &__filter-marker and &__filter[data-highlight]). The source is a
-// 400px-wide photo of scattered, sparse icons, already low-contrast by
-// design for a full-width panel. Two problems compound at the filter
-// pill's actual ~63×29px size: `cover` was shrinking the whole 400px
-// photo down to fit, softening the icons further on top of their own
-// low contrast; and centring landed the crop on one of the image's
-// emptier patches. Sized in native px (no shrink) rather than `cover`,
-// and positioned at the densest icon cluster found by scanning the
-// source — the window with the most non-background pixels — so both
-// elements (the static tab, the wider sliding marker) show the same
-// close-up of actual icons instead of a near-flat swatch.
-$crm-preview-size: 400px auto;
-$crm-preview-position: -126px -164px;
-
 .projects {
   // Top and bottom split on purpose (not one padding-block value): the
   // fixed navbar only eats into the top, so only the top needs to clear
@@ -217,6 +202,15 @@ $crm-preview-position: -126px -164px;
       display: none;
     }
 
+    // Full width on phones so four tabs fit (see &__filter).
+    @include down($bp-md) {
+      width: 100%;
+    }
+
+    @include down(340px) {
+      gap: 2px;
+    }
+
     @include up($bp-lg) {
       margin-bottom: clamp(12px, 2vh, 28px);
     }
@@ -228,8 +222,6 @@ $crm-preview-position: -126px -164px;
     left: 0;
     z-index: 0;
     width: var(--marker-w, 0);
-    // Clips &::before below to the pill's own rounded shape.
-    overflow: hidden;
     background-color: var(--brand-deep);
     border-radius: $radius-pill;
     transform: translateX(var(--marker-x, 4px));
@@ -242,40 +234,14 @@ $crm-preview-position: -126px -164px;
       background-color $dur-mid $ease-out;
 
     // Sitting under the highlighted tab, the pill takes that tab's own
-    // look instead of the brand violet. The colour underneath still
-    // eases from brand-deep to --accent-cyan (the transition above);
-    // this layer — the same photo the CRM panel itself sits on — fades
-    // in over it at the same pace, so selecting the tab reads as the
-    // pill settling into that look rather than a hard cut to an image.
-    &::before {
-      position: absolute;
-      inset: 0;
-      background-image: url("/images/projects/Fondo_KONEKTA-400.jpg");
-      background-image: image-set(
-        url("/images/projects/Fondo_KONEKTA-400.webp") type("image/webp"),
-        url("/images/projects/Fondo_KONEKTA-400.jpg") type("image/jpeg")
-      );
-      background-position: $crm-preview-position;
-      background-size: $crm-preview-size;
-      opacity: 0;
-      transition: opacity $dur-mid $ease-out;
-      content: "";
-    }
-
+    // flat konekta cyan instead of the brand violet, easing across with
+    // the transition above.
     .projects__filters:has(.projects__filter[data-highlight][aria-current="true"]) & {
       background-color: var(--accent-cyan);
-
-      &::before {
-        opacity: 1;
-      }
     }
 
     .projects__filters[data-static] & {
       transition: none;
-
-      &::before {
-        transition: none;
-      }
     }
   }
 
@@ -300,11 +266,23 @@ $crm-preview-position: -126px -164px;
 
     @include focus-ring;
 
-    // 320px: the three labels come to 8px more than the bar has, which cut
-    // the CRM tab — the one this bar is steering people toward — off the
-    // bar's right edge. Trimming the side padding a fifth is what it takes.
+    // Four labels come to more than a phone's bar has — ~56px over at
+    // 375 — which cut the CRM tab, the one this bar is steering people
+    // toward, off its right edge. Below $bp-md the bar spans the
+    // container (see &__filters) and the tabs split it on tighter side
+    // padding; the narrowest phones also step the type down to fit.
+    @include down($bp-md) {
+      flex: 1 1 auto;
+      padding-inline: 0.5em;
+    }
+
+    @include down(380px) {
+      font-size: 0.72rem;
+    }
+
     @include down(340px) {
-      padding-inline: 1em;
+      padding-inline: 0.3em;
+      font-size: 0.7rem;
     }
 
     // The segmented control is the first thing a thumb reaches for in
@@ -339,16 +317,7 @@ $crm-preview-position: -126px -164px;
       // white on this cyan is 1.6:1. The pair is theme-independent, the
       // same way the panel it stands for is.
       color: $ink;
-      // The same photo the CRM panel itself sits on, so the tab reads as
-      // a preview of that panel rather than a flat --accent-cyan fill —
-      // which, on its own, was the loudest thing in the bar.
-      background-image: url("/images/projects/Fondo_KONEKTA-400.jpg");
-      background-image: image-set(
-        url("/images/projects/Fondo_KONEKTA-400.webp") type("image/webp"),
-        url("/images/projects/Fondo_KONEKTA-400.jpg") type("image/jpeg")
-      );
-      background-position: $crm-preview-position;
-      background-size: $crm-preview-size;
+      // Flat konekta cyan — the colour itself, not the panel's photo.
       background-color: var(--accent-cyan);
 
       // Selected, the sliding pill (cyan as well — see the marker) does the
@@ -357,7 +326,6 @@ $crm-preview-position: -126px -164px;
       &[aria-current="true"] {
         color: $ink;
         background-color: transparent;
-        background-image: none;
       }
 
       // The generic hover above turns an unselected label to --text, which
@@ -1199,6 +1167,60 @@ $crm-preview-position: -126px -164px;
       transition: transform $dur-base $ease-out;
     }
   }
+
+  // "Próximamente": a sash across the top-right corner. Its centre line
+  // runs from 60% along the top edge to 60% down the right edge, at
+  // every card size — so the angle and length depend on the panel's
+  // aspect, which changes per breakpoint. This layer covers the panel
+  // as a size container, and the band works both out from its cq units.
+  &__soon {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+    pointer-events: none;
+    border-radius: inherit;
+    container-type: size;
+  }
+
+  &__soon-band {
+    // The run and rise of the centre line, and how far the band carries
+    // on past each end so the panel's own edges cut it off square
+    // instead of showing the band's ends.
+    --run: 40cqw;
+    --rise: 60cqh;
+    --overrun: 6rem;
+
+    position: absolute;
+    top: 0;
+    left: 60%;
+    width: calc(hypot(var(--run), var(--rise)) + var(--overrun) * 2);
+    padding-block: 0.7em;
+    font-size: clamp(0.68rem, 0.6rem + 0.35vw, 0.95rem);
+    font-weight: $fw-bold;
+    line-height: 1;
+    letter-spacing: 0.22em;
+    text-align: center;
+    text-indent: 0.22em; // re-centres the word past its trailing tracking
+    text-transform: uppercase;
+    white-space: nowrap;
+    // Theme-independent, like the panel under it.
+    color: $paper;
+    background-color: $ink;
+    box-shadow: 0 6px 18px rgb(0 0 0 / 18%);
+    transform-origin: 0 0;
+    // Back by the overrun and up by half its own height puts the centre
+    // line's start on the 60% point; the rotation then swings the line
+    // down onto the right edge's 60% point.
+    transform: rotate(atan2(var(--rise), var(--run)))
+      translate(calc(var(--overrun) * -1), -50%);
+
+    // A phone's panel is short next to its wordmark, so at 60% the sash
+    // ran over the end of "konekta."; it meets the right edge higher.
+    @include down($bp-sm) {
+      --rise: 45cqh;
+    }
+  }
 }
 
 // The leaving set on a filter change: up and out, staggered by the
@@ -1282,6 +1304,12 @@ $crm-preview-position: -126px -164px;
   // size at which a site is recognisable.
   @include up($bp-sm) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  // konekta is the CRM tab's only child and a full-width panel, not a
+  // project tile — in one column of two its wordmark ran off the card.
+  > .konekta {
+    grid-column: 1 / -1;
   }
 
   // The filter hand-over. The bento staggers its leaving cards out one

@@ -22,6 +22,10 @@ export function KonektaCard() {
           />
         </svg>
       </span>
+      {/* A sash across the top-right corner — see .konekta__soon. */}
+      <span className="konekta__soon">
+        <span className="konekta__soon-band">Próximamente</span>
+      </span>
     </a>
   )
 }

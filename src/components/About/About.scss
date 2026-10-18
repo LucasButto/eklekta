@@ -30,6 +30,12 @@ $cascade-step: 130ms;
 .about {
   @include section-spacing;
 
+  // A little more air under the hero photo than the shared $section-y.
+  // Padding, not margin: .about skips the between-section margin (see
+  // globals.scss) because a gap there would open in the hero overlap,
+  // so the extra room has to live inside its own opaque background.
+  padding-top: calc(#{$section-y} + #{$section-gap} * 1.4);
+
   // Rides over the hero as it pins and zooms out — the second half of
   // the scroll-zoom effect (see Hero.scss). Positioned + above the hero
   // in the stack, and opaque so the zooming photo never shows through.

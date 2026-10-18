@@ -108,6 +108,48 @@
     ]
   },
   {
+    "kind": "software",
+    "label": "Software",
+    "projects": [
+      {
+        "id": "stock-ferro",
+        "title": "Ferro",
+        "client": "Ferretería Ferro",
+        "categories": ["Software personalizado", "Paneles internos"],
+        "subtitle": "Stock y pedidos para tres sucursales",
+        "summary": "Tres sucursales y un stock en planillas que nunca coincidía. Ahora cada venta descuenta del mismo inventario y el pedido al proveedor se arma solo cuando un artículo baja del mínimo.",
+        "description": "Desarrollo de un sistema de stock y pedidos a medida para Ferretería Ferro, una cadena de tres sucursales en Rosario. Cada mostrador registra la venta contra un único inventario central, las transferencias entre sucursales quedan trazadas y, cuando un artículo baja de su stock mínimo, el sistema arma el borrador del pedido al proveedor que corresponde. La gerencia sigue rotación, faltantes y márgenes por sucursal desde un panel propio, sin esperar el cierre de mes.",
+        "tint": "blue",
+        "cover": "/images/projects/granvia-ops",
+        "featured": true
+      },
+      {
+        "id": "obra-norte",
+        "title": "Norte",
+        "client": "Norte Desarrollos",
+        "categories": ["Software personalizado", "Aplicación web"],
+        "subtitle": "Seguimiento de obra desde el celular",
+        "summary": "Los jefes de obra mandaban los avances por WhatsApp y la oficina los pasaba a mano. Una app web registra avance, fotos y pedidos de material en el momento, y la dirección ve cada obra en un tablero.",
+        "description": "Aplicación web a medida para Norte Desarrollos, una desarrolladora con varias obras en curso. Cada jefe de obra carga desde el celular el avance por rubro, las fotos del día y los pedidos de material, incluso sin señal: la app guarda todo y sincroniza al recuperar conexión. Compras recibe los pedidos ya ordenados por obra y prioridad, y la dirección compara avance real contra el cronograma en un tablero que se actualiza solo.",
+        "tint": "orange",
+        "cover": "/images/projects/lumen-studio",
+        "featured": false
+      },
+      {
+        "id": "portal-alba",
+        "title": "Alba",
+        "client": "Alba Seguros",
+        "categories": ["Software personalizado", "Portal de clientes"],
+        "subtitle": "Autogestión para asegurados",
+        "summary": "Los asegurados pedían por mail la póliza, el cupón de pago o el estado de un siniestro. Ahora lo resuelven solos desde un portal y el equipo atiende lo que de verdad necesita una persona.",
+        "description": "Portal de autogestión para Alba Seguros, un broker con cartera de particulares y pymes. Cada asegurado entra con su DNI y descarga pólizas, cupones y certificados de cobertura, denuncia un siniestro con fotos y sigue su estado paso a paso. El portal se integra con los sistemas de las aseguradoras para mantener los datos al día, y el equipo recibe solo los casos que requieren una gestión manual.",
+        "tint": "violet",
+        "cover": "/images/projects/sereno-brand",
+        "featured": false
+      }
+    ]
+  },
+  {
     "kind": "crm",
     "label": "CRM",
     "projects": []
