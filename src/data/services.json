@@ -12,7 +12,7 @@
       "src": "/images/services/automatizaciones",
       "widths": [
         800,
-        1023
+        1122
       ]
     }
   },
@@ -29,41 +29,41 @@
       "src": "/images/services/crm",
       "widths": [
         800,
-        1200
+        1122
       ]
     }
   },
   {
-    "id": "desarrollo-web",
-    "title": "Desarrollo web a medida",
+    "id": "sitios-web",
+    "title": "Sitios web",
     "description": "Sitios y aplicaciones rápidas y mantenibles, construidas para tu caso y no para una plantilla.",
     "deliverables": [
       "Web corporativa",
       "E-commerce",
-      "Paneles internos"
+      "UX/UI"
     ],
     "media": {
-      "src": "/images/services/desarrollo-web",
+      "src": "/images/services/sitios-web",
       "widths": [
         800,
-        1200
+        1122
       ]
     }
   },
   {
-    "id": "ux-ui",
-    "title": "UX/UI",
-    "description": "Investigación, flujos e interfaz. Diseñamos productos que se entienden sin manual.",
+    "id": "software",
+    "title": "Software personalizado",
+    "description": "Sistemas pensados para cómo trabaja tu equipo, para cuando ninguna herramienta del mercado encaja del todo.",
     "deliverables": [
-      "Research",
-      "Prototipos",
-      "Design system"
+      "Paneles internos",
+      "Sistemas de gestión",
+      "Aplicaciones web"
     ],
     "media": {
-      "src": "/images/services/ux-ui",
+      "src": "/images/services/software",
       "widths": [
         800,
-        1200
+        1122
       ]
     }
   }
