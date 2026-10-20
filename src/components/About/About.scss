@@ -474,6 +474,96 @@ $cascade-step: 130ms;
     max-width: 46ch;
   }
 
+  // ------------------------------------------------ the phone rail
+  // Below $bp-lg the carousel is the one Servicios has: a scroll-snap rail
+  // that bleeds to both screen edges, a card per step (photo, title,
+  // text) one to a screen, endless (About.tsx adds the clones; the hook
+  // that moves it is useEndlessRail). The gap is the page gutter, so with a
+  // card the column wide the next one starts exactly at the screen's edge
+  // and nothing of it shows until it is swiped in.
+  &__railbox {
+    @include container;
+  }
+
+  &__rail {
+    --card-width: calc(100vw - 2 * var(--edge));
+
+    @include bleed-start;
+    @include bleed-end;
+
+    overflow-x: auto;
+    // The rail is a side street, not a diversion: reaching its end must
+    // not start scrolling the page sideways or trigger a back-swipe.
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--edge);
+    // Both axes named, so a thumb that starts on the rail can still scroll
+    // the page down.
+    touch-action: pan-x pan-y pinch-zoom;
+
+    @include hide-scrollbar;
+
+    &:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: -2px;
+      border-radius: $radius-xs;
+    }
+  }
+
+  &__list {
+    display: flex;
+    gap: var(--edge);
+    width: max-content;
+    margin: 0;
+    padding: 0 var(--edge);
+    list-style: none;
+  }
+
+  &__card {
+    display: flex;
+    flex: 0 0 var(--card-width);
+    flex-direction: column;
+    gap: $space-sm;
+    align-items: flex-start;
+    min-width: 0;
+    scroll-snap-align: start;
+    // One flick, one card.
+    scroll-snap-stop: always;
+  }
+
+  // The landscape photo the carousel has always shown on a phone, held to
+  // its ratio like every other frame on the page. Grid, so the <picture>
+  // between the frame and the image stretches to it.
+  &__card-photo {
+    display: grid;
+    width: 100%;
+    max-height: 28.75rem;
+    margin: 0;
+    overflow: hidden;
+    background-color: var(--surface-2);
+    border-radius: $radius-md;
+    aspect-ratio: $ratio-photo;
+
+    picture {
+      min-width: 0;
+      min-height: 0;
+    }
+
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      // Heads sit high in every photo: what the ratio takes off comes off
+      // the bottom.
+      object-position: 50% 0%;
+    }
+  }
+
+  &__railbox &__nav {
+    margin-top: $space-sm;
+  }
+
   // ------------------------------------------------ controls
   &__nav {
     display: flex;

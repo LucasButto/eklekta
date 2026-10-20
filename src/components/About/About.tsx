@@ -4,11 +4,11 @@ import {
   useRef,
   useState,
   type KeyboardEvent,
-  type PointerEvent as ReactPointerEvent,
 } from "react";
 import { Reveal } from "@/components/Reveal/Reveal";
 import { SectionHeading } from "@/components/SectionHeading/SectionHeading";
 import processData from "@/data/process.json";
+import { useEndlessRail, withClones } from "@/hooks/useEndlessRail";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import type { ProcessStep } from "@/types";
 import "./About.scss";
@@ -41,22 +41,12 @@ const imageSet = (stem: string, widths: number[], ext: "webp" | "jpg") =>
 const STAGE_SIZES = "(min-width: 1024px) 55vw, 100vw";
 
 /**
- * Below $bp-lg the carousel is one photo and a panel of controls — no
- * peek slot, nothing to drag a card out of — so the photo itself is the
- * only surface a thumb has to work with. Matches the `down($bp-lg)` in
- * About.scss.
+ * Below $bp-lg the carousel is the same endless scroll-snap rail Servicios
+ * has (see useEndlessRail): a card per step — photo, title, text — one per
+ * screen, with the arrows and dots under it. From there up it is the stage
+ * and peek below. Matches the `down($bp-lg)` in About.scss.
  */
 const TOUCH_LAYOUT = "(max-width: 1023.98px)";
-
-/** How far a drag has to travel across the photo to count as a swipe. */
-const SWIPE_PX = 44;
-
-/**
- * …and how much straighter than it is tall. A near-vertical drag is the
- * reader scrolling the page with their thumb over the photo, and must
- * never be read as a step change.
- */
-const SWIPE_RATIO = 1.4;
 
 // How long the moving photo takes to travel between the peek slot and
 // the stage (either direction). Kept in sync by eye with $travel in
@@ -110,6 +100,7 @@ export function About() {
   // Hovering or focusing anything in the carousel holds it on the
   // current step — reading the paragraph shouldn't race the timer.
   const [paused, setPaused] = useState(false);
+  const isTouchLayout = useMediaQuery(TOUCH_LAYOUT);
 
   const slideRefs = useRef<(HTMLElement | null)[]>([]);
   const prevRects = useRef<Map<number, DOMRect>>(new Map());
@@ -167,13 +158,14 @@ export function About() {
   // for reduced motion rather than just running motionless, since it is
   // still an unrequested content change.
   useEffect(() => {
-    if (paused || prefersReducedMotion()) return;
+    // The phone rail is moved by the reader only.
+    if (paused || isTouchLayout || prefersReducedMotion()) return;
     const timer = window.setTimeout(() => {
       go((index + 1) % steps.length);
     }, AUTOPLAY_MS);
     return () => window.clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [index, paused]);
+  }, [index, paused, isTouchLayout]);
 
   useLayoutEffect(() => {
     const prev = prevRects.current;
@@ -249,56 +241,17 @@ export function About() {
     prev.clear();
   }, [index]);
 
-  // ---- swipe --------------------------------------------------------
-  // On a phone the arrows and dots are small targets and nothing on the
-  // screen says the steps can be moved any other way. A horizontal drag
-  // ANYWHERE on the carousel — the photo, the title, the paragraph, the
-  // space between — walks the same two steps the arrows do. It used to be
-  // wired to the photo alone, so a swipe that started on the text (which
-  // is most of the carousel's height) did nothing. Pointer events, so one
-  // path covers touch and pen; `touch-action: pan-y` on .about__feature
-  // (About.scss) is what leaves the page's own vertical scroll alone.
-  // A mouse is left out: on a narrow desktop window a drag is a text
-  // selection, and it should stay one.
-  const isTouchLayout = useMediaQuery(TOUCH_LAYOUT);
-  const dragStart = useRef<{ x: number; y: number } | null>(null);
-  // Set when a drag turned into a step change, and read by the click
-  // handler on the very next event so the gesture does not ALSO fire
-  // the photo's own "go back" tap.
-  const swiped = useRef(false);
-
-  function onPointerDown(event: ReactPointerEvent) {
-    if (!isTouchLayout || !event.isPrimary || event.pointerType === "mouse") {
-      return;
-    }
-    // A press that lands on an arrow or a dot is that control's own tap,
-    // not the start of a swipe.
-    if ((event.target as Element).closest("button")) return;
-    dragStart.current = { x: event.clientX, y: event.clientY };
-    swiped.current = false;
-  }
-
-  function onPointerCancel() {
-    dragStart.current = null;
-  }
-
-  function onPointerUp(event: ReactPointerEvent) {
-    const start = dragStart.current;
-    dragStart.current = null;
-    if (!start) return;
-
-    const dx = event.clientX - start.x;
-    const dy = event.clientY - start.y;
-    if (Math.abs(dx) < SWIPE_PX || Math.abs(dx) < Math.abs(dy) * SWIPE_RATIO) {
-      return;
-    }
-
-    swiped.current = true;
-    // Dragging left pulls the next step in from the right, the same
-    // direction the peek photo travels on desktop.
-    if (dx < 0) go((index + 1) % steps.length);
-    else go((index - 1 + steps.length) % steps.length, "backward");
-  }
+  // ---- the phone rail -----------------------------------------------
+  const railRef = useRef<HTMLOListElement | null>(null);
+  const {
+    shown: railShown,
+    goTo: railGoTo,
+    step: railStep,
+  } = useEndlessRail(railRef, {
+    count: steps.length,
+    active: isTouchLayout,
+    endless: isTouchLayout,
+  });
 
   const step = steps[index];
 
@@ -324,15 +277,96 @@ export function About() {
           the peek into the stage is the same DOM node the whole way,
           and a plain FLIP carries it. Autoplay pauses on hover/focus
           anywhere in here. */}
+      {isTouchLayout ? (
+        <Reveal className="about__railbox">
+          {/* The same endless rail Servicios has: a card per step, one per
+              screen, the first and last flanked by a clone of the other so
+              the swipe never goes the long way round. The clones are
+              hidden from assistive tech and from the keyboard. */}
+          <div
+            className="about__rail"
+            role="region"
+            aria-label="Proceso, carrusel"
+            tabIndex={0}
+          >
+            <ol className="about__list" ref={railRef}>
+              {withClones(steps, true).map(({ item: entry, index: at, clone }) => (
+                <li
+                  className="about__card"
+                  key={clone ? `clone-${clone}-${at}` : entry.id}
+                  data-index={at}
+                  {...(clone ? { "aria-hidden": true, inert: true } : {})}
+                >
+                  <figure className="about__card-photo">
+                    <picture>
+                      <source
+                        type="image/webp"
+                        srcSet={imageSet(entry.image, PHOTO_WIDTHS, "webp")}
+                        sizes="100vw"
+                      />
+                      <img
+                        src={`${entry.image}-1200.jpg`}
+                        srcSet={imageSet(entry.image, PHOTO_WIDTHS, "jpg")}
+                        sizes="100vw"
+                        alt=""
+                        loading={at === 0 && !clone ? "eager" : "lazy"}
+                        decoding="async"
+                        width={1200}
+                        height={750}
+                      />
+                    </picture>
+                  </figure>
+                  <h3 className="about__title">{entry.title}</h3>
+                  <p className="about__body">{entry.detail}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          <div className="about__nav">
+            <button
+              type="button"
+              className="about__nav-btn about__nav-btn--prev"
+              onClick={() => railStep(-1)}
+            >
+              <span className="sr-only">Paso anterior</span>
+              <ArrowIcon />
+            </button>
+
+            <ul className="about__dots">
+              {steps.map((entry, i) => (
+                <li key={entry.id}>
+                  <button
+                    type="button"
+                    className="about__dot"
+                    aria-current={i === railShown ? "step" : undefined}
+                    onClick={() => railGoTo(i)}
+                  >
+                    <span className="sr-only">
+                      Paso {entry.step}: {entry.title}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+
+            <button
+              type="button"
+              className="about__nav-btn about__nav-btn--next"
+              onClick={() => railStep(1)}
+            >
+              <span className="sr-only">Siguiente paso</span>
+              <ArrowIcon />
+            </button>
+          </div>
+        </Reveal>
+      ) : (
       <Reveal
         className="about__feature"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
         onFocus={() => setPaused(true)}
         onBlur={() => setPaused(false)}
-        onPointerDown={onPointerDown}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerCancel}
       >
         {steps.map((entry, i) => {
           const slot = slotFor(i, index, out?.i ?? null, steps.length);
@@ -372,15 +406,7 @@ export function About() {
                       role: "button" as const,
                       tabIndex: 0,
                       "aria-label": `Volver al paso ${steps[prevIndex].step}: ${steps[prevIndex].title}`,
-                      onClick: () => {
-                        // A swipe that just changed the step must not
-                        // also count as the tap that goes back.
-                        if (swiped.current) {
-                          swiped.current = false;
-                          return;
-                        }
-                        go(prevIndex, "backward" as const);
-                      },
+                      onClick: () => go(prevIndex, "backward" as const),
                       onKeyDown: (event: KeyboardEvent) => {
                         if (event.key !== "Enter" && event.key !== " ") return;
                         event.preventDefault();
@@ -434,23 +460,6 @@ export function About() {
           {/* The live region is the stable wrapper; the copy inside is
               keyed so each step remounts and replays about-copy-in. */}
           <div className="about__copy-slot" aria-live="polite">
-            {/* Below $bp-lg: an invisible copy of EVERY step, stacked in the
-                same grid cell as the real one (see .about__copy-slot). The
-                cell is then as tall as the longest of them, at this exact
-                width, so the arrows and dots under it stay put instead of
-                rising and falling with the word count. Not rendered from
-                $bp-lg up, where the slot reserves its own height. */}
-            {isTouchLayout &&
-              steps.map((entry) => (
-                <div
-                  className="about__copy about__copy--sizer"
-                  aria-hidden="true"
-                  key={entry.id}
-                >
-                  <h3 className="about__title">{entry.title}</h3>
-                  <p className="about__body">{entry.detail}</p>
-                </div>
-              ))}
             <div
               className="about__copy"
               data-direction={stepDirection}
@@ -510,6 +519,7 @@ export function About() {
           </div>
         </div>
       </Reveal>
+      )}
     </section>
   );
 }
