@@ -103,7 +103,14 @@
     //
     // Lives in $slab-font (tokens) because Team's heading rays size
     // themselves off the bar this line produces — keep them one value.
-    font-size: $slab-font;
+    // The same size as every other section title below $bp-lg
+    // ($display-md); from there up it is the banner's own $slab-font.
+    font-size: $display-md;
+
+    @include up($bp-lg) {
+      font-size: $slab-font;
+    }
+
     position: relative;
     z-index: 0;
     // Tighter than the display mixin's own 0.94 — this one line is the

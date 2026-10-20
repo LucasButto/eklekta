@@ -170,9 +170,13 @@ $field-graphite-dark: #262247;
   // grid's height math is; a heading is not) and so sat out the root
   // step-down the rest of the page took. Back on rem, and pulled in a
   // further notch — it is the longest heading string on the site and
-  // was the only one still landing three lines.
+  // was the only one still landing three lines. Only from $bp-lg: below
+  // it every section title shares one size (see $display-md), and this
+  // one used to be the smaller of the set on a phone.
   .section-heading__title {
-    font-size: clamp(1.85rem, 0.7rem + 3.5vw, 4.45rem);
+    @include up($bp-lg) {
+      font-size: clamp(1.85rem, 0.7rem + 3.5vw, 4.45rem);
+    }
   }
 
   // ------------------------------------------------ the filter bar

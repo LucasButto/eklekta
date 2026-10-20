@@ -104,14 +104,10 @@ $member-scrim: #191823;
         width: 100%;
         line-height: 1.08;
         // --center would centre the rows; here they hang from the left.
+        // The size is the shared one ($display-md, from SectionHeading):
+        // every section title on a phone is the same size, and this
+        // one's widest row, "quien hace el", fits it.
         text-align: left;
-        // Sized to the widest of the three rows, "quien hace el", which
-        // runs to about 9 times the font size: the size follows the line
-        // width (viewport minus both edges) so that row keeps the same
-        // share of the line at every phone width. Capped at 3.25rem, the
-        // size the shared curve reaches by the time it hands over to the
-        // wide layout at $bp-md, so there is no jump there.
-        font-size: clamp(1.75rem, calc((100vw - 2 * var(--edge)) * 0.098), 3.25rem);
       }
     }
   }
