@@ -126,11 +126,12 @@
     @include visually-hidden;
   }
 
+  // The button, and under it the line that says what happened.
   &__foot {
     display: flex;
-    flex-wrap: wrap;
-    gap: $space-sm $space-md;
-    align-items: center;
+    flex-direction: column;
+    gap: $space-sm;
+    align-items: flex-start;
     margin-top: $space-2xs;
   }
 
@@ -147,7 +148,7 @@
   }
 
   &__status {
-    flex: 1 1 14rem;
+    max-width: 40rem;
     font-size: $text-sm;
     color: var(--panel-muted);
     text-wrap: pretty;
@@ -288,4 +289,185 @@
   --form-error: #fb923c;
 
   color-scheme: dark;
+}
+
+// ------------------------------------------------ the send button
+// One <Button> whose label, loading bar and result are three layers in a
+// clipped stage. Whichever layer the phase names sits at rest; the rest are
+// parked above (already shown) or below (still to come) and roll up as the
+// phase moves on — so the label goes up and out as the bar comes up from
+// below, and the bar goes up and out as the result does.
+//
+// The stage is as wide as the label, which ContactForm.tsx measures into an
+// inline width and keeps through every phase. Until that is measured (and
+// in the pre-rendered HTML) the label sits in the flow and holds the button
+// open by itself.
+$send-roll: 110%;
+$send-green: #15803d; // 5.0:1 with white
+$send-red: #b91c1c; // 6.5:1 with white
+
+.send__stage {
+  position: relative;
+  display: block;
+  height: 1.5em;
+  overflow: hidden;
+  // The layers are clipped at the stage, not at the pill: the pill's own
+  // padding stays clear, so the text is cut at its own line box.
+  transition: width 460ms $ease-out;
+
+  // Once measured the label too is a layer; before that it is the one thing
+  // in the flow, so the button has a width without any script.
+  &[data-ready] .send__layer--label {
+    position: absolute;
+    inset: 0;
+  }
+}
+
+.send__layer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    transform 460ms $ease-out,
+    opacity 280ms $ease-out;
+
+  // Where each layer waits, by phase. Above (-) once it has had its turn,
+  // below (+) before it has.
+  &--label {
+    transform: none;
+  }
+
+  &--loading,
+  &--result {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transform: translateY($send-roll);
+  }
+}
+
+.send__text {
+  display: inline-flex;
+  gap: $space-2xs;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.send__icon {
+  flex: none;
+  width: 1.5em;
+  height: 1.5em;
+}
+
+// The bar: a track the width of the label, a fill that grows from the left.
+.send__bar {
+  position: relative;
+  width: 100%;
+  height: 0.42em;
+  overflow: hidden;
+  background-color: rgb(255 255 255 / 30%);
+  border-radius: $radius-pill;
+}
+
+.send__fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-color: currentcolor;
+  border-radius: inherit;
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+// ---- phases
+.contact-form__send {
+  // Not dimmed while it works: the disabled look is for a button that has
+  // nothing to say, and this one is busy saying it.
+  &:disabled {
+    cursor: default;
+    opacity: 1;
+  }
+
+  &[data-phase="loading"],
+  &[data-phase="finishing"] {
+    .send__layer--label {
+      opacity: 0;
+      transform: translateY(-$send-roll);
+    }
+
+    .send__layer--loading {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  &[data-phase="success"],
+  &[data-phase="error"] {
+    .send__layer--label {
+      opacity: 0;
+      transform: translateY(-$send-roll);
+    }
+
+    .send__layer--loading {
+      opacity: 0;
+      transform: translateY(-$send-roll);
+    }
+
+    .send__layer--result {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  // Back to the label: the result leaves upward like everything else, and
+  // the label rolls in from below (it is parked above, so it is given its
+  // own run rather than a transition).
+  &[data-returning] {
+    .send__layer--result {
+      opacity: 0;
+      transform: translateY(-$send-roll);
+    }
+
+    .send__layer--label {
+      animation: send-label-in 460ms $ease-out both;
+    }
+  }
+}
+
+// More specific than ".contact-form .button--solid" above (and than its
+// hover), so the result colour holds while the pointer is over the pill.
+.contact-form .contact-form__send.button--solid {
+  &[data-phase="success"] {
+    --button-bg: #{$send-green};
+    --button-fg: #{$paper};
+  }
+
+  &[data-phase="error"] {
+    --button-bg: #{$send-red};
+    --button-fg: #{$paper};
+  }
+
+  &[data-phase="success"]:hover,
+  &[data-phase="error"]:hover,
+  &:disabled:hover {
+    transform: none;
+  }
+}
+
+@keyframes send-label-in {
+  from {
+    opacity: 0;
+    transform: translateY($send-roll);
+  }
+}
+
+@include reduced-motion {
+  .send__stage,
+  .send__layer {
+    transition: none;
+  }
+
+  .contact-form__send[data-returning] .send__layer--label {
+    animation: none;
+  }
 }
