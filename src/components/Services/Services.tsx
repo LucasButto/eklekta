@@ -20,6 +20,46 @@ const BACKGROUND = "/images/works/isotype-scatter.webp";
  */
 const CAROUSEL = "(max-width: 1023.98px)";
 
+/**
+ * Where a card is the whole screen and nothing of the next one shows, so
+ * the rail gets the one-time nudge below. From $bp-md two cards share the
+ * row and the next is already half visible. Matches the `down($bp-md)`
+ * in Services.scss.
+ */
+const SINGLE_CARD = "(max-width: 767.98px)";
+
+/**
+ * The nudge: the rail slides this far left, as if a thumb had started a
+ * swipe, shows the start of the next card, and settles back. A share of
+ * the screen, so it reads the same on a narrow phone and a wide one.
+ */
+const NUDGE_SHARE = 0.16;
+const NUDGE_MIN_PX = 44;
+const NUDGE_MAX_PX = 72;
+const NUDGE_MS = 1900;
+
+const EASE_OUT = "cubic-bezier(0.22, 1, 0.36, 1)";
+const EASE_SWING = "cubic-bezier(0.45, 0, 0.55, 1)";
+
+/**
+ * The nudge as a card on a spring, not a slider: each stop is
+ * [share of NUDGE_MS, how far out as a share of the distance (1 = fully out,
+ * 0 = home, negative = past home, to the right), the easing into the NEXT
+ * stop]. It shoots past the mark on the way out and rings down onto it,
+ * holds so the next card can be read, then comes home past zero and
+ * rebounds until it rests — the boing is both ends of the move.
+ */
+const NUDGE_PATH: ReadonlyArray<readonly [number, number, string]> = [
+  [0, 0, EASE_OUT],
+  [0.18, 1.08, EASE_SWING], // out, a touch past the mark
+  [0.33, 1, "linear"], // eases back onto it, showing the next card
+  [0.5, 1, EASE_SWING], // held
+  [0.62, -0.22, EASE_SWING], // home, and past it
+  [0.74, 0.08, EASE_SWING], // rebound
+  [0.85, -0.03, EASE_SWING],
+  [1, 0, "linear"],
+];
+
 /** Every photo is generated at 4:5, the aspect the pinned panel uses.
  *  CSS sizes these, so the attributes only carry the ratio for CLS. */
 const MEDIA_RATIO = { width: 800, height: 1000 };
@@ -49,6 +89,7 @@ function ArrowIcon() {
 
 export function Services() {
   const isCarousel = useMediaQuery(CAROUSEL);
+  const isSingleCard = useMediaQuery(SINGLE_CARD);
 
   // `count` is the hook's effect dependency and nothing else, so
   // handing it a different number is how the sequence is torn down and
@@ -108,12 +149,107 @@ export function Services() {
     return () => observer.disconnect();
   }, [isCarousel]);
 
+  // The one-time nudge. Once, the first time the rail is fully on screen,
+  // it slides a little to the left and comes back — a card that is the
+  // whole screen gives no sign there is a second one, and this is the
+  // sign. Moves the list with a transform rather than scrolling the
+  // container: the rail is scroll-snap mandatory, which would pull a
+  // small programmatic scroll straight back to the first card.
+  //
+  // It is only ever a hint, so it gives way to the reader moving the rail:
+  // a sideways swipe (the rail itself scrolling) or a tap on the arrows or
+  // dots cancels it, and the rail is then wherever the reader put it. A
+  // thumb that lands on the rail and keeps scrolling the PAGE does not —
+  // the reader is still on their way down, and the nudge plays out under
+  // them. Reduced motion skips it entirely.
+  const nudgeRef = useRef<Animation | null>(null);
+  const nudgedRef = useRef(false);
+  useEffect(() => {
+    const list = listRef.current;
+    const carousel = list?.parentElement;
+    if (!isSingleCard || !list || !carousel || nudgedRef.current) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const cancel = () => {
+      nudgeRef.current?.cancel();
+    };
+    // A sideways swipe is the reader taking over. Measured off scrollLeft,
+    // not just the event, so a scroll that goes nowhere is not one.
+    const onScroll = () => {
+      if (nudgeRef.current && carousel.scrollLeft > 2) cancel();
+    };
+
+    // Fully on screen: every pixel of the rail is inside the viewport — or,
+    // if it is taller than the viewport, as much of it as a viewport can
+    // hold.
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[entries.length - 1];
+        if (!entry || nudgedRef.current) return;
+        const visible = entry.intersectionRect.height;
+        const wanted = Math.min(
+          entry.boundingClientRect.height,
+          entry.rootBounds?.height ?? window.innerHeight,
+        );
+        if (!entry.isIntersecting || visible < wanted - 2) return;
+
+        nudgedRef.current = true;
+        observer.disconnect();
+        // Already moved by hand: nothing left to hint at.
+        if (carousel.scrollLeft > 2) return;
+
+        const distance = Math.round(
+          Math.min(
+            NUDGE_MAX_PX,
+            Math.max(NUDGE_MIN_PX, window.innerWidth * NUDGE_SHARE),
+          ),
+        );
+        // Out with a rebound, a beat to be seen, and back with another —
+        // see NUDGE_PATH.
+        nudgeRef.current = list.animate(
+          NUDGE_PATH.map(([offset, out, easing]) => ({
+            offset,
+            transform: `translateX(${Math.round(-out * distance * 10) / 10}px)`,
+            easing,
+          })),
+          { duration: NUDGE_MS },
+        );
+        // Snap is off for the length of the nudge: snap points follow the
+        // cards' transformed boxes, so when the rebound carried the first
+        // card past home the rail re-snapped onto it — a real scroll,
+        // which read as the reader swiping and cut the bounce short.
+        carousel.style.scrollSnapType = "none";
+        const settle = () => {
+          nudgeRef.current = null;
+          carousel.style.scrollSnapType = "";
+        };
+        nudgeRef.current.onfinish = settle;
+        nudgeRef.current.oncancel = settle;
+      },
+      { threshold: Array.from({ length: 21 }, (_, i) => i / 20) },
+    );
+    observer.observe(carousel);
+
+    // Only the rail's own horizontal scroll counts as the reader taking
+    // over; vertical page scrolling never fires this.
+    carousel.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      observer.disconnect();
+      carousel.removeEventListener("scroll", onScroll);
+      cancel();
+    };
+  }, [isSingleCard]);
+
   // Walks the rail to a card. Scrolls the CONTAINER, never the item:
   // scrollIntoView would take the page with it and drag the reader out
   // of the section they are standing in. The observer above keeps the
   // dots in step on its own, since a programmatic scroll crosses the
   // same intersections a thumb does.
   function goTo(index: number) {
+    // A nudge still in flight would be measured as part of the card's
+    // position, and is pointless once the reader is driving.
+    nudgeRef.current?.cancel();
+    nudgeRef.current = null;
     const list = listRef.current;
     const carousel = list?.parentElement;
     const item = list?.children[index];
@@ -207,12 +343,12 @@ export function Services() {
                       <source
                         type="image/webp"
                         srcSet={srcSet(service.media, "webp")}
-                        sizes="(min-width: 768px) 44vw, 82vw"
+                        sizes="(min-width: 768px) 44vw, 100vw"
                       />
                       <img
                         src={fallback(service.media)}
                         srcSet={srcSet(service.media, "jpg")}
-                        sizes="(min-width: 768px) 44vw, 82vw"
+                        sizes="(min-width: 768px) 44vw, 100vw"
                         alt=""
                         loading="lazy"
                         decoding="async"

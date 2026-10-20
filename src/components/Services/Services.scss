@@ -176,7 +176,7 @@
     width: 100%;
     overflow: hidden;
     background-color: var(--surface-2);
-    border-radius: $radius-lg;
+    border-radius: $radius-md;
 
     @include up($bp-lg) {
       display: block;
@@ -256,7 +256,12 @@
       // because three things downstream have to agree with it: the
       // item's flex-basis, the title's size cap, and the rail's trailing
       // padding (which is what lets the LAST card reach the start line).
-      --card-width: 82vw;
+      // The whole content column: on a phone a card is the screen, with
+      // nothing of the next one showing at the edge. That is what the
+      // list's gap below ($bp-md) is for. Services.tsx runs a short nudge
+      // the first time the rail is fully on screen, so the reader still
+      // learns there is more to the right.
+      --card-width: calc(100vw - 2 * var(--edge));
 
       // Two cards at a time once there is width for them — the tablet
       // band should read as its own layout, not as the phone's
@@ -423,6 +428,15 @@
     @include down($bp-lg) {
       flex-direction: row;
       gap: $space-sm;
+
+      // A card is the column wide here (see --card-width), so the next one
+      // starts at (edge + card + gap): a gap narrower than the page
+      // gutter would leave a sliver of it showing at the right edge. As
+      // wide as the gutter, it starts exactly at the screen edge, and the
+      // previous one ends exactly at the other.
+      @include down($bp-md) {
+        gap: var(--edge);
+      }
       // The rail's own end padding. The wrapper bleeds to the screen
       // edge, so without this the first and last card would sit flush
       // against it instead of on the page's gutter.
@@ -515,10 +529,9 @@
     align-items: flex-start;
 
     @include down($bp-lg) {
-      // One card. ~82vw leaves a real sliver of the next one showing at
-      // 320px and a comfortable one from 375 up, which is the whole
-      // job: the rail has to advertise that there is more to the right
-      // before anyone has swiped. The value itself now lives on
+      // One card. On a phone it is the whole column and the next one is
+      // off screen (the nudge in Services.tsx is what says there is more);
+      // from $bp-md two share the row. The value itself lives on
       // &__carousel, where the rail's trailing padding can read it too.
       flex: 0 0 var(--card-width);
       // Flex items floor at their min-content width, and the longest
