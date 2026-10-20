@@ -5,16 +5,17 @@
 //  photographs rise past it one at a time; once they have all gone
 //  "Eso es eklekta." lands under it.
 //
-//  No JS. On desktop the section runs tall, the frame pins
-//  (position: sticky) and a view timeline on the section scrubs
-//  every move. Browsers without scroll-driven animations — and
-//  anyone on reduced motion — get the static collage, which is
+//  Desktop: no JS. The section runs tall, the frame pins (position:
+//  sticky) and a view timeline on the section scrubs every move: the
+//  statement builds a part at a time, the mark lands last and the
+//  photographs rise past it. Browsers without scroll-driven animations —
+//  and anyone on reduced motion — get the static layout, which is
 //  already a finished look.
 //
-//  The one exception is below $bp-lg (phones and tablets), where the
-//  section is just the statement: there its words light up as it
-//  scrolls into view — see "the words lighting up" below and
-//  Manifesto.tsx. Desktop has none of that.
+//  Phones and tablets (below $bp-lg): no photographs and no pin. The
+//  statement plays a timed entrance once it is on screen (see "a timed
+//  entrance" below and Manifesto.tsx), then "eklekta." shakes on a loop.
+//  Reduced motion shows the text as it is.
 // =============================================================
 
 .manifesto {
@@ -52,11 +53,31 @@
   width: 100%;
 }
 
+// Each figure holds the ratio of the photo it shows (the files in
+// public/images/manifesto/, and the width/height in Manifesto.tsx): the
+// width comes from the layout, the height follows. A fixed height from a
+// separate clamp() could not match the photo at every width, so the frame
+// and the picture drifted apart — a photo shorter than its frame stopped
+// short of the bottom, and a taller one lost its foot to the crop.
+$ratio-lead: 1024 / 1536;
+$ratio-card: 1122 / 1402;
+
 .manifesto__figure {
   overflow: hidden;
   border-radius: $radius-sm;
 
+  // <picture> is inline by default, so the img's `height: 100%` had no box
+  // to resolve against and fell back to the photo's own ratio. A block
+  // picture that fills the figure gives `object-fit: cover` its box, and
+  // the photo reaches the rounded bottom corners.
+  picture {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
   img {
+    display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -87,21 +108,18 @@
   color: var(--text);
 
   // On a phone the size is not a curve at all: it is a share of the
-  // measure, because every length in the composition below is. Each row
-  // is given a slice of the column and its bar takes what the words
-  // leave, so the whole block only holds its proportions if the type
-  // scales with the column too — at a fixed curve the words would eat
-  // the bars on a narrow screen and swim on a wide one.
+  // measure, so the longest line fills the column at every width instead
+  // of eating it on a narrow screen and swimming in it on a wide one.
   //
-  // /11.9 is what the longest line can carry: "herramientas." runs 9.62
-  // times the font size in this face, and what the measure has left over
-  // after it and the gap is the shortest bar on the page. At /11.9 that
-  // bar is 2.6 times the font size — still a bar. Past about /12 it drops
-  // under 2em and starts reading as a nick rather than a mark. The 8.9vh
-  // term is carried through for the same reason it exists above — a
-  // window held in landscape keeps the short-window trim.
+  // /10.6 is what that line can carry: "herramientas." runs 9.62 times the
+  // font size in this face, which leaves it a little short of the right
+  // edge, and the slab row ("lo repetitivo." plus the slab own padding)
+  // stays inside the measure too. That lands the statement at the same
+  // size as the section titles (about 32px at 375). The 8.9vh term is
+  // carried through for the same reason it exists above — a window held
+  // in landscape keeps the short-window trim.
   @include down($bp-md) {
-    font-size: max(1.3rem, min(calc((100vw - 2 * var(--gutter)) / 11.9), 8.9vh));
+    font-size: max(1.3rem, min(calc((100vw - 2 * var(--gutter)) / 10.6), 8.9vh));
   }
 
   // ch scales with this element's own font-size, so shrinking the font
@@ -124,11 +142,11 @@
 // to: six short lines of a very wide face, every one a different length,
 // ragged on both edges at once.
 //
-// Anchored instead, the way the Equipo heading is — the first sentence
-// hangs off the left edge, the second off the right, and the mark closes
-// back on the left. Each block keeps its rag on one side, and the step
-// between the two is the composition rather than an accident of where
-// the words happened to break.
+// Anchored to the left edge instead, the two sentences one under the
+// other, and one accent: the brand slab on "lo repetitivo." — the mark
+// the headings already use ("servicios", "entrega.") — which Manifesto.tsx
+// puts on only below $bp-md. It used to be a brand bar on every row, six
+// of them, and that read as a striped block rather than as a sentence.
 @include down($bp-md) {
   .manifesto__frame {
     justify-items: start;
@@ -136,83 +154,22 @@
   }
 
   .manifesto__text {
-    // Both edges have to be reachable for the two parts to anchor to
-    // opposite ones, and 18ch is narrower than the column at some
-    // widths — the second sentence would hang off the middle of the
-    // page rather than off the gutter.
+    // The measure is the whole column: 18ch is narrower than it at some
+    // widths, and the rows below are sized to fill it.
     width: 100%;
     max-width: none;
   }
-
-  .manifesto__part--two {
-    text-align: right;
-  }
 }
 
-// ---- the bars ----------------------------------------------------
-// One on every row, running off the gutter on the side that sentence is
-// anchored to: out the right edge on the first, in from the left edge on
-// the second. Same mark the Equipo heading makes, three to a sentence.
-//
-// Every row runs the full measure, so every bar reaches the edge of the
-// screen. The step is then in where each bar STARTS: the lines get
-// longer as a sentence goes down, so the bars get shorter, and the
-// staircase is the text's own rag answered in brand colour.
-//
-// `display: contents` from $bp-md up: the wrappers are then transparent
-// to layout, the runs and the spaces between them rejoin into one
-// sentence, and the wide statement renders exactly as it did before they
-// existed.
+// One line of the statement each. `display: contents` from $bp-md up: the
+// wrappers are then transparent to layout, the runs and the spaces between
+// them rejoin into one sentence, and the wide statement renders exactly as
+// it did before they existed.
 .manifesto__row {
   display: contents;
 
   @include down($bp-md) {
-    display: flex;
-    align-items: center;
-
-    // Every row runs the full measure, so every bar reaches the edge of
-    // the screen. The step is then in where each bar STARTS: the lines
-    // get longer as the sentence goes down, so the bars get shorter, and
-    // the staircase is the text's own rag answered in brand colour.
-    width: 100%;
-
-    &::before,
-    &::after {
-      flex: 1 1 auto;
-      // Never a stub, whatever the row is left with.
-      min-width: clamp(1.25rem, 5vw, 3rem);
-      // In em, so it tracks the type it sits beside. Monument's caps are
-      // 0.717 of its font size, so this sits just under cap height —
-      // level with the letters rather than overtopping them.
-      height: 0.68em;
-      background-color: var(--brand);
-    }
-  }
-}
-
-// The left-anchored sentence: bars off the right gutter. --gutter, not
-// --edge: the frame's own padding is the container mixin's gutter, and
-// the bleed has to match it exactly.
-.manifesto__part--one .manifesto__row {
-  @include down($bp-md) {
-    &::after {
-      margin-inline: 0.42em calc(-1 * var(--gutter));
-      content: "";
-    }
-  }
-}
-
-// The right-anchored sentence: the mirror. `margin-left: auto` is what
-// hangs a part-width row off the right edge instead of the left.
-.manifesto__part--two .manifesto__row {
-  @include down($bp-md) {
-    justify-content: flex-end;
-    margin-left: auto;
-
-    &::before {
-      margin-inline: calc(-1 * var(--gutter)) 0.42em;
-      content: "";
-    }
+    display: block;
   }
 }
 
@@ -268,6 +225,12 @@
   // the column at 375 and 421px at 1440. At 0.58 the whole line measures
   // within a pixel or two of what it does today at every width — the
   // change is the type, not the footprint.
+  // Its own box, so the shake below can turn it (an inline box ignores
+  // transforms).
+  .manifesto__brand-word {
+    display: inline-block;
+  }
+
   .manifesto__closing-lead {
     font-family: $font-display;
     font-weight: $fw-ultra;
@@ -401,31 +364,85 @@
       top: 0;
       left: clamp(1rem, 4.5vw, 5.5rem);
       width: clamp(15.5rem, 22vw, 23.5rem);
-      height: clamp(20rem, 29vw, 30.5rem);
+      aspect-ratio: $ratio-lead;
     }
 
     &--mid {
       top: 30%;
       right: clamp(0rem, 1vw, 1.5rem);
       width: clamp(18.5rem, 27vw, 29rem);
-      height: clamp(24rem, 36vw, 38.5rem);
+      aspect-ratio: $ratio-card;
     }
 
     &--trail {
       bottom: 0;
       left: clamp(3rem, 10.5vw, 12.5rem);
       width: clamp(14.5rem, 19.5vw, 21rem);
-      height: clamp(18.5rem, 25vw, 26.5rem);
+      aspect-ratio: $ratio-card;
     }
   }
 }
 
 // ============================================================
-//  Enhancement — the frame pins while the reader scrolls through it.
-//  The three photographs climb up from below and keep going, out the
-//  top — they pass, they do not park. Over the same scroll the
-//  statement builds a part at a time, and the closing line lands last.
-//  A view timeline on the tall section scrubs all of it.
+//  Phones and tablets (below $bp-lg) — a timed entrance.
+//
+//  Nothing to pin and nothing to pass here: the section stays in the page
+//  flow, as a continuation of the one above it. The statement is NOT tied
+//  to the scroll position — a scrubbed fade stalls when the thumb stops and
+//  races when it flicks. Instead Manifesto.tsx adds .is-revealed once, when
+//  the first part has come about a quarter of the way up the screen, and
+//  from there the three pieces play on the clock: the same speed however
+//  the reader scrolls. Each starts a beat after the one before; the last
+//  is in place well before the block reaches the middle of the screen at
+//  any normal scrolling pace.
+//
+//  When the closing line has landed, "eklekta." starts its shake.
+// ============================================================
+$reveal-ms: 1100ms;
+$reveal-step: 320ms;
+
+@media (prefers-reduced-motion: no-preference) {
+  @include down($bp-lg) {
+    // Hidden until revealed. Only under no-preference: reduced motion
+    // never gets the class, and never hides the text either.
+    .manifesto__part,
+    .manifesto__closing-line {
+      opacity: 0;
+    }
+
+    .manifesto.is-revealed {
+      .manifesto__part,
+      .manifesto__closing-line {
+        animation: manifesto-part-rise $reveal-ms linear both;
+      }
+
+      .manifesto__part--two {
+        animation-delay: $reveal-step;
+      }
+
+      .manifesto__closing-line {
+        animation-delay: $reveal-step * 2;
+      }
+    }
+
+    // The sign-off. Once the closing line has arrived Manifesto.tsx adds
+    // .is-shaking to the name and it keeps shaking for good: a short
+    // wobble, then a pause, then again (the pause is the tail of the
+    // keyframes, see manifesto-shake).
+    .manifesto__brand-word.is-shaking {
+      animation: manifesto-shake 2600ms ease-in-out infinite;
+    }
+  }
+}
+
+// ============================================================
+//  Desktop enhancement — scroll-driven.
+//
+//  The frame pins while the reader scrolls through it. The three
+//  photographs climb up from below and keep going, out the top — they
+//  pass, they do not park. Over the same scroll the statement builds a
+//  part at a time, and the closing line lands last. A view timeline on
+//  the tall section scrubs all of it.
 // ============================================================
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
@@ -591,5 +608,56 @@
   to {
     opacity: 1;
     transform: translate3d(0, 0, 0);
+  }
+}
+
+// The phone version of the fade: the same arrival, with a lift you can see
+// — 2rem read as a fade alone at phone sizes. Eased, so the part slows into
+// place instead of stopping dead at the end of its run.
+@keyframes manifesto-part-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 3.25rem, 0);
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  55% {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+// A small wobble on "eklekta." — a few decaying turns about its own centre,
+// over the first 700ms of a 2600ms cycle; the rest of the cycle is the
+// pause before the next one.
+@keyframes manifesto-shake {
+  0%,
+  26.9%,
+  100% {
+    transform: none;
+  }
+
+  3.8% {
+    transform: translateX(-0.05em) rotate(-4deg);
+  }
+
+  8.1% {
+    transform: translateX(0.05em) rotate(3.5deg);
+  }
+
+  12.4% {
+    transform: translateX(-0.035em) rotate(-2.5deg);
+  }
+
+  16.7% {
+    transform: translateX(0.025em) rotate(1.5deg);
+  }
+
+  21% {
+    transform: translateX(-0.01em) rotate(-0.6deg);
   }
 }

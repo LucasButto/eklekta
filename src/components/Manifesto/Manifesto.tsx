@@ -5,7 +5,22 @@ import "./Manifesto.scss";
 const STILL = "(prefers-reduced-motion: reduce)";
 
 /**
- * The words light up one after another as the section scrolls through,
+ * Whether the timed entrance below $bp-lg can run: it waits for the
+ * statement with an IntersectionObserver. Where it can, the word-by-word
+ * lighting below would stack on top of it, so that stays off.
+ */
+const REVEAL = typeof IntersectionObserver !== "undefined";
+
+/**
+ * Where the statement scrolls into view and is revealed (Manifesto.scss):
+ * once the first part's top edge has come this far up the screen — a
+ * quarter of the way, measured from the bottom.
+ */
+const REVEAL_LINE = "0px 0px -25% 0px";
+
+/**
+ * The fallback for a phone whose browser cannot run the timed entrance:
+ * the words light up one after another as the section scrolls through,
  * first to last — below $bp-lg only. From there up the text is the plain
  * statement the pinned photo sequence fades in (see the enhancement in
  * Manifesto.scss) and none of this applies.
@@ -36,6 +51,14 @@ const HOLD = -0.06;
  * Matches the `down($bp-lg)` the stylesheet uses.
  */
 const PHONE = "(max-width: 1023.98px)";
+
+/**
+ * Where the statement is set left-aligned, one sentence under the other,
+ * with the brand slab on "lo repetitivo." — phones only. From $bp-md up it
+ * is the centred statement the photographs ride past, plain. Matches the
+ * `down($bp-md)` the stylesheet uses.
+ */
+const SMALL = "(max-width: 767.98px)";
 
 /**
  * The three photographs, as path stems: `${src}-{480,800,1024}.{webp,jpg}`
@@ -77,12 +100,14 @@ export function Manifesto() {
   // come to about 5 MB, and a display: none on a lazy image leaves it to
   // each browser to decide not to fetch it. Unmounted, nothing is asked for.
   const phone = useMediaQuery(PHONE);
+  const small = useMediaQuery(SMALL);
   const showCollage = !phone;
-  // The words only light up below $bp-lg, and reduced motion gets the
-  // plain text in its final colour: either way, no word spans and no
-  // scroll listener.
+  // The words only light up below $bp-lg, and only where the timed
+  // entrance is not available to do the job (see REVEAL). Reduced motion
+  // gets the plain text in its final colour: in every other case, no word
+  // spans and no scroll listener.
   const still = useMediaQuery(STILL);
-  const lighting = phone && !still;
+  const lighting = phone && !still && !REVEAL;
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -141,6 +166,48 @@ export function Manifesto() {
       if (raf) cancelAnimationFrame(raf);
     };
   }, [lighting]);
+
+  // The entrance, on the clock rather than on the scroll: once, when the
+  // first part has come a quarter of the way up the screen, the section
+  // gets .is-revealed and the three pieces play their timed fade-and-rise
+  // (Manifesto.scss) — the same speed whether the reader keeps scrolling,
+  // stops, or flicks past. When the closing line's own entrance ends the
+  // whole statement is on screen, and "eklekta." gets .is-shaking: a
+  // wobble on a loop from then on. Both classes are only ever added.
+  // Phones and tablets only, never under reduced motion (which shows the
+  // text as it is).
+  const revealing = phone && !still && REVEAL;
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!revealing || !section) return;
+    const first = section.querySelector<HTMLElement>(".manifesto__part--one");
+    const closing = section.querySelector<HTMLElement>(
+      ".manifesto__closing-line",
+    );
+    const brand = section.querySelector<HTMLElement>(".manifesto__brand-word");
+    if (!first || !closing || !brand) return;
+
+    const onLanded = (event: AnimationEvent) => {
+      if (event.target !== closing) return;
+      brand.classList.add("is-shaking");
+    };
+    closing.addEventListener("animationend", onLanded);
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        section.classList.add("is-revealed");
+        observer.disconnect();
+      },
+      { rootMargin: REVEAL_LINE },
+    );
+    observer.observe(first);
+
+    return () => {
+      observer.disconnect();
+      closing.removeEventListener("animationend", onLanded);
+    };
+  }, [revealing]);
 
   /**
    * One run of text split into word spans. The words sit inside one
@@ -222,7 +289,15 @@ export function Manifesto() {
           <span className="manifesto__part manifesto__part--two">
             <span className="manifesto__row">{words("Es sacar")}</span>{" "}
             <span className="manifesto__row">{words("del medio")}</span>{" "}
-            <span className="manifesto__row">{words("lo repetitivo.")}</span>
+            <span className="manifesto__row">
+              {/* The slab is the shared .text-slab, so it is the same
+                  mark as "servicios" and "entrega." in either theme. */}
+              {small ? (
+                <span className="text-slab">{words("lo repetitivo.")}</span>
+              ) : (
+                words("lo repetitivo.")
+              )}
+            </span>
           </span>
         </h2>
 
@@ -232,7 +307,7 @@ export function Manifesto() {
             .manifesto__closing-lead. */}
         <p className="manifesto__closing-line">
           <span className="manifesto__closing-lead">{words("Eso es")}</span>{" "}
-          {words("eklekta.")}
+          <span className="manifesto__brand-word">{words("eklekta.")}</span>
         </p>
       </div>
     </section>
