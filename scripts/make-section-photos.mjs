@@ -3,6 +3,11 @@
 //
 //   brand-assets/manifesto-src/ultimo-bloque-N.png → public/images/manifesto/ultimo-bloque-N-{480,800,1024}.{webp,jpg}
 //   brand-assets/about-src/<paso>.png               → public/images/about/<paso>-{800,1200,1480}.{webp,jpg}
+//   brand-assets/about-notebook-src/<paso>.png      → public/images/about/<paso>-notebook-{640,960,1254}.{webp,jpg}
+//
+// El carrusel de About usa la versión cuadrada (notebook) entre $bp-lg y
+// $bp-3xl, y la original apaisada en celular y de 1080p para arriba (ver
+// About.tsx).
 //
 // Mismo esquema que las portadas de proyectos y el equipo: el código guarda
 // solo el prefijo (`/images/about/diagnostico`) y arma el srcset. Los
@@ -34,6 +39,8 @@ const GROUPS = [
   { src: 'manifesto-src', out: 'manifesto', widths: [480, 800, 1024] },
   // El escenario del carrusel sangra hasta el borde en pantallas anchas.
   { src: 'about-src', out: 'about', widths: [800, 1200, 1480] },
+  // La versión cuadrada para notebooks: el original mide 1254 px.
+  { src: 'about-notebook-src', out: 'about', suffix: '-notebook', widths: [640, 960, 1254] },
 ]
 
 const kb = async (file) => `${((await stat(file)).size / 1024).toFixed(0)} kB`
@@ -50,7 +57,7 @@ for (const group of GROUPS) {
   }
 
   for (const file of sources) {
-    const stem = path.parse(file).name
+    const stem = path.parse(file).name + (group.suffix ?? '')
     const input = path.join(SRC, file)
     const meta = await sharp(input).metadata()
     console.log(`${group.out}/${file}  ${meta.width}×${meta.height}  ${await kb(input)}`)

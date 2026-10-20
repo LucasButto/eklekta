@@ -16,13 +16,25 @@ import "./About.scss";
 const steps = processData as ProcessStep[];
 
 /**
- * Each step's photo is a path stem: `${image}-{800,1200,1480}.{webp,jpg}`
- * are the real files (see scripts/make-section-photos.mjs).
+ * Each step's photo is a path stem with two cuts behind it (see
+ * scripts/make-section-photos.mjs):
+ *   `${image}-{800,1200,1480}.{webp,jpg}`          the landscape original
+ *   `${image}-notebook-{640,960,1254}.{webp,jpg}`  a square recut
+ * The square one only serves the laptop band, $bp-lg to $bp-3xl, where
+ * the stage is too narrow for a landscape frame to stay tall enough.
+ * Phones and 1080p up keep the original. Either way the frame holds that
+ * photo's ratio (About.scss), so a resize scales the photo, never
+ * re-crops it.
  */
-const IMAGE_WIDTHS = [800, 1200, 1480];
+const PHOTO_WIDTHS = [800, 1200, 1480];
+const NOTEBOOK_WIDTHS = [640, 960, 1254];
 
-const imageSet = (stem: string, ext: "webp" | "jpg") =>
-  IMAGE_WIDTHS.map((w) => `${stem}-${w}.${ext} ${w}w`).join(", ");
+// The laptop band. Matches the up($bp-lg) / up($bp-3xl) pair on
+// .about__slide in About.scss.
+const NOTEBOOK_MEDIA = "(min-width: 1024px) and (max-width: 1919.98px)";
+
+const imageSet = (stem: string, widths: number[], ext: "webp" | "jpg") =>
+  widths.map((w) => `${stem}-${w}.${ext} ${w}w`).join(", ");
 
 // The stage is the photo's biggest frame: full width of the column below
 // $bp-lg, and about half the viewport (bleeding to the edge) above it.
@@ -379,19 +391,39 @@ export function About() {
             >
               <picture>
                 <source
+                  media={NOTEBOOK_MEDIA}
                   type="image/webp"
-                  srcSet={imageSet(entry.image, "webp")}
+                  srcSet={imageSet(
+                    `${entry.image}-notebook`,
+                    NOTEBOOK_WIDTHS,
+                    "webp",
+                  )}
+                  sizes={STAGE_SIZES}
+                />
+                <source
+                  media={NOTEBOOK_MEDIA}
+                  type="image/jpeg"
+                  srcSet={imageSet(
+                    `${entry.image}-notebook`,
+                    NOTEBOOK_WIDTHS,
+                    "jpg",
+                  )}
+                  sizes={STAGE_SIZES}
+                />
+                <source
+                  type="image/webp"
+                  srcSet={imageSet(entry.image, PHOTO_WIDTHS, "webp")}
                   sizes={STAGE_SIZES}
                 />
                 <img
                   src={`${entry.image}-1200.jpg`}
-                  srcSet={imageSet(entry.image, "jpg")}
+                  srcSet={imageSet(entry.image, PHOTO_WIDTHS, "jpg")}
                   sizes={STAGE_SIZES}
                   alt=""
                   loading={i === 0 ? "eager" : "lazy"}
                   decoding="async"
                   width={1200}
-                  height={900}
+                  height={750}
                 />
               </picture>
             </figure>
