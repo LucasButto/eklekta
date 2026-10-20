@@ -14,6 +14,14 @@
         800,
         1122
       ]
+    },
+    "mediaMobile": {
+      "src": "/images/services/automatizaciones-h",
+      "widths": [
+        640,
+        960,
+        1280
+      ]
     }
   },
   {
@@ -30,6 +38,14 @@
       "widths": [
         800,
         1122
+      ]
+    },
+    "mediaMobile": {
+      "src": "/images/services/crm-h",
+      "widths": [
+        640,
+        960,
+        1280
       ]
     }
   },
@@ -48,6 +64,14 @@
         800,
         1122
       ]
+    },
+    "mediaMobile": {
+      "src": "/images/services/sitios-web-h",
+      "widths": [
+        640,
+        960,
+        1280
+      ]
     }
   },
   {
@@ -64,6 +88,14 @@
       "widths": [
         800,
         1122
+      ]
+    },
+    "mediaMobile": {
+      "src": "/images/services/software-h",
+      "widths": [
+        640,
+        960,
+        1280
       ]
     }
   }

@@ -50,9 +50,11 @@ export interface Project {
   /**
    * Path stem for the landscape cover — `${cover}-{400,800,1200}.{webp,jpg}`
    * are the real files (see coverSet in ProjectCard). The fallback for
-   * projects with no portrait crop of their own.
+   * projects with no portrait crop of their own. Optional: work with no
+   * public screenshot (desktop tools, internal apps) is shown as the
+   * colour poster alone, with no peek and no picture in the dialog.
    */
-  cover: string
+  cover?: string
   /**
    * Path stem for the portrait crop — `${coverLarge}-{440,832}.{webp,jpg}`.
    * It is the screenshot that slides in from the card's right edge on
@@ -110,6 +112,12 @@ export interface Service {
   deliverables: string[]
   /** Photo the pinned panel swaps to while this service is being read. */
   media: ServiceMedia
+  /**
+   * A landscape (3:2) cut of the same photo, for the mobile carousel card,
+   * whose frame is wide rather than tall — the portrait `media` lost its
+   * top and bottom there. Optional: the card falls back to `media`.
+   */
+  mediaMobile?: ServiceMedia
 }
 
 export interface ProcessStep {

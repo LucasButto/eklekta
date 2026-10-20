@@ -705,8 +705,10 @@
       order: -1;
       // A landscape band, not the panel's 4:5 portrait. The card is the
       // full height budget now, and a 4:5 photo at 82vw alone came to
-      // 384px of it on a 375px screen.
-      aspect-ratio: 4 / 3;
+      // 384px of it on a 375px screen. 3:2 is the ratio of the landscape
+      // cut each service has for this card (mediaMobile), so the frame
+      // shows the whole photo instead of re-cropping it.
+      aspect-ratio: 3 / 2;
       margin-top: 0;
       margin-bottom: $space-2xs;
 

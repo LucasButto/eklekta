@@ -63,6 +63,8 @@ const NUDGE_PATH: ReadonlyArray<readonly [number, number, string]> = [
 /** Every photo is generated at 4:5, the aspect the pinned panel uses.
  *  CSS sizes these, so the attributes only carry the ratio for CLS. */
 const MEDIA_RATIO = { width: 800, height: 1000 };
+/** The landscape cut the mobile card uses (Service.mediaMobile), 3:2. */
+const MOBILE_RATIO = { width: 960, height: 640 };
 
 const srcSet = (media: ServiceMedia, ext: "webp" | "jpg") =>
   media.widths.map((w) => `${media.src}-${w}.${ext} ${w}w`).join(", ");
@@ -342,17 +344,17 @@ export function Services() {
                     <picture>
                       <source
                         type="image/webp"
-                        srcSet={srcSet(service.media, "webp")}
+                        srcSet={srcSet(service.mediaMobile ?? service.media, "webp")}
                         sizes="(min-width: 768px) 44vw, 100vw"
                       />
                       <img
-                        src={fallback(service.media)}
-                        srcSet={srcSet(service.media, "jpg")}
+                        src={fallback(service.mediaMobile ?? service.media)}
+                        srcSet={srcSet(service.mediaMobile ?? service.media, "jpg")}
                         sizes="(min-width: 768px) 44vw, 100vw"
                         alt=""
                         loading="lazy"
                         decoding="async"
-                        {...MEDIA_RATIO}
+                        {...(service.mediaMobile ? MOBILE_RATIO : MEDIA_RATIO)}
                       />
                     </picture>
                   </div>
