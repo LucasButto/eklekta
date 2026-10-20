@@ -1,55 +1,5 @@
 [
   {
-    "id": "automatizaciones",
-    "title": "Automatizaciones",
-    "description": "Conectamos las herramientas que ya usás para que el trabajo repetitivo deje de ocupar horas.",
-    "deliverables": [
-      "Mapa de procesos",
-      "Integraciones",
-      "Alertas y reportes"
-    ],
-    "media": {
-      "src": "/images/services/automatizaciones",
-      "widths": [
-        800,
-        1122
-      ]
-    },
-    "mediaMobile": {
-      "src": "/images/services/automatizaciones-h",
-      "widths": [
-        640,
-        960,
-        1280
-      ]
-    }
-  },
-  {
-    "id": "crm",
-    "title": "CRM",
-    "description": "Implementamos y configuramos tu CRM: pipeline claro, datos limpios y tableros que se leen de un vistazo.",
-    "deliverables": [
-      "Configuración",
-      "Migración de datos",
-      "Capacitación"
-    ],
-    "media": {
-      "src": "/images/services/crm",
-      "widths": [
-        800,
-        1122
-      ]
-    },
-    "mediaMobile": {
-      "src": "/images/services/crm-h",
-      "widths": [
-        640,
-        960,
-        1280
-      ]
-    }
-  },
-  {
     "id": "sitios-web",
     "title": "Sitios web",
     "description": "Sitios y aplicaciones rápidas y mantenibles, construidas para tu caso y no para una plantilla.",
@@ -75,6 +25,31 @@
     }
   },
   {
+    "id": "automatizaciones",
+    "title": "Automatizaciones",
+    "description": "Conectamos las herramientas que ya usás para que el trabajo repetitivo deje de ocupar horas.",
+    "deliverables": [
+      "Mapa de procesos",
+      "Integraciones",
+      "Alertas y reportes"
+    ],
+    "media": {
+      "src": "/images/services/automatizaciones",
+      "widths": [
+        800,
+        1122
+      ]
+    },
+    "mediaMobile": {
+      "src": "/images/services/automatizaciones-h",
+      "widths": [
+        640,
+        960,
+        1280
+      ]
+    }
+  },
+  {
     "id": "software",
     "title": "Software personalizado",
     "description": "Sistemas pensados para cómo trabaja tu equipo, para cuando ninguna herramienta del mercado encaja del todo.",
@@ -92,6 +67,31 @@
     },
     "mediaMobile": {
       "src": "/images/services/software-h",
+      "widths": [
+        640,
+        960,
+        1280
+      ]
+    }
+  },
+  {
+    "id": "crm",
+    "title": "CRM",
+    "description": "Implementamos y configuramos tu CRM: pipeline claro, datos limpios y tableros que se leen de un vistazo.",
+    "deliverables": [
+      "Configuración",
+      "Migración de datos",
+      "Capacitación"
+    ],
+    "media": {
+      "src": "/images/services/crm",
+      "widths": [
+        800,
+        1122
+      ]
+    },
+    "mediaMobile": {
+      "src": "/images/services/crm-h",
       "widths": [
         640,
         960,
