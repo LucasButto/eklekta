@@ -1,3 +1,4 @@
+@use "sass:math";
 @use "styles" as *;
 
 // The stage (the big photo) and the peek (the blurred one waiting off
@@ -10,7 +11,7 @@
 // one ratio (1.39 to 1.78): 16:10 is where the widest one (escala) keeps
 // both the arch and the shoe, and the taller three only give up floor or
 // sky, since the crop is anchored to the top (see the img below).
-$ratio-photo: 16 / 10;
+$ratio-photo: math.div(16, 10);
 $ratio-notebook: 1;
 
 // The travel. TRAVEL_MS in About.tsx runs the geometry half of the same

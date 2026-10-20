@@ -1,3 +1,4 @@
+@use "sass:math";
 @use "styles" as *;
 
 // =============================================================
@@ -59,8 +60,8 @@
 // separate clamp() could not match the photo at every width, so the frame
 // and the picture drifted apart — a photo shorter than its frame stopped
 // short of the bottom, and a taller one lost its foot to the crop.
-$ratio-lead: 1024 / 1536;
-$ratio-card: 1122 / 1402;
+$ratio-lead: math.div(1024, 1536);
+$ratio-card: math.div(1122, 1402);
 
 .manifesto__figure {
   overflow: hidden;
