@@ -62,6 +62,36 @@
         "alignImg": "center",
         "url": "https://amecom.com.ar",
         "featured": false
+      },
+      {
+        "id": "pau",
+        "title": "PAU",
+        "client": "Programa de Agricultura Urbana",
+        "categories": ["Desarrollo web", "Agricultura"],
+        "subtitle": "Mapa de huertas y ferias de Rosario",
+        "summary": "Sitio institucional para el Programa de Agricultura Urbana de Rosario: mapa interactivo filtrable de huertas, ferias, compost y centro agroecológico, más una sección de guías para empezar a cultivar.",
+        "tint": "orange",
+        "cover": "/images/projects/proj-5",
+        "coverLarge": "/images/projects/proj-5V",
+        "alignImg": "left",
+        "url": "https://pau-red.vercel.app/",
+        "featured": false,
+        "description": "Sitio institucional para el Programa de Agricultura Urbana de Rosario: mapa interactivo filtrable de huertas, ferias, compost y centro agroecológico, más una sección de guías para empezar a cultivar."
+      },
+      {
+        "id": "trazzo",
+        "title": "Trazzo",
+        "client": "Trazzo Arquitectura",
+        "categories": ["Desarrollo web", "Arquitectura"],
+        "subtitle": "Portfolio de arquitectura",
+        "summary": "Sitio institucional para Trazzo Arquitectura: galería de proyectos con renders a pantalla completa, secciones de servicios y la historia del estudio, con una estética minimalista acorde a su identidad de marca.",
+        "tint": "violet",
+        "cover": "/images/projects/proj-6",
+        "coverLarge": "/images/projects/proj-6V",
+        "alignImg": "center",
+        "url": "https://trazzoarquitectura.com/",
+        "featured": false,
+        "description": "Sitio institucional para Trazzo Arquitectura: galería de proyectos con renders a pantalla completa, secciones de servicios y la historia del estudio, con una estética minimalista acorde a su identidad de marca."
       }
     ]
   },
@@ -70,40 +100,48 @@
     "label": "Automatización",
     "projects": [
       {
-        "id": "nodo-reparto",
-        "title": "Nodo",
-        "client": "Nodo Reparto",
-        "categories": ["Automatización", "Integraciones"],
-        "subtitle": "Ruteo de pedidos sin planilla",
-        "summary": "Los pedidos entran por WhatsApp y mail y salen asignados a un repartidor con la hoja de ruta armada. El equipo dejó de copiar direcciones a mano y de pelear con la planilla compartida.",
-        "description": "Automatización del ingreso y despacho de pedidos para Nodo Reparto, un servicio de última milla en Rosario. Los pedidos llegan por WhatsApp Business y por un formulario web, se normalizan las direcciones contra una API de geocodificación, se agrupan por zona y se asignan al repartidor con menos carga. Cada repartidor recibe su hoja de ruta del día en Telegram y el cliente un mensaje con el seguimiento. Construido sobre Make y funciones serverless, con el mismo Google Sheets que el equipo ya usaba como tablero de control.",
+        "id": "descarga-comisiones",
+        "title": "Descarga de Comisiones",
+        "client": "Seguros",
+        "categories": ["Automatización", "Seguros"],
+        "subtitle": "App de escritorio para liquidación",
+        "summary": "App de escritorio que se conecta al portal de una aseguradora con autenticación en dos pasos, descarga las comisiones por agente y la importa a la planilla del cliente con reconciliación automática.",
         "tint": "violet",
-        "cover": "/images/projects/granvia-ops",
-        "featured": true
+        "featured": true,
+        "description": "App de escritorio que se conecta al portal de una aseguradora con autenticación en dos pasos, descarga las comisiones por agente y la importa a la planilla del cliente con reconciliación automática."
       },
       {
-        "id": "cierre-claro",
-        "title": "Claro",
-        "client": "Estudio Claro",
-        "categories": ["Automatización"],
-        "subtitle": "Facturación mensual de un estudio contable",
-        "summary": "El estudio emitía 200 facturas a mano cada mes y perseguía los pagos uno por uno por WhatsApp. Ahora las facturas salen solas y los recordatorios se mandan escalonados.",
-        "description": "Automatización del ciclo de facturación mensual para Estudio Claro, un estudio contable con cartera de pymes. A partir de una planilla de honorarios el flujo genera y emite las facturas electrónicas contra el web service de AFIP, las envía por mail con el PDF adjunto y registra el vencimiento. A los cinco y a los quince días manda recordatorios escalonados solo a quien no pagó, y avisa al estudio cuando una cuenta pasa los treinta días. Todo queda anotado en la misma planilla que el equipo revisa cada semana.",
-        "tint": "graphite",
-        "cover": "/images/projects/lumen-studio",
-        "featured": false
-      },
-      {
-        "id": "turnos-vera",
-        "title": "Vera",
-        "client": "Vera Salud",
-        "categories": ["Automatización", "Integraciones"],
-        "subtitle": "Recordatorios de turno y lista de espera",
-        "summary": "Un centro de salud con seis consultorios y 40 % de ausentismo. Con recordatorios por WhatsApp y una lista de espera que se llama sola, el ausentismo bajó a la mitad.",
-        "description": "Automatización de la agenda de turnos para Vera Salud, un centro de salud con seis consultorios. El flujo lee la agenda del sistema de gestión, confirma cada turno por WhatsApp 48 y 3 horas antes, y ante una cancelación ofrece el hueco al primero de la lista de espera de esa especialidad. Los turnos sin confirmar se liberan la noche anterior. Recepción sigue todo desde un tablero simple y solo interviene cuando el flujo pide una decisión.",
+        "id": "carga-liquidaciones",
+        "title": "Carga de Liquidaciones",
+        "client": "Liquidaciones",
+        "categories": ["Automatización", "Liquidaciones"],
+        "subtitle": "App de escritorio para comisiones",
+        "summary": "Automatiza la descarga masiva de comisiones desde un sistema externo, convirtiendo su formato para preparar su subida a otra plataforma, lista para cargarse sin intervención manual.",
         "tint": "lime",
-        "cover": "/images/projects/sereno-brand",
-        "featured": false
+        "featured": false,
+        "description": "Automatiza la descarga masiva de comisiones desde un sistema externo, convirtiendo su formato para preparar su subida a otra plataforma, lista para cargarse sin intervención manual."
+      },
+      {
+        "id": "ordenes-traslado",
+        "title": "Órdenes de Traslado",
+        "client": "Salud",
+        "categories": ["Automatización", "Salud"],
+        "subtitle": "Carga automática para un centro médico",
+        "summary": "Lee por coordenadas los PDFs de órdenes de traslado de una ART y genera la planilla Excel de carga: un viaje por fila, control de duplicados y preservación exacta del formato de plantilla.",
+        "tint": "orange",
+        "featured": false,
+        "description": "Lee por coordenadas los PDFs de órdenes de traslado de una ART y genera la planilla Excel de carga: un viaje por fila, control de duplicados y preservación exacta del formato de plantilla."
+      },
+      {
+        "id": "captura-ensayos",
+        "title": "Captura de Ensayos",
+        "client": "Industria",
+        "categories": ["Automatización", "Industria"],
+        "subtitle": "Software de laboratorio para packaging",
+        "summary": "Se conecta por puerto serie a la prensa de resistencia, decodifica el resultado en vivo, lo cruza con los datos del pedido y lo registra con trazabilidad completa.",
+        "tint": "graphite",
+        "featured": false,
+        "description": "Se conecta por puerto serie a la prensa de resistencia, decodifica el resultado en vivo, lo cruza con los datos del pedido y lo registra con trazabilidad completa."
       }
     ]
   },
@@ -112,40 +150,59 @@
     "label": "Software",
     "projects": [
       {
-        "id": "stock-ferro",
-        "title": "Ferro",
-        "client": "Ferretería Ferro",
-        "categories": ["Software personalizado", "Paneles internos"],
-        "subtitle": "Stock y pedidos para tres sucursales",
-        "summary": "Tres sucursales y un stock en planillas que nunca coincidía. Ahora cada venta descuenta del mismo inventario y el pedido al proveedor se arma solo cuando un artículo baja del mínimo.",
-        "description": "Desarrollo de un sistema de stock y pedidos a medida para Ferretería Ferro, una cadena de tres sucursales en Rosario. Cada mostrador registra la venta contra un único inventario central, las transferencias entre sucursales quedan trazadas y, cuando un artículo baja de su stock mínimo, el sistema arma el borrador del pedido al proveedor que corresponde. La gerencia sigue rotación, faltantes y márgenes por sucursal desde un panel propio, sin esperar el cierre de mes.",
+        "id": "manifiesto",
+        "title": "Manifiesto",
+        "client": "Documentos profesionales",
+        "categories": ["Software", "SaaS"],
+        "subtitle": "Plataforma para documentos con diseño propio",
+        "summary": "SaaS para crear y publicar documentos profesionales (presentaciones, portfolios, catálogos y más) con editor en vivo: contenido único, plantillas y acabados a elegir, listo como link público y PDF.",
         "tint": "blue",
-        "cover": "/images/projects/granvia-ops",
-        "featured": true
+        "featured": true,
+        "description": "SaaS para crear y publicar documentos profesionales (presentaciones, portfolios, catálogos y más) con editor en vivo: contenido único, plantillas y acabados a elegir, listo como link público y PDF."
       },
       {
-        "id": "obra-norte",
-        "title": "Norte",
-        "client": "Norte Desarrollos",
-        "categories": ["Software personalizado", "Aplicación web"],
-        "subtitle": "Seguimiento de obra desde el celular",
-        "summary": "Los jefes de obra mandaban los avances por WhatsApp y la oficina los pasaba a mano. Una app web registra avance, fotos y pedidos de material en el momento, y la dirección ve cada obra en un tablero.",
-        "description": "Aplicación web a medida para Norte Desarrollos, una desarrolladora con varias obras en curso. Cada jefe de obra carga desde el celular el avance por rubro, las fotos del día y los pedidos de material, incluso sin señal: la app guarda todo y sincroniza al recuperar conexión. Compras recibe los pedidos ya ordenados por obra y prioridad, y la dirección compara avance real contra el cronograma en un tablero que se actualiza solo.",
-        "tint": "orange",
-        "cover": "/images/projects/lumen-studio",
-        "featured": false
-      },
-      {
-        "id": "portal-alba",
-        "title": "Alba",
-        "client": "Alba Seguros",
-        "categories": ["Software personalizado", "Portal de clientes"],
-        "subtitle": "Autogestión para asegurados",
-        "summary": "Los asegurados pedían por mail la póliza, el cupón de pago o el estado de un siniestro. Ahora lo resuelven solos desde un portal y el equipo atiende lo que de verdad necesita una persona.",
-        "description": "Portal de autogestión para Alba Seguros, un broker con cartera de particulares y pymes. Cada asegurado entra con su DNI y descarga pólizas, cupones y certificados de cobertura, denuncia un siniestro con fotos y sigue su estado paso a paso. El portal se integra con los sistemas de las aseguradoras para mantener los datos al día, y el equipo recibe solo los casos que requieren una gestión manual.",
+        "id": "nexa",
+        "title": "Nexa",
+        "client": "IA",
+        "categories": ["Software", "IA"],
+        "subtitle": "App de hábitos con apoyo a la salud mental",
+        "summary": "Una mascota-compañera que acompaña por voz y texto, pensada como apoyo a la salud mental: registra el ánimo con emociones reales, ofrece contención en los días difíciles y acceso directo a líneas de ayuda.",
         "tint": "violet",
-        "cover": "/images/projects/sereno-brand",
-        "featured": false
+        "featured": false,
+        "description": "Una mascota-compañera que acompaña por voz y texto, pensada como apoyo a la salud mental: registra el ánimo con emociones reales, ofrece contención en los días difíciles y acceso directo a líneas de ayuda."
+      },
+      {
+        "id": "centi",
+        "title": "Centi",
+        "client": "Finanzas",
+        "categories": ["Software", "Finanzas"],
+        "subtitle": "Control de gastos e ingresos",
+        "summary": "App de control de gastos e ingresos con reportes por categoría, calendario de movimientos, presupuestos mensuales y categorías 100% personalizables, con todos los datos guardados en el dispositivo.",
+        "tint": "lime",
+        "featured": false,
+        "description": "App de control de gastos e ingresos con reportes por categoría, calendario de movimientos, presupuestos mensuales y categorías 100% personalizables, con todos los datos guardados en el dispositivo."
+      },
+      {
+        "id": "ordenate",
+        "title": "Ordenate",
+        "client": "Productividad",
+        "categories": ["Software", "Productividad"],
+        "subtitle": "Organizador de archivos",
+        "summary": "Clasifica archivos sueltos o una carpeta entera por tipo, fecha o tamaño con reglas configurables, detecta duplicados y descarga todo ordenado en un .zip, sin que nada salga nunca del navegador.",
+        "tint": "orange",
+        "featured": false,
+        "description": "Clasifica archivos sueltos o una carpeta entera por tipo, fecha o tamaño con reglas configurables, detecta duplicados y descarga todo ordenado en un .zip, sin que nada salga nunca del navegador."
+      },
+      {
+        "id": "color-image",
+        "title": "Color Image",
+        "client": "Diseño",
+        "categories": ["Software", "Diseño"],
+        "subtitle": "Paletas desde una imagen",
+        "summary": "Extrae una paleta de colores desde cualquier imagen y genera un sistema de diseño UI completo —primarios, secundarios y de estado— con vista previa de interfaz y verificación de contraste WCAG.",
+        "tint": "graphite",
+        "featured": false,
+        "description": "Extrae una paleta de colores desde cualquier imagen y genera un sistema de diseño UI completo —primarios, secundarios y de estado— con vista previa de interfaz y verificación de contraste WCAG."
       }
     ]
   },
