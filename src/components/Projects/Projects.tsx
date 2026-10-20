@@ -167,10 +167,6 @@ export function Projects() {
     [openId, list],
   )
   const mode = leadProject ? 'detail' : 'grid'
-  const railProjects = useMemo(
-    () => (leadProject ? list.filter((p) => p.id !== leadProject.id) : list),
-    [leadProject, list],
-  )
 
   // --- the bento's pages -------------------------------------------------
   // Remembered per tab, and back to the first page whenever the tab
@@ -182,18 +178,26 @@ export function Projects() {
   const pageCount = Math.max(1, Math.ceil(list.length / PAGE_SIZE))
   const page =
     paging.kind === shown ? Math.min(paging.page, pageCount - 1) : 0
+  // What is on this page — and, with a project open, what is left of it
+  // for the side rail: the open project comes off, and so does everything
+  // on the other pages. A project can only be opened from the grid, so the
+  // open one is always on the page being shown.
   const pageProjects = useMemo(
     () =>
-      mode === 'grid'
-        ? railProjects.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
-        : railProjects,
-    [mode, railProjects, page],
+      list
+        .slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+        .filter((p) => p.id !== leadProject?.id),
+    [list, page, leadProject],
   )
   // Once the reader has turned a page, cards arriving with it skip the
   // scroll-reveal fade: the slide in is their entrance.
   const [pagedOnce, setPagedOnce] = useState(false)
   const turning = useRef(false)
   const enterPending = useRef(false)
+  // Set when the hand-over is a tab change: the page arrows then leave
+  // and arrive with the cards, each to its own side. A page turn keeps
+  // them where they are — they are the controls doing the turning.
+  const enterButtons = useRef(false)
   // The slide is only ever a hand-over, so if its end somehow never
   // arrives (a tab hidden mid-move) the lock lets go on its own.
   const releaseLater = () =>
@@ -217,7 +221,11 @@ export function Projects() {
   // the second by the right.
   const offscreenX = (el: HTMLElement) => {
     const rect = el.getBoundingClientRect()
-    const left = el.parentElement?.firstElementChild === el
+    const left = el.classList.contains('projects__page-btn--prev')
+      ? true
+      : el.classList.contains('projects__page-btn--next')
+        ? false
+        : el.parentElement?.firstElementChild === el
     return left
       ? -(rect.right + PAGE_CLEAR_PX)
       : window.innerWidth - rect.left + PAGE_CLEAR_PX
@@ -233,9 +241,15 @@ export function Projects() {
   // The whole board clears outward. Resolves once every card is gone; the
   // cards stay parked off-screen (fill: forwards) until the caller swaps
   // the set, which unmounts them.
-  const slideOut = (grid: HTMLElement) =>
+  const pageButtons = () =>
+    Array.from(
+      stageRef.current?.querySelectorAll<HTMLElement>('.projects__page-btn') ??
+        [],
+    )
+
+  const slideOut = (grid: HTMLElement, withButtons = false) =>
     Promise.all(
-      slideTargets(grid).map(
+      [...slideTargets(grid), ...(withButtons ? pageButtons() : [])].map(
         (el) =>
           el.animate(
             [
@@ -280,7 +294,15 @@ export function Projects() {
     if (!enterPending.current) return
     enterPending.current = false
     const grid = stageRef.current?.querySelector<HTMLElement>('.projects__grid')
-    const targets = grid ? slideTargets(grid) : []
+    const withButtons = enterButtons.current
+    enterButtons.current = false
+    const buttons = withButtons ? pageButtons() : []
+    // The arrows outlive the tab change when both tabs have them (the cards
+    // are new elements, the arrows are the same two), so the exit that
+    // parked them off-screen is still holding them there: let it go before
+    // the entrance starts, in the same frame, so they never show at home.
+    for (const el of buttons) el.getAnimations().forEach((a) => a.cancel())
+    const targets = [...(grid ? slideTargets(grid) : []), ...buttons]
     if (targets.length === 0) {
       turning.current = false
       return
@@ -551,8 +573,9 @@ export function Projects() {
         if (grid) {
           turning.current = true
           releaseLater()
-          slideOut(grid).then(() => {
+          slideOut(grid, true).then(() => {
             enterPending.current = true
+            enterButtons.current = true
             setPagedOnce(true)
             setShown(next)
           })
@@ -811,7 +834,7 @@ export function Projects() {
             {shown === 'crm' ? (
               <KonektaCard />
             ) : mode === 'detail' ? (
-              railProjects.map((project, index) => (
+              pageProjects.map((project, index) => (
                 <ProjectCard
                   key={project.id}
                   project={project}

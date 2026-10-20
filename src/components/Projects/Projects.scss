@@ -398,14 +398,19 @@ $field-graphite-dark: #262247;
     z-index: 5;
     display: grid;
     place-items: center;
-    width: 3rem;
-    height: 3rem;
-    color: var(--text);
+    width: 3.5rem;
+    height: 3.5rem;
+    // The brand's solid violet with a white arrow, ringed in the page
+    // colour so it holds its edge over a card it overlaps: pale chips
+    // on the page colour were passing unnoticed.
+    color: var(--on-brand);
     cursor: pointer;
-    background-color: var(--bg);
-    border: 1px solid var(--border-strong);
+    background-color: var(--brand);
+    border: 0;
     border-radius: 50%;
-    box-shadow: var(--shadow-md);
+    box-shadow:
+      0 0 0 4px var(--bg),
+      0 10px 28px rgb(0 0 0 / 22%);
     translate: -50% -50%;
     transition:
       color $dur-base $ease-out,
@@ -414,26 +419,57 @@ $field-graphite-dark: #262247;
       scale $dur-base $ease-out;
 
     svg {
-      width: 1.25rem;
-      height: 1.25rem;
+      width: 1.6rem;
+      height: 1.6rem;
     }
 
+    // The wave: the same light the CRM tab throws, a ring that leaves the
+    // button and fades out as it spreads. Two of them, the second a beat
+    // behind, then stillness for the rest of the cycle — so the pair keeps
+    // saying "there is more" without ever stopping the eye. On a
+    // pseudo-element so it does not fight the button's own shadows, and
+    // out of the click target (pointer-events: none).
+    &::before,
+    &::after {
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      content: "";
+      border-radius: 50%;
+      animation: projects-page-wave 3.6s ease-out infinite;
+    }
+
+    &::after {
+      animation-delay: 0.45s;
+    }
+
+    // Centred in the gutter beside the bento — or, where the gutter is
+    // narrower than the button (a 1280 window), pulled in so it stays on
+    // screen and overlaps the card's edge a little instead of the
+    // window's.
     &--prev {
-      left: calc(-0.5 * var(--edge));
+      left: calc(-1 * var(--edge) + max(0.5 * var(--edge), 2.2rem));
     }
 
     &--next {
-      left: calc(100% + 0.5 * var(--edge));
+      left: calc(100% + var(--edge) - max(0.5 * var(--edge), 2.2rem));
     }
 
     @include hover {
-      color: var(--on-brand);
-      background-color: var(--brand);
-      border-color: var(--brand);
+      background-color: var(--brand-press);
+      scale: 1.08;
     }
 
     &:active {
       scale: 0.94;
+    }
+
+    @include reduced-motion {
+      &::before,
+      &::after {
+        animation: none;
+      }
     }
 
     @include focus-ring;
@@ -1144,20 +1180,23 @@ $field-graphite-dark: #262247;
   // the sideways entry, which is the right move at their proportion.
   //
   // Wide/narrow only exists from $bp-lg (below it every cell is a full
-  // or half row), so this is scoped to match. `:only-child` is the odd
-  // count's closer — a lone card takes the whole row, which makes it
-  // the widest card of the set, not an exception to the rule.
+  // or half row), so this is scoped to match.
+  //
+  // "Wide" here means every grid card that is not the bento's narrow
+  // column — the wide cards, the odd count's lone closer, and the two
+  // cards of a page of two (which split the row evenly and carry neither
+  // class). Keyed on the class they all lack rather than on the ones some
+  // have: those last two kinds used to fall through to the phone, and a
+  // desktop site showed up tilted inside a handset.
   @include up($bp-lg) {
-    .projects__cell--wide .project-card__head,
-    .projects__cell[data-view="grid"]:only-child .project-card__head {
+    .projects__cell[data-view="grid"]:not(.projects__cell--narrow) .project-card__head {
       max-width: $head-max-wide;
     }
 
     // The wide cards hold it in a laptop instead: the lid of a Mac, its
     // foot cut by the card. Dark bezel, aluminium edge, the camera at the
     // top; it rises straight up as before, so the phone's tip is undone.
-    .projects__cell--wide .project-card__peek,
-    .projects__cell[data-view="grid"]:only-child .project-card__peek {
+    .projects__cell[data-view="grid"]:not(.projects__cell--narrow) .project-card__peek {
       top: 8%;
       right: 0;
       bottom: 0;
@@ -1211,8 +1250,7 @@ $field-graphite-dark: #262247;
       }
     }
 
-    .projects__cell--wide .project-card:hover .project-card__peek,
-    .projects__cell[data-view="grid"]:only-child
+    .projects__cell[data-view="grid"]:not(.projects__cell--narrow)
       .project-card:hover
       .project-card__peek {
       translate: none;
@@ -2027,6 +2065,20 @@ $field-graphite-dark: #262247;
     &[data-shown]::backdrop {
       transition: none;
     }
+  }
+}
+
+// The page arrows' wave. A ring of the brand colour spreads off the button
+// and fades; it is over by a third of the cycle, and the rest is stillness.
+// color-mix because --brand is a token, not a literal to hand to rgba().
+@keyframes projects-page-wave {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--brand) 65%, transparent);
+  }
+
+  34%,
+  100% {
+    box-shadow: 0 0 0 1.4rem color-mix(in srgb, var(--brand) 0%, transparent);
   }
 }
 
