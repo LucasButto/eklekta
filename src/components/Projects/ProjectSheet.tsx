@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/Button/Button";
 import type { Project } from "@/types";
 import { coverSet, COVER_WIDTHS } from "./coverSet";
@@ -27,8 +27,40 @@ interface ProjectSheetProps {
  * A real <dialog> with showModal(), so the top layer, the backdrop, the
  * focus trap and Escape are the platform's and not ours to re-implement.
  */
-export function ProjectSheet({ project, onClose }: ProjectSheetProps) {
+/** How long the sheet takes to slide back down; matches project-sheet-out. */
+const CLOSE_MS = 320;
+
+export function ProjectSheet({ project: next, onClose }: ProjectSheetProps) {
   const ref = useRef<HTMLDialogElement>(null);
+
+  // The sheet holds on to the project it is showing for as long as it
+  // takes to slide back down: the parent drops it at once on close, and
+  // without this the panel vanished on the spot instead of leaving the
+  // way it arrived.
+  const [project, setProject] = useState(next);
+  const [closing, setClosing] = useState(false);
+  // On once the open sheet has been painted where it starts (see the
+  // [data-shown] transition in Projects.scss).
+  const [shown, setShown] = useState(false);
+  if (next && next !== project) {
+    setProject(next);
+    if (closing) setClosing(false);
+  }
+  if (!next && project && !closing) setClosing(true);
+
+  useEffect(() => {
+    if (!closing) return;
+    const reduce = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const done = () => {
+      setProject(null);
+      setClosing(false);
+      setShown(false);
+    };
+    const timer = window.setTimeout(done, reduce ? 0 : CLOSE_MS);
+    return () => window.clearTimeout(timer);
+  }, [closing]);
 
   useEffect(() => {
     const dialog = ref.current;
@@ -41,6 +73,33 @@ export function ProjectSheet({ project, onClose }: ProjectSheetProps) {
 
     if (!dialog.open) dialog.showModal();
 
+    // The rise starts only once the sheet is ready to move without a
+    // hitch: its screenshot decoded (decoding a large image on the first
+    // frames of the slide is what made it stutter), capped so a slow
+    // network never holds the sheet back, and then two frames — the first
+    // lays the sheet out below the screen, the second is the first one
+    // painted there — so none of the rise is spent before it is visible.
+    let cancelled = false;
+    let raf = 0;
+    const start = () => {
+      if (cancelled) return;
+      raf = requestAnimationFrame(() => {
+        raf = requestAnimationFrame(() => {
+          if (!cancelled) setShown(true);
+        });
+      });
+    };
+    const img = dialog.querySelector<HTMLImageElement>(".project-sheet__shot img");
+    const decoded = img?.decode ? img.decode().catch(() => undefined) : null;
+    if (decoded) {
+      Promise.race([
+        decoded,
+        new Promise((resolve) => window.setTimeout(resolve, 280)),
+      ]).then(start);
+    } else {
+      start();
+    }
+
     // showModal() does not stop the page behind from scrolling, and a
     // sheet that drags the list along under it reads as broken. Same
     // hold the mobile nav panel already uses, and it keeps scrollY
@@ -49,6 +108,8 @@ export function ProjectSheet({ project, onClose }: ProjectSheetProps) {
     document.body.style.overflow = "hidden";
 
     return () => {
+      cancelled = true;
+      cancelAnimationFrame(raf);
       document.body.style.overflow = previousOverflow;
       // Also covers the case where the viewport crosses $bp-lg while the
       // sheet is open and this whole component unmounts.
@@ -64,11 +125,12 @@ export function ProjectSheet({ project, onClose }: ProjectSheetProps) {
   // object-fit threw away 56% of every image — on Prosperi it sliced
   // straight through the wordmark in the artwork. Same picture, the
   // orientation this frame was built for.
-  const set = coverSet(project.cover, COVER_WIDTHS);
+  const set = project.cover ? coverSet(project.cover, COVER_WIDTHS) : null;
 
   return (
     <dialog
       className="project-sheet"
+      data-shown={shown && !closing ? "" : undefined}
       ref={ref}
       aria-label={`Detalle de ${project.title}`}
       // Escape fires `cancel` before the dialog closes itself; taking
@@ -85,7 +147,10 @@ export function ProjectSheet({ project, onClose }: ProjectSheetProps) {
         if (event.target === ref.current) onClose();
       }}
     >
-      <div className="project-sheet__panel">
+      <div
+        className="project-sheet__panel"
+        data-tint={project.tint ?? "violet"}
+      >
         <span className="project-sheet__handle" aria-hidden="true" />
 
         <button
@@ -111,22 +176,32 @@ export function ProjectSheet({ project, onClose }: ProjectSheetProps) {
             data-tint={project.tint ?? "violet"}
             aria-hidden="true"
           >
-            <picture>
-              <source
-                type="image/webp"
-                srcSet={set.webp}
-                sizes="(min-width: 768px) 40rem, 100vw"
-              />
-              <img
-                src={set.src}
-                srcSet={set.jpg}
-                sizes="(min-width: 768px) 40rem, 100vw"
-                alt={`${project.title}: ${project.subtitle}`}
-                decoding="async"
-                fetchPriority="high"
-                data-align={project.alignImg ?? "center"}
-              />
-            </picture>
+            {/* No screenshot: the frame is the project's poster instead —
+                its colour field with the name set on it, the way the tile
+                in the list shows it — not an empty block of colour. */}
+            {!set && (
+              <span className="project-sheet__poster">
+                {project.title.toUpperCase()}
+              </span>
+            )}
+            {set && (
+              <picture>
+                <source
+                  type="image/webp"
+                  srcSet={set.webp}
+                  sizes="(min-width: 768px) 40rem, 100vw"
+                />
+                <img
+                  src={set.src}
+                  srcSet={set.jpg}
+                  sizes="(min-width: 768px) 40rem, 100vw"
+                  alt={`${project.title}: ${project.subtitle}`}
+                  decoding="async"
+                  fetchPriority="high"
+                  data-align={project.alignImg ?? "center"}
+                />
+              </picture>
+            )}
           </span>
 
           <div className="project-sheet__body">

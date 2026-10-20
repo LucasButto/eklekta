@@ -81,22 +81,25 @@ export function ProjectCard({
   // Both the hover peek and the opened panel show the portrait crop.
   // Automation work has no dedicated vertical, so it falls back to the
   // landscape `cover` (those files are already portrait).
+  // Some work has no screenshot at all (see Project.cover): its card is
+  // the poster alone — no peek, and no picture once opened.
   const stem = project.coverLarge ?? project.cover;
+  const hasShot = Boolean(stem);
   const widths = project.coverLarge ? COVER_LARGE_WIDTHS : COVER_WIDTHS;
-  const set = coverSet(stem, widths);
+  const set = coverSet(stem ?? "", widths);
   const align = project.alignImg ?? "center";
 
   // Warm the opened panel's step on hover / focus so the FLIP into the
   // detail isn't waiting on a fetch. The peek already has the same
   // image at a much smaller step, which is a different resource.
   const warm = useCallback(() => {
-    if (isLead) return;
+    if (isLead || !hasShot) return;
     preload(set.src, {
       as: "image",
       imageSrcSet: set.webp,
       imageSizes: SHOT_SIZES,
     });
-  }, [isLead, set.src, set.webp]);
+  }, [isLead, hasShot, set.src, set.webp]);
 
   // Register on a stable callback ref, not an effect: the ref fires
   // during commit, before <Projects>'s FLIP layout effect reads the
@@ -154,6 +157,7 @@ export function ProjectCard({
         type="button"
         className="project-card"
         data-tint={project.tint ?? "violet"}
+        data-shot={hasShot ? undefined : "none"}
         onClick={() => onSelect(isLead ? null : project.id)}
         onPointerEnter={isLead ? undefined : warm}
         onFocus={isLead ? undefined : warm}
@@ -166,7 +170,7 @@ export function ProjectCard({
         {/* The opened panel carries no type of its own — the readout
             sitting beside it already has the category, the name and the
             rest, and printing them over the picture said it twice. */}
-        {!isLead && (
+        {(!isLead || !hasShot) && (
           <>
             {category && (
               <span className="project-card__eyebrow">{category}</span>
@@ -186,7 +190,7 @@ export function ProjectCard({
             of it shows, and only on hover. The wrapper is aria-hidden
             (the button already has its own label), so the alt below is
             for crawlers and image search rather than for screen readers. */}
-        {(isLead || isGrid) && (
+        {hasShot && (isLead || isGrid) && (
           <span
             className={isLead ? "project-card__shot" : "project-card__peek"}
             aria-hidden="true"

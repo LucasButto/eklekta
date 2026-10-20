@@ -77,6 +77,19 @@ const OPEN_DELAY_MS = 0
 const FAST_CLOSE = 0.6
 const CLOSE_MS = Math.round(MOVE_MS * FAST_CLOSE) + 80
 
+// The desktop bento shows at most one 2×2 page of projects; the arrows at
+// either side page through the rest. A page turn clears the board
+// outward — the left column slides off the left edge of the screen, the
+// right column off the right — and the next page comes in the same way,
+// from beyond those edges. Rows go a beat apart so it reads as cards
+// being dealt rather than a block shunting.
+const PAGE_SIZE = 4
+const PAGE_OUT_MS = 420
+const PAGE_IN_MS = 620
+const PAGE_ROW_STAGGER_MS = 70
+// Clear of the screen edge by this much once out, so no shadow peeks in.
+const PAGE_CLEAR_PX = 64
+
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' &&
   window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -158,6 +171,142 @@ export function Projects() {
     () => (leadProject ? list.filter((p) => p.id !== leadProject.id) : list),
     [leadProject, list],
   )
+
+  // --- the bento's pages -------------------------------------------------
+  // Remembered per tab, and back to the first page whenever the tab
+  // changes (the page belongs to the set it was turned in).
+  const [paging, setPaging] = useState<{ kind: string; page: number }>({
+    kind: shown,
+    page: 0,
+  })
+  const pageCount = Math.max(1, Math.ceil(list.length / PAGE_SIZE))
+  const page =
+    paging.kind === shown ? Math.min(paging.page, pageCount - 1) : 0
+  const pageProjects = useMemo(
+    () =>
+      mode === 'grid'
+        ? railProjects.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+        : railProjects,
+    [mode, railProjects, page],
+  )
+  // Once the reader has turned a page, cards arriving with it skip the
+  // scroll-reveal fade: the slide in is their entrance.
+  const [pagedOnce, setPagedOnce] = useState(false)
+  const turning = useRef(false)
+  const enterPending = useRef(false)
+  // The slide is only ever a hand-over, so if its end somehow never
+  // arrives (a tab hidden mid-move) the lock lets go on its own.
+  const releaseLater = () =>
+    window.setTimeout(
+      () => {
+        turning.current = false
+      },
+      PAGE_OUT_MS + PAGE_IN_MS + 3 * PAGE_ROW_STAGGER_MS + 600,
+    )
+
+  // What slides: the cards of the grid — or, on the CRM tab, its one panel.
+  const slideTargets = (grid: HTMLElement) => {
+    const cells = Array.from(
+      grid.querySelectorAll<HTMLElement>('.projects__cell'),
+    )
+    return cells.length ? cells : Array.from(grid.children as HTMLCollectionOf<HTMLElement>)
+  }
+
+  // Which way a card leaves and arrives: the first of a row (and a card
+  // alone in its row, or the CRM panel) by the left edge of the screen,
+  // the second by the right.
+  const offscreenX = (el: HTMLElement) => {
+    const rect = el.getBoundingClientRect()
+    const left = el.parentElement?.firstElementChild === el
+    return left
+      ? -(rect.right + PAGE_CLEAR_PX)
+      : window.innerWidth - rect.left + PAGE_CLEAR_PX
+  }
+  const rowOf = (el: HTMLElement) => {
+    const row = el.parentElement
+    const grid = row?.parentElement
+    return row && grid && row.classList.contains('projects__row')
+      ? Array.prototype.indexOf.call(grid.children, row)
+      : 0
+  }
+
+  // The whole board clears outward. Resolves once every card is gone; the
+  // cards stay parked off-screen (fill: forwards) until the caller swaps
+  // the set, which unmounts them.
+  const slideOut = (grid: HTMLElement) =>
+    Promise.all(
+      slideTargets(grid).map(
+        (el) =>
+          el.animate(
+            [
+              { transform: 'translateX(0)' },
+              {
+                transform: `translateX(${Math.round(offscreenX(el))}px)`,
+              },
+            ],
+            {
+              duration: PAGE_OUT_MS,
+              delay: rowOf(el) * PAGE_ROW_STAGGER_MS,
+              easing: 'cubic-bezier(0.55, 0, 0.75, 0.2)',
+              fill: 'forwards',
+            },
+          ).finished,
+      ),
+    ).catch(() => undefined)
+
+  const turnPage = (delta: number) => {
+    if (turning.current || pageCount < 2) return
+    const next = (page + delta + pageCount) % pageCount
+    const commit = () => {
+      setPagedOnce(true)
+      setPaging({ kind: shown, page: next })
+    }
+    const grid = stageRef.current?.querySelector<HTMLElement>('.projects__grid')
+    if (!grid || prefersReducedMotion()) {
+      commit()
+      return
+    }
+    turning.current = true
+    releaseLater()
+    slideOut(grid).then(() => {
+      enterPending.current = true
+      commit()
+    })
+  }
+
+  // The arriving cards, page or tab: placed off-screen on their side
+  // before the first paint, then slid home.
+  useLayoutEffect(() => {
+    if (!enterPending.current) return
+    enterPending.current = false
+    const grid = stageRef.current?.querySelector<HTMLElement>('.projects__grid')
+    const targets = grid ? slideTargets(grid) : []
+    if (targets.length === 0) {
+      turning.current = false
+      return
+    }
+    Promise.all(
+      targets.map(
+        (el) =>
+          el.animate(
+            [
+              { transform: `translateX(${Math.round(offscreenX(el))}px)` },
+              { transform: 'translateX(0)' },
+            ],
+            {
+              duration: PAGE_IN_MS,
+              delay: rowOf(el) * PAGE_ROW_STAGGER_MS,
+              easing: EASE,
+              fill: 'backwards',
+            },
+          ).finished,
+      ),
+    )
+      .catch(() => undefined)
+      .then(() => {
+        turning.current = false
+      })
+  }, [page, shown])
 
   // --- the layout FLIP ------------------------------------------------
   // Every card hands its cell up here keyed by project id. Before a
@@ -381,6 +530,8 @@ export function Projects() {
   const selectFilter = useCallback(
     (next: string) => {
       if (next === latest.current) return
+      // Mid-slide: the board is being swapped already.
+      if (turning.current) return
       latest.current = next
       if (next === HIGHLIGHT) setHighlightSeen(true)
 
@@ -390,6 +541,24 @@ export function Projects() {
         if (latest.current !== next) return
         setFilter(next)
         window.clearTimeout(swapTimer.current)
+
+        // Desktop: the same hand-over as the page arrows — the cards leave
+        // by both edges of the screen and the new tab's come in from them.
+        const grid =
+          !isFeed && !prefersReducedMotion()
+            ? stageRef.current?.querySelector<HTMLElement>('.projects__grid')
+            : null
+        if (grid) {
+          turning.current = true
+          releaseLater()
+          slideOut(grid).then(() => {
+            enterPending.current = true
+            setPagedOnce(true)
+            setShown(next)
+          })
+          return
+        }
+
         swapTimer.current = window.setTimeout(
           () => {
             if (latest.current === next) setShown(next)
@@ -419,6 +588,7 @@ export function Projects() {
         swapSection()
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [openId, select, isFeed],
   )
 
@@ -620,7 +790,13 @@ export function Projects() {
           <div
             className={mode === 'detail' ? 'projects__rail' : 'projects__grid'}
             role="list"
-            data-swapping={mode === 'grid' && swapping ? '' : undefined}
+            // The CSS stagger-out is the fallback: desktop slides the cards
+            // off the screen instead (see slideOut), unless reduced motion.
+            data-swapping={
+              mode === 'grid' && swapping && (isFeed || prefersReducedMotion())
+                ? ''
+                : undefined
+            }
             // Drives the short-filter layouts (see Projects.scss): one or
             // two projects still fill the full 2×2 bento height, and two
             // split the row evenly instead of wide/narrow. Only set for
@@ -628,7 +804,7 @@ export function Projects() {
             // themselves.
             data-count={
               mode === 'grid' && shown !== 'crm'
-                ? railProjects.length
+                ? pageProjects.length
                 : undefined
             }
           >
@@ -653,7 +829,7 @@ export function Projects() {
               // Below $bp-lg .projects__row just wraps its (already
               // full-width or 50%-width) cells, so the phone/tablet wrap
               // is untouched.
-              chunkPairs(railProjects).map((row, rowIndex) => (
+              chunkPairs(pageProjects).map((row, rowIndex) => (
                 <div
                   className="projects__row"
                   role="presentation"
@@ -668,7 +844,7 @@ export function Projects() {
                       span={
                         // Two projects share the row evenly — no
                         // wide/narrow (see .projects__grid[data-count="2"]).
-                        railProjects.length === 2 || row.length !== 2
+                        pageProjects.length === 2 || row.length !== 2
                           ? undefined
                           : rowIndex % 2 === 0
                             ? i === 0
@@ -680,13 +856,55 @@ export function Projects() {
                       }
                       onSelect={select}
                       registerRef={registerRef}
-                      noReveal={openedOnce.has(project.id)}
+                      noReveal={pagedOnce || openedOnce.has(project.id)}
                     />
                   ))}
                 </div>
               ))
             )}
           </div>
+
+          {/* The page arrows, one each side of the bento. Only when the
+              tab has more than one page, and only in the grid — the open
+              detail lists every project in its rail already. */}
+          {mode === 'grid' && shown !== 'crm' && pageCount > 1 && (
+            <>
+              <button
+                type="button"
+                className="projects__page-btn projects__page-btn--prev"
+                onClick={() => turnPage(-1)}
+              >
+                <span className="sr-only">Proyectos anteriores</span>
+                <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+                  <path
+                    d="M12 4 6 10l6 6"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+              <button
+                type="button"
+                className="projects__page-btn projects__page-btn--next"
+                onClick={() => turnPage(1)}
+              >
+                <span className="sr-only">Siguientes proyectos</span>
+                <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+                  <path
+                    d="M8 4l6 6-6 6"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            </>
+          )}
         </div>
         )}
         </div>

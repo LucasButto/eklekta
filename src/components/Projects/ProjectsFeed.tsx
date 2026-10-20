@@ -35,7 +35,8 @@ export function ProjectsFeed({ projects, swapping, onOpen }: ProjectsFeedProps) 
       {projects.map((project) => {
         const category = project.categories[0];
         const hasShot = Boolean(project.cover) && !failed.has(project.id);
-        const set = hasShot ? coverSet(project.cover, COVER_WIDTHS) : null;
+        const set =
+          hasShot && project.cover ? coverSet(project.cover, COVER_WIDTHS) : null;
 
         return (
           <li className="projects-feed__cell" key={project.id}>

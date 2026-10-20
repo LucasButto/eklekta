@@ -56,31 +56,48 @@ $card-inset: clamp(1.1rem, 0.75rem + 1.3vw, 2rem);
 // take in the bento's *narrow* column without running past two lines.
 $card-title: clamp(1.3rem, 1rem + 1.3vw, 2.35rem);
 
-// How much of the card's width the hover peek occupies, and how much of
-// its *own* width stays hanging off the right edge once it lands.
-$peek-w: 38%;
-$peek-rest: 14%;
-// The bento's wide cards get a much bigger panel that rises straight up
-// out of the bottom edge and rests in the card's bottom-right corner —
-// a little over half the card's width and most of its height, so the
-// screenshot is actually readable rather than a thumbnail. The bleed
-// off the right edge is a smaller share here than on the narrow cards:
-// at the narrow card's 14% this panel would throw away 61px of picture
-// instead of 25px, and the point of the bleed is the cut, not its size.
-// 9% lands it at ~37px, in line with what the narrow cards give up.
-// $peek-rest-y is how much of its own height stays below the card's
-// bottom edge once it lands.
+// The bento's wide cards get a much bigger panel (the laptop lid, see the
+// device tokens below) that rises straight up out of the bottom edge and
+// rests in the card's bottom-right corner — a little over half the card's
+// width and most of its height, so the screenshot is actually readable
+// rather than a thumbnail. 9% of it stays off the right edge, ~37px: the
+// point of the bleed is the cut, not its size. $peek-rest-y is how much of
+// its own height stays below the card's bottom edge once it lands.
 $peek-w-wide: 59%;
 $peek-rest-wide: 9%;
 $peek-rest-y: 10%;
 // Where each landed peek's left edge falls, and so where the title's
-// measure has to stop. Narrow: 100% - 38% + 14% of 38%. Wide: the same
-// sum at 40%, and then a further step back — the wide panel is big
-// enough that a title running right up against it would read as
-// crowding rather than as two things sharing a card. Written out rather
-// than calculated because Sass cannot multiply two percentages.
-$head-max: 67%;
+// measure has to stop. Narrow: the tipped phone's leftmost corner, which
+// measured 54–61% of the card across 1280–1920 (the phone is sized off the
+// card height, so it takes more of a taller card). Wide: the laptop at
+// 40%, and then a further step back — the panel is big enough that a
+// title running right up against it would read as crowding rather than as
+// two things sharing a card.
+$head-max: 52%;
 $head-max-wide: 40%;
+
+// ---- the devices the peek is shown in
+// Narrow cards hold the screenshot in a phone, wide ones in a laptop lid.
+// Bezels in px (clamped), not %, so the frame is equally thick on every
+// side whatever the box ratio.
+$phone-bezel: clamp(5px, 0.45vw, 8px);
+// A phone's corners, not a pill's: small enough that the long sides read
+// straight.
+$phone-radius: clamp(12px, 1.25vw, 20px);
+// The phone is as wide as the old flat peek (38% of the card), so at a
+// phone's proportion it is taller than the card: like the laptop, the
+// card only ever shows part of it. It waits off the right edge; on hover
+// it slides in just far enough to show, still with 24% of its width past
+// the right edge, then tips over to the left on its bottom-left corner
+// (below the card) and comes to rest leaning.
+$phone-w: 38%;
+$phone-rest: 24%;
+$phone-tilt: -9deg;
+$laptop-bezel: clamp(8px, 0.9vw, 14px);
+$laptop-radius: clamp(10px, 1vw, 16px);
+// The aluminium edge round the lid.
+$laptop-edge: #a9abb6;
+$laptop-edge-w: 2.5px;
 
 // ------------------------------------------------ the colour fields
 // Each project is set on a flat tint, chosen so the pair carries its
@@ -93,6 +110,12 @@ $field-graphite: #141031;
 $field-graphite-dark: #262247;
 
 .projects {
+  // A page turn slides the bento's cards right off the screen at both
+  // edges (see the paging in Projects.tsx); clipped here so that travel
+  // never widens the page into a sideways scroll. `clip`, not `hidden`:
+  // no scroll container, so nothing inside that sticks or pins is affected.
+  overflow-x: clip;
+
   // Top and bottom split on purpose (not one padding-block value): the
   // fixed navbar only eats into the top, so only the top needs to clear
   // it. This used to carry a much taller floor (104–140px) to clear the
@@ -364,7 +387,62 @@ $field-graphite-dark: #262247;
   // ------------------------------------------------ stage
   // Holds one of two layouts. Grid mode is just the bento below;
   // detail mode is a three-track grid the FLIP reflows into.
+  // The page arrows (Projects.tsx), centred on the bento's height in the
+  // gutter either side of it. Desktop only — the stage only exists there.
+  // A solid round chip on the page colour, so where a narrow window's
+  // gutter is thinner than the chip it can overlap a card's edge and
+  // still read.
+  &__page-btn {
+    position: absolute;
+    top: 50%;
+    z-index: 5;
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    color: var(--text);
+    cursor: pointer;
+    background-color: var(--bg);
+    border: 1px solid var(--border-strong);
+    border-radius: 50%;
+    box-shadow: var(--shadow-md);
+    translate: -50% -50%;
+    transition:
+      color $dur-base $ease-out,
+      background-color $dur-base $ease-out,
+      border-color $dur-base $ease-out,
+      scale $dur-base $ease-out;
+
+    svg {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+
+    &--prev {
+      left: calc(-0.5 * var(--edge));
+    }
+
+    &--next {
+      left: calc(100% + 0.5 * var(--edge));
+    }
+
+    @include hover {
+      color: var(--on-brand);
+      background-color: var(--brand);
+      border-color: var(--brand);
+    }
+
+    &:active {
+      scale: 0.94;
+    }
+
+    @include focus-ring;
+  }
+
   &__stage {
+    // The page arrows are placed against it.
+    position: relative;
+
     @include up($bp-lg) {
       // Grid mode only: passes .projects__inner's leftover height on
       // down to .projects__grid. Detail mode pins its own height via
@@ -563,6 +641,14 @@ $field-graphite-dark: #262247;
         @include hover {
           transform: none;
           box-shadow: var(--shadow-lg);
+        }
+
+        // No screenshot to show (see Project.cover): the panel is the
+        // poster itself — its own field, the eyebrow up top and the name
+        // at the foot — instead of a black slab with nothing in it.
+        &[data-shot="none"] {
+          padding: $card-inset;
+          background-color: var(--field);
         }
       }
     }
@@ -865,20 +951,50 @@ $field-graphite-dark: #262247;
   // It sits at rest fully outside the card (translateX(100%) against an
   // element already flush with the right edge), so `overflow: hidden`
   // on the card is what keeps it invisible until asked for.
+  // The hover peek, as a phone: a black body with an even bezel, the
+  // island at the top, the screenshot as its screen. It waits off the right
+  // edge, standing; on hover it slides in a little way and then tips over
+  // to the left onto its bottom-left corner, coming to rest at an angle.
+  // `translate` and `rotate` are separate properties so each half of the
+  // move gets its own timing: in, the fall starts while the slide is still
+  // travelling (90ms in), so the two read as one motion, and lands with a
+  // little overshoot; out, it starts standing up before it slides away.
   &__peek {
     position: absolute;
     top: 12%;
-    bottom: 12%;
     right: 0;
     z-index: 0;
     display: block;
-    width: $peek-w;
+    width: $phone-w;
+    aspect-ratio: 9 / 18.5;
     overflow: hidden;
-    background-color: rgb(0 0 0 / 14%);
-    border-radius: $radius-sm 0 0 $radius-sm;
-    box-shadow: -18px 0 40px rgb(0 0 0 / 22%);
-    transform: translateX(100%);
-    transition: transform $dur-slow $ease-out;
+    background-color: #0b0b10;
+    border-radius: $phone-radius;
+    box-shadow:
+      0 0 0 1.5px #34343e,
+      -18px 14px 40px rgb(0 0 0 / 28%);
+    transform-origin: bottom left;
+    // Parked past the right edge by more than its shadow reaches (~60px
+    // to the left of the body), so nothing of it shows at rest.
+    translate: calc(100% + 72px) 0;
+    rotate: 0deg;
+    transition:
+      translate 400ms cubic-bezier(0.45, 0, 0.55, 1) 80ms,
+      rotate 220ms $ease-in-out;
+
+    // The island.
+    &::before {
+      position: absolute;
+      top: calc(#{$phone-bezel} + 6px);
+      left: 50%;
+      z-index: 1;
+      width: 30%;
+      height: clamp(7px, 0.75vw, 11px);
+      content: "";
+      background-color: #000;
+      border-radius: $radius-pill;
+      translate: -50% 0;
+    }
 
     // Not painted at all on touch, where there is no hover to trigger
     // it — the image is still fetched, so this stays a display rule
@@ -893,11 +1009,12 @@ $field-graphite-dark: #262247;
 
     img {
       position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
+      inset: $phone-bezel;
+      width: calc(100% - 2 * #{$phone-bezel});
+      height: calc(100% - 2 * #{$phone-bezel});
       object-fit: cover;
       object-position: top center;
+      border-radius: calc(#{$phone-radius} - #{$phone-bezel});
 
       &[data-align="left"] {
         object-position: top left;
@@ -990,7 +1107,11 @@ $field-graphite-dark: #262247;
     box-shadow: var(--shadow-md);
 
     .project-card__peek {
-      transform: translateX($peek-rest);
+      translate: $phone-rest 0;
+      rotate: $phone-tilt;
+      transition:
+        translate 420ms cubic-bezier(0.33, 1, 0.68, 1),
+        rotate 520ms cubic-bezier(0.34, 1.45, 0.64, 1) 90ms;
     }
 
     .project-card__close {
@@ -1032,11 +1153,21 @@ $field-graphite-dark: #262247;
       max-width: $head-max-wide;
     }
 
+    // The wide cards hold it in a laptop instead: the lid of a Mac, its
+    // foot cut by the card. Dark bezel, aluminium edge, the camera at the
+    // top; it rises straight up as before, so the phone's tip is undone.
     .projects__cell--wide .project-card__peek,
     .projects__cell[data-view="grid"]:only-child .project-card__peek {
       top: 8%;
+      right: 0;
       bottom: 0;
+      height: auto;
+      aspect-ratio: auto;
       width: $peek-w-wide;
+      translate: none;
+      rotate: none;
+      transform-origin: center;
+      transition: transform $dur-slow $ease-out;
       // A share of the card's width stops being the right measure once
       // the card gets very wide: on an odd count's full-row closer 59%
       // is 703px, most of the row. The cap is in rem so it still rides
@@ -1047,18 +1178,58 @@ $field-graphite-dark: #262247;
       max-width: 30rem;
       // Only the top corners are ever in view: the right edge and the
       // foot are both clipped by the card.
-      border-radius: $radius-sm $radius-sm 0 0;
-      box-shadow: -16px -14px 40px rgb(0 0 0 / 22%);
-      transform: translate($peek-rest-wide, 100%);
+      border-radius: $laptop-radius $laptop-radius 0 0;
+      box-shadow:
+        0 0 0 $laptop-edge-w $laptop-edge,
+        -16px -14px 40px rgb(0 0 0 / 22%);
+      // Parked far enough below the card that the aluminium edge and the
+      // shadow (which reaches ~55px above the lid) stay out of sight.
+      transform: translate($peek-rest-wide, calc(100% + 64px));
+
+      // The camera, centred in the top bezel: a lens with a ring and a
+      // glint, so it reads as a camera and not a speck of dust.
+      &::before {
+        top: calc(#{$laptop-bezel} * 0.5 - 3.5px);
+        width: 7px;
+        height: 7px;
+        background: radial-gradient(
+          circle at 35% 35%,
+          #8a90b4 0 14%,
+          #2a2c3c 34%,
+          #121219 70%
+        );
+        border-radius: 50%;
+        box-shadow: 0 0 0 1.5px #34353f;
+      }
+
+      img {
+        inset: $laptop-bezel $laptop-bezel 0;
+        width: calc(100% - 2 * #{$laptop-bezel});
+        height: calc(100% - #{$laptop-bezel});
+        border-radius: calc(#{$laptop-radius} - #{$laptop-bezel} * 0.5)
+          calc(#{$laptop-radius} - #{$laptop-bezel} * 0.5) 0 0;
+      }
     }
 
     .projects__cell--wide .project-card:hover .project-card__peek,
     .projects__cell[data-view="grid"]:only-child
       .project-card:hover
       .project-card__peek {
+      translate: none;
+      rotate: none;
       transform: translate($peek-rest-wide, $peek-rest-y);
+      transition: transform $dur-slow $ease-out;
     }
   }
+}
+
+// A card with no screenshot has no peek to keep clear of, so its title
+// takes the whole card — otherwise long single words ("Liquidaciones")
+// were cut mid-word to fit a measure reserved for a panel that never
+// arrives. More specific than both measures above, so it wins at every
+// width and in the wide cards too.
+.projects__cell[data-view="grid"] .project-card[data-shot="none"] .project-card__head {
+  max-width: none;
 }
 
 // Graphite is the one field that cannot survive the theme swap
@@ -1500,7 +1671,12 @@ $field-graphite-dark: #262247;
   max-height: none;
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  // Visible, not hidden: the phone panel carries an extension below its
+  // own bottom edge (see &__panel), and the dialog must not cut it off at
+  // a height that can come out shorter than the visible screen while the
+  // browser's toolbar shows or hides. The dialog is fixed, so anything
+  // below the screen simply is not seen — it never scrolls.
+  overflow: visible;
   background: transparent;
   border: 0;
 
@@ -1510,12 +1686,26 @@ $field-graphite-dark: #262247;
     justify-content: center;
   }
 
+  // The motion is a transition on [data-shown], which ProjectSheet sets
+  // two frames after showModal() — once the panel and its picture have
+  // been laid out and painted below the screen. As a keyframe animation it
+  // started the moment the dialog opened, and the first paint of the
+  // sheet (the screenshot decoding, the layout) ate the first ~150ms of
+  // it: the first frame anyone saw was already most of the way up, so it
+  // read as a jump. In: a long, even rise at full opacity. Out: removing
+  // the attribute sends it back down, quicker and accelerating away;
+  // ProjectSheet keeps the content until it has gone.
+  --sheet-from: 100%;
+
   &::backdrop {
     background-color: rgba($ink, 0.55);
+    opacity: 0;
+    transition: opacity 320ms ease-in;
   }
 
-  &[open]::backdrop {
-    animation: project-sheet-scrim 240ms $ease-out both;
+  &[data-shown]::backdrop {
+    opacity: 1;
+    transition: opacity 360ms $ease-out;
   }
 
   &__panel {
@@ -1525,12 +1715,65 @@ $field-graphite-dark: #262247;
     width: 100%;
     max-height: 90svh;
     overflow: hidden;
-    background-color: var(--surface);
+    // The panel wears the colour of the card it opened from — the same
+    // field and ink the tile has (see the [data-tint] rules just below) —
+    // so the sheet reads as that card unfolded, not as a generic white
+    // dialog.
+    --field: #{$brand-deep};
+    --ink: #{$paper};
+
+    color: var(--ink);
+    background-color: var(--field);
     border-radius: $radius-lg $radius-lg 0 0;
+    // A solid strip of the panel's own colour hanging below it, as tall
+    // as half a screen: at the end of the rise, or when the toolbar moves,
+    // the page used to show through a thin gap under the panel. A shadow
+    // rather than a pseudo-element, because the panel clips its children
+    // (overflow: hidden) but never its own shadow; the copy starts behind
+    // the panel, so only its lower part — the extension — is ever seen.
+    box-shadow: 0 50vh 0 0 var(--field);
+    transform: translateY(var(--sheet-from));
+    transition: transform 320ms cubic-bezier(0.55, 0, 0.8, 0.25);
+    // Its own compositor layer from the start, so the first frame of the
+    // rise is not spent promoting and painting it.
+    will-change: transform;
   }
 
-  &[open] &__panel {
-    animation: project-sheet-in 240ms $ease-out both;
+  // The iOS sheet curve: it keeps moving visibly for most of its run.
+  // A steep expo-out (0.22, 1, 0.36, 1) covered 80% of the travel in the
+  // first ~100ms, so the sheet seemed to jump up rather than rise.
+  &[data-shown] &__panel {
+    transform: none;
+    transition: transform 520ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  &__panel[data-tint="orange"] {
+    --field: #{$accent-orange};
+    --ink: #{$ink};
+  }
+
+  &__panel[data-tint="blue"] {
+    --field: #{$accent-blue};
+    --ink: #{$paper};
+  }
+
+  &__panel[data-tint="lime"] {
+    --field: #{$accent-lime};
+    --ink: #{$ink};
+  }
+
+  &__panel[data-tint="violet"] {
+    --field: #{$brand-deep};
+    --ink: #{$paper};
+  }
+
+  &__panel[data-tint="graphite"] {
+    --field: #{$field-graphite};
+    --ink: #{$paper};
+  }
+
+  :root[data-theme="dark"] &__panel[data-tint="graphite"] {
+    --field: #{$field-graphite-dark};
   }
 
   // The grab mark. Decorative — the close button beside it is the real
@@ -1541,23 +1784,31 @@ $field-graphite-dark: #262247;
     width: 2.25rem;
     height: 0.25rem;
     margin: 0.625rem auto 0;
-    background-color: var(--border-strong);
+    background-color: var(--ink);
     border-radius: $radius-pill;
+    opacity: 0.32;
   }
 
+  // Sits on the picture's top-right corner, so it is the same translucent
+  // near-black disc with a paper glyph the desktop panel's close uses —
+  // a pale chip over a screenshot read as a sticker on it.
   &__close {
     position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
+    top: calc(1.375rem + #{$space-2xs});
+    right: calc(var(--gutter) + #{$space-2xs});
     z-index: 2;
     display: grid;
     place-items: center;
     width: 2.75rem;
     height: 2.75rem;
-    color: var(--text);
+    color: $paper;
     cursor: pointer;
-    background-color: var(--surface-2);
-    border: 1px solid var(--border);
+    // No backdrop blur: it rides along with the panel, and a blur on a
+    // moving layer has to be recomputed on every frame of the slide,
+    // which on a phone is what made the rise stutter. A slightly denser
+    // disc holds the same contrast without it.
+    background-color: rgb(11 11 16 / 72%);
+    border: 0;
     border-radius: 50%;
 
     @include focus-ring;
@@ -1577,16 +1828,43 @@ $field-graphite-dark: #262247;
     overscroll-behavior: contain;
   }
 
+  // Inset from the panel's edges and rounded, like the tile it opened
+  // from: run edge to edge, the screenshot's square corners met the
+  // panel's rounded ones under the handle and the two never lined up.
   &__shot {
-    --field: #{$brand-deep};
 
     // Same grid as the tile's frame, for the same reason — see
     // .project-tile__shot.
     display: grid;
-    width: 100%;
+    width: calc(100% - 2 * var(--gutter));
+    margin: 0.75rem var(--gutter) 0;
     aspect-ratio: 16 / 10;
     overflow: hidden;
+    color: var(--ink);
     background-color: var(--field);
+    border-radius: $radius-md;
+
+    &[data-tint="orange"] {
+      --field: #{$accent-orange};
+      --ink: #{$ink};
+    }
+
+    &[data-tint="blue"] {
+      --field: #{$accent-blue};
+    }
+
+    &[data-tint="lime"] {
+      --field: #{$accent-lime};
+      --ink: #{$ink};
+    }
+
+    &[data-tint="graphite"] {
+      --field: #{$field-graphite};
+    }
+
+    :root[data-theme="dark"] &[data-tint="graphite"] {
+      --field: #{$field-graphite-dark};
+    }
 
     picture {
       min-width: 0;
@@ -1617,21 +1895,46 @@ $field-graphite-dark: #262247;
     padding: $space-md var(--gutter) $space-lg;
   }
 
+  // The poster a project with no screenshot gets in that frame — a
+  // shorter band, since there is no picture to give the height to.
+  &__shot:has(&__poster) {
+    aspect-ratio: 2 / 1;
+    // The panel is the same colour now, so the frame needs its own edge:
+    // a shade deeper than the field.
+    background-color: color-mix(in srgb, var(--field) 80%, #000);
+  }
+
+  &__poster {
+    @include display($display-sm, $fw-ultra);
+
+    align-self: end;
+    padding: $space-md;
+    padding-right: 4rem;
+    font-size: clamp(1.5rem, 1rem + 2.6vw, 2.5rem);
+    overflow-wrap: break-word;
+  }
+
   &__eyebrow {
     @include eyebrow;
+
+    // The tint's ink, stepped back — the same move the card's own eyebrow
+    // makes (see .project-card__eyebrow), which reads on all five fields.
+    color: var(--ink);
+    opacity: 0.66;
   }
 
   &__title {
     @include display($display-sm, $fw-ultra);
 
     font-size: clamp(1.5rem, 1.15rem + 1.6vw, 2.25rem);
-    color: var(--text);
+    color: var(--ink);
   }
 
   &__sub {
     font-size: $text-sm;
     font-weight: $fw-medium;
-    color: var(--brand);
+    color: var(--ink);
+    opacity: 0.82;
   }
 
   &__summary {
@@ -1639,6 +1942,13 @@ $field-graphite-dark: #262247;
 
     margin-top: $space-2xs;
     font-size: $text-base;
+    color: var(--ink);
+    opacity: 0.88;
+    // Ragged, not justified: in a measure this narrow the justified
+    // paragraph opened rivers between words and split one in three
+    // lines with a hyphen.
+    text-align: left;
+    hyphens: manual;
   }
 
   &__cta,
@@ -1648,13 +1958,33 @@ $field-graphite-dark: #262247;
 
   &__note {
     font-size: $text-sm;
-    color: var(--text-muted);
+    color: var(--ink);
+    opacity: 0.72;
+  }
+
+  // The pill is the inverse of the panel — the ink on the field's colour —
+  // so it holds its contrast on all five fields (the brand violet it had
+  // vanished on the violet one).
+  &__cta {
+    --button-bg: var(--ink);
+    --button-fg: var(--field);
+    --button-border: transparent;
+
+    &:hover {
+      --button-bg: var(--ink);
+      --button-fg: var(--field);
+      opacity: 0.9;
+    }
   }
 
   // From $bp-md it stops being a sheet and becomes an ordinary centred
   // modal — a panel pinned to the bottom edge of a tablet reads as a
   // phone pattern stretched.
   @include up($bp-md) {
+    // Centred, the panel's own height is no longer enough to start it
+    // below the screen: it starts a viewport's worth down instead.
+    --sheet-from: 70svh;
+
     &[open] {
       align-items: center;
     }
@@ -1663,6 +1993,9 @@ $field-graphite-dark: #262247;
       max-width: 40rem;
       max-height: 85svh;
       border-radius: $radius-lg;
+      // Centred, it has no bottom edge to run past — the extension would
+      // hang below the modal as a second panel.
+      box-shadow: var(--shadow-lg);
     }
 
     // The handle says "this came up from the bottom edge and can be
@@ -1675,28 +2008,25 @@ $field-graphite-dark: #262247;
     &__body {
       padding-inline: $space-lg;
     }
+
+    &__shot {
+      width: calc(100% - 2 * #{$space-lg});
+      margin: $space-lg $space-lg 0;
+    }
+
+    &__close {
+      top: calc(#{$space-lg} + #{$space-2xs});
+      right: calc(#{$space-lg} + #{$space-2xs});
+    }
   }
 
   @include reduced-motion {
-    &[open] &__panel,
-    &[open]::backdrop {
-      animation: none;
+    &__panel,
+    &::backdrop,
+    &[data-shown] &__panel,
+    &[data-shown]::backdrop {
+      transition: none;
     }
-  }
-}
-
-// Transform and opacity only — nothing here animates layout, so the
-// list behind the sheet is never asked to reflow.
-@keyframes project-sheet-in {
-  from {
-    opacity: 0;
-    transform: translateY(100%);
-  }
-}
-
-@keyframes project-sheet-scrim {
-  from {
-    opacity: 0;
   }
 }
 
