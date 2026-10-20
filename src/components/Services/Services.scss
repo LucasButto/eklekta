@@ -547,6 +547,10 @@
       // put it where the other three go. The trailing padding on
       // &__list buys that room, so all four behave the same now.
       scroll-snap-align: start;
+      // A flick stops at the next card instead of sailing past several:
+      // the rail moves one card at a time, which is also what keeps the
+      // lock in useEndlessRail short.
+      scroll-snap-stop: always;
     }
 
     @include up($bp-lg) {

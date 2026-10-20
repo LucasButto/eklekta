@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef } from "react";
 import { Button } from "@/components/Button/Button";
 import { Reveal } from "@/components/Reveal/Reveal";
 import { SectionHeading } from "@/components/SectionHeading/SectionHeading";
 import servicesData from "@/data/services.json";
+import { useEndlessRail, withClones } from "@/hooks/useEndlessRail";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useScrollSequence } from "@/hooks/useScrollSequence";
 import type { Service, ServiceMedia } from "@/types";
@@ -27,38 +28,6 @@ const CAROUSEL = "(max-width: 1023.98px)";
  * in Services.scss.
  */
 const SINGLE_CARD = "(max-width: 767.98px)";
-
-/**
- * The nudge: the rail slides this far left, as if a thumb had started a
- * swipe, shows the start of the next card, and settles back. A share of
- * the screen, so it reads the same on a narrow phone and a wide one.
- */
-const NUDGE_SHARE = 0.16;
-const NUDGE_MIN_PX = 44;
-const NUDGE_MAX_PX = 72;
-const NUDGE_MS = 1900;
-
-const EASE_OUT = "cubic-bezier(0.22, 1, 0.36, 1)";
-const EASE_SWING = "cubic-bezier(0.45, 0, 0.55, 1)";
-
-/**
- * The nudge as a card on a spring, not a slider: each stop is
- * [share of NUDGE_MS, how far out as a share of the distance (1 = fully out,
- * 0 = home, negative = past home, to the right), the easing into the NEXT
- * stop]. It shoots past the mark on the way out and rings down onto it,
- * holds so the next card can be read, then comes home past zero and
- * rebounds until it rests — the boing is both ends of the move.
- */
-const NUDGE_PATH: ReadonlyArray<readonly [number, number, string]> = [
-  [0, 0, EASE_OUT],
-  [0.18, 1.08, EASE_SWING], // out, a touch past the mark
-  [0.33, 1, "linear"], // eases back onto it, showing the next card
-  [0.5, 1, EASE_SWING], // held
-  [0.62, -0.22, EASE_SWING], // home, and past it
-  [0.74, 0.08, EASE_SWING], // rebound
-  [0.85, -0.03, EASE_SWING],
-  [1, 0, "linear"],
-];
 
 /** Every photo is generated at 4:5, the aspect the pinned panel uses.
  *  CSS sizes these, so the attributes only carry the ratio for CLS. */
@@ -113,165 +82,18 @@ export function Services() {
     [isCarousel, trackRef],
   );
 
-  // Which card the rail is resting on, for the dots under it. Read off
-  // the scroll container itself rather than from a scroll handler:
-  // whichever card is showing the most of itself inside the rail is the
-  // one being read, mid-swipe as well as at rest.
-  const [shown, setShown] = useState(0);
-  useEffect(() => {
-    const list = listRef.current;
-    if (!isCarousel || !list) return;
+  // The carousel below $bp-lg: one card per screen on a phone, endless,
+  // with a one-time nudge — see useEndlessRail, which Nosotros shares.
+  const { shown, goTo, step } = useEndlessRail(listRef, {
+    count: services.length,
+    active: isCarousel,
+    endless: isSingleCard,
+  });
 
-    const items = Array.from(
-      list.querySelectorAll<HTMLLIElement>("[data-seq-item]"),
-    );
-    if (items.length === 0) return;
-
-    const ratios = new Map<Element, number>();
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          ratios.set(entry.target, entry.intersectionRatio);
-        }
-        let best = 0;
-        let bestRatio = -1;
-        items.forEach((item, index) => {
-          const ratio = ratios.get(item) ?? 0;
-          if (ratio > bestRatio) {
-            bestRatio = ratio;
-            best = index;
-          }
-        });
-        setShown(best);
-      },
-      { root: list.parentElement, threshold: [0, 0.25, 0.5, 0.75, 1] },
-    );
-
-    for (const item of items) observer.observe(item);
-    return () => observer.disconnect();
-  }, [isCarousel]);
-
-  // The one-time nudge. Once, the first time the rail is fully on screen,
-  // it slides a little to the left and comes back — a card that is the
-  // whole screen gives no sign there is a second one, and this is the
-  // sign. Moves the list with a transform rather than scrolling the
-  // container: the rail is scroll-snap mandatory, which would pull a
-  // small programmatic scroll straight back to the first card.
-  //
-  // It is only ever a hint, so it gives way to the reader moving the rail:
-  // a sideways swipe (the rail itself scrolling) or a tap on the arrows or
-  // dots cancels it, and the rail is then wherever the reader put it. A
-  // thumb that lands on the rail and keeps scrolling the PAGE does not —
-  // the reader is still on their way down, and the nudge plays out under
-  // them. Reduced motion skips it entirely.
-  const nudgeRef = useRef<Animation | null>(null);
-  const nudgedRef = useRef(false);
-  useEffect(() => {
-    const list = listRef.current;
-    const carousel = list?.parentElement;
-    if (!isSingleCard || !list || !carousel || nudgedRef.current) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    const cancel = () => {
-      nudgeRef.current?.cancel();
-    };
-    // A sideways swipe is the reader taking over. Measured off scrollLeft,
-    // not just the event, so a scroll that goes nowhere is not one.
-    const onScroll = () => {
-      if (nudgeRef.current && carousel.scrollLeft > 2) cancel();
-    };
-
-    // Fully on screen: every pixel of the rail is inside the viewport — or,
-    // if it is taller than the viewport, as much of it as a viewport can
-    // hold.
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[entries.length - 1];
-        if (!entry || nudgedRef.current) return;
-        const visible = entry.intersectionRect.height;
-        const wanted = Math.min(
-          entry.boundingClientRect.height,
-          entry.rootBounds?.height ?? window.innerHeight,
-        );
-        if (!entry.isIntersecting || visible < wanted - 2) return;
-
-        nudgedRef.current = true;
-        observer.disconnect();
-        // Already moved by hand: nothing left to hint at.
-        if (carousel.scrollLeft > 2) return;
-
-        const distance = Math.round(
-          Math.min(
-            NUDGE_MAX_PX,
-            Math.max(NUDGE_MIN_PX, window.innerWidth * NUDGE_SHARE),
-          ),
-        );
-        // Out with a rebound, a beat to be seen, and back with another —
-        // see NUDGE_PATH.
-        nudgeRef.current = list.animate(
-          NUDGE_PATH.map(([offset, out, easing]) => ({
-            offset,
-            transform: `translateX(${Math.round(-out * distance * 10) / 10}px)`,
-            easing,
-          })),
-          { duration: NUDGE_MS },
-        );
-        // Snap is off for the length of the nudge: snap points follow the
-        // cards' transformed boxes, so when the rebound carried the first
-        // card past home the rail re-snapped onto it — a real scroll,
-        // which read as the reader swiping and cut the bounce short.
-        carousel.style.scrollSnapType = "none";
-        const settle = () => {
-          nudgeRef.current = null;
-          carousel.style.scrollSnapType = "";
-        };
-        nudgeRef.current.onfinish = settle;
-        nudgeRef.current.oncancel = settle;
-      },
-      { threshold: Array.from({ length: 21 }, (_, i) => i / 20) },
-    );
-    observer.observe(carousel);
-
-    // Only the rail's own horizontal scroll counts as the reader taking
-    // over; vertical page scrolling never fires this.
-    carousel.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      observer.disconnect();
-      carousel.removeEventListener("scroll", onScroll);
-      cancel();
-    };
-  }, [isSingleCard]);
-
-  // Walks the rail to a card. Scrolls the CONTAINER, never the item:
-  // scrollIntoView would take the page with it and drag the reader out
-  // of the section they are standing in. The observer above keeps the
-  // dots in step on its own, since a programmatic scroll crosses the
-  // same intersections a thumb does.
-  function goTo(index: number) {
-    // A nudge still in flight would be measured as part of the card's
-    // position, and is pointless once the reader is driving.
-    nudgeRef.current?.cancel();
-    nudgeRef.current = null;
-    const list = listRef.current;
-    const carousel = list?.parentElement;
-    const item = list?.children[index];
-    if (!carousel || !(item instanceof HTMLElement)) return;
-
-    // The snapport's own start inset, so the card lands on the page
-    // gutter rather than flush against the bled edge — the same place
-    // scroll-snap puts it after a swipe.
-    const inset =
-      parseFloat(getComputedStyle(carousel).scrollPaddingInlineStart) || 0;
-    const delta =
-      item.getBoundingClientRect().left - carousel.getBoundingClientRect().left;
-
-    carousel.scrollTo({
-      left: carousel.scrollLeft + delta - inset,
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? "auto"
-        : "smooth",
-    });
-  }
+  // What the list renders. On the phone rail the four cards are flanked by
+  // a clone of the last (before) and of the first (after) — see the endless
+  // rail above; elsewhere it is just the four.
+  const rail = withClones(services, isSingleCard);
 
   return (
     <section className="services">
@@ -324,8 +146,15 @@ export function Services() {
               : {})}
           >
             <ol className="services__list" ref={setList}>
-              {services.map((service) => (
-                <li className="services__item" key={service.id} data-seq-item>
+              {rail.map(({ item: service, index, clone }) => (
+                <li
+                  className="services__item"
+                  key={clone ? `clone-${clone}-${index}` : service.id}
+                  data-index={index}
+                  {...(clone
+                    ? { "aria-hidden": true, inert: true }
+                    : { "data-seq-item": true })}
+                >
                   <h3 className="services__item-title">{service.title}</h3>
                   <p className="services__item-body">{service.description}</p>
                   <ul className="services__chips">
@@ -381,9 +210,7 @@ export function Services() {
               <button
                 type="button"
                 className="services__nav-btn services__nav-btn--prev"
-                onClick={() =>
-                  goTo((shown - 1 + services.length) % services.length)
-                }
+                onClick={() => step(-1)}
               >
                 <span className="sr-only">Servicio anterior</span>
                 <ArrowIcon />
@@ -405,7 +232,7 @@ export function Services() {
               <button
                 type="button"
                 className="services__nav-btn services__nav-btn--next"
-                onClick={() => goTo((shown + 1) % services.length)}
+                onClick={() => step(1)}
               >
                 <span className="sr-only">Siguiente servicio</span>
                 <ArrowIcon />
