@@ -12,9 +12,11 @@
         "summary": "Sitio institucional para una constructora residencial y comercial de alto estándar en Rosario. Galería de obras filtrable por rubro, formulario de contacto protegido contra spam e imágenes optimizadas on-demand.",
         "description": "Desarrollo de un sitio web institucional para Prosperi, una empresa de construcción residencial y comercial de alto estándar con base en Rosario, Argentina. Construido con React, TypeScript y Vite, con un tema oscuro editorial y tipografía serif/sans, una galería de proyectos filtrable organizada por rubro (Albañilería, Pintura, Revestimientos, Trabajos de Altura) y optimización de imágenes on-demand mediante el CDN de imágenes de Netlify. Incluye una sección de filosofía, un formulario de contacto protegido contra spam e integración con Instagram, totalmente responsive y desplegado en Netlify.",
         "tint": "orange",
-        "cover": "/images/projects/proj-1",
-        "coverLarge": "/images/projects/proj-1V",
-        "alignImg": "left",
+        "images": {
+          "laptop": "/images/projects/sitios-web/proj-1-laptop",
+          "phone": "/images/projects/sitios-web/proj-1-celular",
+          "panel": "/images/projects/sitios-web/proj-1-identidad"
+        },
         "url": "https://prosperisrl.com/",
         "featured": true
       },
@@ -27,9 +29,11 @@
         "summary": "Portfolio para el estudio de arquitectura de Julián Peisino. Las obras se cargan desde Firebase, así que el estudio suma proyectos nuevos sin tocar una línea de código.",
         "description": "Desarrollo de un sitio web para el arquitecto Julián Peisino usando Next.js en el frontend y Firebase para la gestión de datos en el backend. La plataforma muestra los proyectos de arquitectura de forma dinámica, con los datos cargados directamente desde Firebase.",
         "tint": "graphite",
-        "cover": "/images/projects/proj-2",
-        "coverLarge": "/images/projects/proj-2V",
-        "alignImg": "left",
+        "images": {
+          "laptop": "/images/projects/sitios-web/proj-2-laptop",
+          "phone": "/images/projects/sitios-web/proj-2-celular",
+          "panel": "/images/projects/sitios-web/proj-2-identidad"
+        },
         "url": "https://peisino.com.ar/",
         "featured": false
       },
@@ -42,9 +46,11 @@
         "summary": "Landing comercial para una marca de productos para construcción en acero. HTML, CSS y JavaScript puros, sin frameworks: carrusel en el hero, grilla de productos y un CTA fijo a WhatsApp.",
         "description": "Diseño y desarrollo de una landing page comercial para HomeSteelHome, una marca de productos para construcción en acero con base en Rosario, Argentina. Construida con HTML5 semántico, CSS y JavaScript puros, sin frameworks. Incluye un hero con carrusel de múltiples imágenes con transiciones de opacidad en CSS y rotación automática en JS, una grilla de productos 3×2 responsive con overlays glassmorphism, una curva trapezoidal en SVG en la base del hero, animaciones de aparición al hacer scroll y un CTA fijo de WhatsApp. Totalmente responsive en mobile, tablet, laptop y viewports 2K+, validada con tests de captura en Playwright. Desplegada en Latin Cloud con dominio de NIC Argentina y SSL mediante CloudPanel.",
         "tint": "blue",
-        "cover": "/images/projects/proj-3",
-        "coverLarge": "/images/projects/proj-3V",
-        "alignImg": "left",
+        "images": {
+          "laptop": "/images/projects/sitios-web/proj-3-laptop",
+          "phone": "/images/projects/sitios-web/proj-3-celular",
+          "panel": "/images/projects/sitios-web/proj-3-identidad"
+        },
         "url": "https://homesteelhome.com.ar/",
         "featured": false
       },
@@ -57,9 +63,11 @@
         "summary": "Optimización del sitio de un ISP que da servicio a zonas rurales e industriales. Cambiamos el chatbot por WhatsApp directo, reordenamos el contenido y cada consulta quedó medida como conversión en Google Ads.",
         "description": "Proyecto de optimización web para Amecom Internet, un ISP que brinda servicio en zonas rurales e industriales de Argentina. El trabajo incluyó la instalación del píxel de Google Ads y la configuración del seguimiento de conversiones mediante Insert Headers and Footers, el reemplazo de un chatbot de terceros por un botón de contacto directo por WhatsApp, la reorganización del contenido con el Theme Builder y el panel de estructura de Elementor, y la configuración de botones de consulta por WhatsApp para cada plan de servicio usando plantillas dinámicas de JetEngine. Todas las interacciones se registran como eventos de conversión en Google Ads.",
         "tint": "lime",
-        "cover": "/images/projects/proj-4",
-        "coverLarge": "/images/projects/proj-4V",
-        "alignImg": "center",
+        "images": {
+          "laptop": "/images/projects/sitios-web/proj-4-laptop",
+          "phone": "/images/projects/sitios-web/proj-4-celular",
+          "panel": "/images/projects/sitios-web/proj-4-identidad"
+        },
         "url": "https://amecom.com.ar",
         "featured": false
       },
@@ -71,9 +79,11 @@
         "subtitle": "Mapa de huertas y ferias de Rosario",
         "summary": "Sitio institucional para el Programa de Agricultura Urbana de Rosario: mapa interactivo filtrable de huertas, ferias, compost y centro agroecológico, más una sección de guías para empezar a cultivar.",
         "tint": "orange",
-        "cover": "/images/projects/proj-5",
-        "coverLarge": "/images/projects/proj-5V",
-        "alignImg": "left",
+        "images": {
+          "laptop": "/images/projects/sitios-web/proj-5-laptop",
+          "phone": "/images/projects/sitios-web/proj-5-celular",
+          "panel": "/images/projects/sitios-web/proj-5-identidad"
+        },
         "url": "https://pau-red.vercel.app/",
         "featured": false,
         "description": "Sitio institucional para el Programa de Agricultura Urbana de Rosario: mapa interactivo filtrable de huertas, ferias, compost y centro agroecológico, más una sección de guías para empezar a cultivar."
@@ -86,12 +96,31 @@
         "subtitle": "Portfolio de arquitectura",
         "summary": "Sitio institucional para Trazzo Arquitectura: galería de proyectos con renders a pantalla completa, secciones de servicios y la historia del estudio, con una estética minimalista acorde a su identidad de marca.",
         "tint": "violet",
-        "cover": "/images/projects/proj-6",
-        "coverLarge": "/images/projects/proj-6V",
-        "alignImg": "center",
+        "images": {
+          "laptop": "/images/projects/sitios-web/proj-6-laptop",
+          "phone": "/images/projects/sitios-web/proj-6-celular",
+          "panel": "/images/projects/sitios-web/proj-6-identidad"
+        },
         "url": "https://trazzoarquitectura.com/",
         "featured": false,
         "description": "Sitio institucional para Trazzo Arquitectura: galería de proyectos con renders a pantalla completa, secciones de servicios y la historia del estudio, con una estética minimalista acorde a su identidad de marca."
+      },
+      {
+        "id": "chrisdesign",
+        "title": "Chris Design",
+        "client": "Chris Design",
+        "categories": ["Desarrollo web", "E-commerce", "Decoración"],
+        "subtitle": "Tienda online de cortinas y decoración",
+        "summary": "Tienda online desarrollada en Shopify para Chris Design: catálogo de cortinas, textiles y accesorios para el hogar, organizado por categorías, con fichas de producto, guía de medidas y acceso a asesoramiento personalizado. Una propuesta visual cálida y elegante, alineada con la identidad de la marca y pensada para facilitar la exploración y compra de sus productos.",
+        "tint": "graphite",
+        "images": {
+          "laptop": "/images/projects/sitios-web/proj-7-laptop",
+          "phone": "/images/projects/sitios-web/proj-7-celular",
+          "panel": "/images/projects/sitios-web/proj-7-identidad"
+        },
+        "url": "https://www.chrisdesign.com.ar/",
+        "featured": false,
+        "description": "Tienda online desarrollada en Shopify para Chris Design: catálogo de cortinas, textiles y accesorios para el hogar, organizado por categorías, con fichas de producto, guía de medidas y acceso a asesoramiento personalizado. Una propuesta visual cálida y elegante, alineada con la identidad de la marca y pensada para facilitar la exploración y compra de sus productos."
       }
     ]
   },
@@ -107,6 +136,11 @@
         "subtitle": "App de escritorio para liquidación",
         "summary": "App de escritorio que se conecta al portal de una aseguradora con autenticación en dos pasos, descarga las comisiones por agente y la importa a la planilla del cliente con reconciliación automática.",
         "tint": "violet",
+        "images": {
+          "laptop": "/images/projects/automatizaciones/auto-1-laptop",
+          "phone": "/images/projects/automatizaciones/auto-1-celular",
+          "panel": "/images/projects/automatizaciones/auto-1-flujo"
+        },
         "featured": true,
         "description": "App de escritorio que se conecta al portal de una aseguradora con autenticación en dos pasos, descarga las comisiones por agente y la importa a la planilla del cliente con reconciliación automática."
       },
@@ -118,6 +152,11 @@
         "subtitle": "App de escritorio para comisiones",
         "summary": "Automatiza la descarga masiva de comisiones desde un sistema externo, convirtiendo su formato para preparar su subida a otra plataforma, lista para cargarse sin intervención manual.",
         "tint": "lime",
+        "images": {
+          "laptop": "/images/projects/automatizaciones/auto-2-laptop",
+          "phone": "/images/projects/automatizaciones/auto-2-celular",
+          "panel": "/images/projects/automatizaciones/auto-2-flujo"
+        },
         "featured": false,
         "description": "Automatiza la descarga masiva de comisiones desde un sistema externo, convirtiendo su formato para preparar su subida a otra plataforma, lista para cargarse sin intervención manual."
       },
@@ -129,6 +168,11 @@
         "subtitle": "Carga automática para un centro médico",
         "summary": "Lee por coordenadas los PDFs de órdenes de traslado de una ART y genera la planilla Excel de carga: un viaje por fila, control de duplicados y preservación exacta del formato de plantilla.",
         "tint": "orange",
+        "images": {
+          "laptop": "/images/projects/automatizaciones/auto-3-laptop",
+          "phone": "/images/projects/automatizaciones/auto-3-celular",
+          "panel": "/images/projects/automatizaciones/auto-3-flujo"
+        },
         "featured": false,
         "description": "Lee por coordenadas los PDFs de órdenes de traslado de una ART y genera la planilla Excel de carga: un viaje por fila, control de duplicados y preservación exacta del formato de plantilla."
       },
@@ -140,6 +184,11 @@
         "subtitle": "Software de laboratorio para packaging",
         "summary": "Se conecta por puerto serie a la prensa de resistencia, decodifica el resultado en vivo, lo cruza con los datos del pedido y lo registra con trazabilidad completa.",
         "tint": "graphite",
+        "images": {
+          "laptop": "/images/projects/automatizaciones/auto-4-laptop",
+          "phone": "/images/projects/automatizaciones/auto-4-celular",
+          "panel": "/images/projects/automatizaciones/auto-4-flujo"
+        },
         "featured": false,
         "description": "Se conecta por puerto serie a la prensa de resistencia, decodifica el resultado en vivo, lo cruza con los datos del pedido y lo registra con trazabilidad completa."
       }
