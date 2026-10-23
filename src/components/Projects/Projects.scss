@@ -73,8 +73,14 @@ $peek-rest-y: 10%;
 // 40%, and then a further step back — the panel is big enough that a
 // title running right up against it would read as crowding rather than as
 // two things sharing a card.
-$head-max: 52%;
-$head-max-wide: 40%;
+// In cqw (the card is the container, see below) so the title's own size can
+// be fitted to the same measure: a % does the same job for max-width but
+// cannot be divided into a font-size.
+$head-max: 52cqw;
+$head-max-wide: 40cqw;
+// What a letter of the title's face takes of its font-size, at the heavy end
+// of the set (AMECOM measures 0.96; most words sit at 0.75–0.9).
+$title-em-per-letter: 0.95;
 
 // ---- the devices the peek is shown in
 // Narrow cards hold the screenshot in a phone, wide ones in a laptop lid.
@@ -400,17 +406,13 @@ $field-graphite-dark: #262247;
     place-items: center;
     width: 3.5rem;
     height: 3.5rem;
-    // The brand's solid violet with a white arrow, ringed in the page
-    // colour so it holds its edge over a card it overlaps: pale chips
-    // on the page colour were passing unnoticed.
+    // The brand's solid violet with a white arrow.
     color: var(--on-brand);
     cursor: pointer;
     background-color: var(--brand);
     border: 0;
     border-radius: 50%;
-    box-shadow:
-      0 0 0 4px var(--bg),
-      0 10px 28px rgb(0 0 0 / 22%);
+    box-shadow: 0 10px 28px rgb(0 0 0 / 22%);
     translate: -50% -50%;
     transition:
       color $dur-base $ease-out,
@@ -498,8 +500,13 @@ $field-graphite-dark: #262247;
         $detail-h: var(--detail-h, calc(#{$card-h-lg} * 2 + #{$projects-gap}));
 
         display: grid;
+        // The opened panel shows the project's board, a 4:5
+        // picture, and is as tall as the row — so its track is exactly
+        // four fifths of the row's height. Any other width and the
+        // picture would be cropped (or the panel would stop filling the
+        // row). The readout takes what is left.
         grid-template-columns:
-          [lead] minmax(0, 0.92fr)
+          [lead] minmax(0, calc(#{$detail-h} * 0.8))
           [read] minmax(0, 1fr)
           [rail] clamp(9rem, 5.5rem + 7vw, 11.75rem);
         grid-template-rows: $detail-h;
@@ -679,7 +686,7 @@ $field-graphite-dark: #262247;
           box-shadow: var(--shadow-lg);
         }
 
-        // No screenshot to show (see Project.cover): the panel is the
+        // No picture to show (see Project.images): the panel is the
         // poster itself — its own field, the eyebrow up top and the name
         // at the foot — instead of a black slab with nothing in it.
         &[data-shot="none"] {
@@ -1049,16 +1056,8 @@ $field-graphite-dark: #262247;
       width: calc(100% - 2 * #{$phone-bezel});
       height: calc(100% - 2 * #{$phone-bezel});
       object-fit: cover;
-      object-position: top center;
+      object-position: center;
       border-radius: calc(#{$phone-radius} - #{$phone-bezel});
-
-      &[data-align="left"] {
-        object-position: top left;
-      }
-
-      &[data-align="right"] {
-        object-position: top right;
-      }
     }
   }
 
@@ -1097,16 +1096,10 @@ $field-graphite-dark: #262247;
       inset: 0;
       width: 100%;
       height: 100%;
+      // The picture is the panel's own 4:5, so there is nothing for
+      // cover to crop but a rounding error.
       object-fit: cover;
-      object-position: top center;
-
-      &[data-align="left"] {
-        object-position: top left;
-      }
-
-      &[data-align="right"] {
-        object-position: top right;
-      }
+      object-position: center;
     }
   }
 
@@ -1162,8 +1155,26 @@ $field-graphite-dark: #262247;
 // there is no peek, and the name takes the whole card. The opened panel
 // and the rail minis have no peek either — their heads stay full width.
 @media (hover: hover) and (pointer: fine) {
+  .projects__cell[data-view="grid"] .project-card {
+    container-type: inline-size;
+    --measure: #{$head-max};
+  }
+
   .projects__cell[data-view="grid"] .project-card__head {
-    max-width: $head-max;
+    max-width: var(--measure);
+  }
+
+  // The name is set as large as the card allows, but never so large that
+  // its longest word cannot fit the measure: a word wider than the measure
+  // is broken mid-word (see .project-card__title), and "LIQUIDACIONES"
+  // came out as "LIQUIDACI / ONES". Projects.tsx hands over the length of
+  // that word in --word. Short names never shrink: the min() leaves them at
+  // $card-title.
+  .projects__cell[data-view="grid"] .project-card__title {
+    font-size: min(
+      #{$card-title},
+      calc(var(--measure) / (var(--word, 1) * #{$title-em-per-letter}))
+    );
   }
 
   // The bento's big cards take the peek differently. They are nearly
@@ -1189,8 +1200,8 @@ $field-graphite-dark: #262247;
   // have: those last two kinds used to fall through to the phone, and a
   // desktop site showed up tilted inside a handset.
   @include up($bp-lg) {
-    .projects__cell[data-view="grid"]:not(.projects__cell--narrow) .project-card__head {
-      max-width: $head-max-wide;
+    .projects__cell[data-view="grid"]:not(.projects__cell--narrow) .project-card {
+      --measure: #{$head-max-wide};
     }
 
     // The wide cards hold it in a laptop instead: the lid of a Mac, its
@@ -1203,10 +1214,13 @@ $field-graphite-dark: #262247;
       height: auto;
       aspect-ratio: auto;
       width: $peek-w-wide;
-      translate: none;
-      rotate: none;
+      // The whole move is `translate`, like the phone's, and never
+      // `transform`: the production minifier folds `translate`/`rotate`
+      // written next to a `transform` into it and drops the zeroes, which
+      // let the phone's tilt from the base rule through.
+      rotate: 0deg;
       transform-origin: center;
-      transition: transform $dur-slow $ease-out;
+      transition: translate $dur-slow $ease-out;
       // A share of the card's width stops being the right measure once
       // the card gets very wide: on an odd count's full-row closer 59%
       // is 703px, most of the row. The cap is in rem so it still rides
@@ -1223,7 +1237,7 @@ $field-graphite-dark: #262247;
         -16px -14px 40px rgb(0 0 0 / 22%);
       // Parked far enough below the card that the aluminium edge and the
       // shadow (which reaches ~55px above the lid) stay out of sight.
-      transform: translate($peek-rest-wide, calc(100% + 64px));
+      translate: $peek-rest-wide calc(100% + 64px);
 
       // The camera, centred in the top bezel: a lens with a ring and a
       // glint, so it reads as a camera and not a speck of dust.
@@ -1253,10 +1267,9 @@ $field-graphite-dark: #262247;
     .projects__cell[data-view="grid"]:not(.projects__cell--narrow)
       .project-card:hover
       .project-card__peek {
-      translate: none;
-      rotate: none;
-      transform: translate($peek-rest-wide, $peek-rest-y);
-      transition: transform $dur-slow $ease-out;
+      translate: $peek-rest-wide $peek-rest-y;
+      rotate: 0deg;
+      transition: translate $dur-slow $ease-out;
     }
   }
 }
@@ -1268,6 +1281,10 @@ $field-graphite-dark: #262247;
 // width and in the wide cards too.
 .projects__cell[data-view="grid"] .project-card[data-shot="none"] .project-card__head {
   max-width: none;
+}
+
+.projects__cell[data-view="grid"] .project-card[data-shot="none"] .project-card__title {
+  font-size: $card-title;
 }
 
 // Graphite is the one field that cannot survive the theme swap
@@ -1297,10 +1314,10 @@ $field-graphite-dark: #262247;
   // picked by breakpoint here instead — the jpg url() is the fallback
   // for browsers that don't parse image-set(), left in place since an
   // unsupported second declaration is just dropped, not overridden.
-  background-image: url('/images/projects/Fondo_KONEKTA-400.jpg');
+  background-image: url('/images/projects/crm/Fondo_KONEKTA-400.jpg');
   background-image: image-set(
-    url('/images/projects/Fondo_KONEKTA-400.webp') type('image/webp'),
-    url('/images/projects/Fondo_KONEKTA-400.jpg') type('image/jpeg')
+    url('/images/projects/crm/Fondo_KONEKTA-400.webp') type('image/webp'),
+    url('/images/projects/crm/Fondo_KONEKTA-400.jpg') type('image/jpeg')
   );
   background-position: center;
   background-size: cover;
@@ -1313,10 +1330,10 @@ $field-graphite-dark: #262247;
 
   @include up($bp-md) {
     min-height: $card-h-md;
-    background-image: url('/images/projects/Fondo_KONEKTA-800.jpg');
+    background-image: url('/images/projects/crm/Fondo_KONEKTA-800.jpg');
     background-image: image-set(
-      url('/images/projects/Fondo_KONEKTA-800.webp') type('image/webp'),
-      url('/images/projects/Fondo_KONEKTA-800.jpg') type('image/jpeg')
+      url('/images/projects/crm/Fondo_KONEKTA-800.webp') type('image/webp'),
+      url('/images/projects/crm/Fondo_KONEKTA-800.jpg') type('image/jpeg')
     );
   }
 
@@ -1330,10 +1347,10 @@ $field-graphite-dark: #262247;
     width: 100%;
     flex: 0 1 auto;
     min-height: calc(#{$card-h-lg} * 2 + #{$projects-gap});
-    background-image: url('/images/projects/Fondo_KONEKTA-1200.jpg');
+    background-image: url('/images/projects/crm/Fondo_KONEKTA-1200.jpg');
     background-image: image-set(
-      url('/images/projects/Fondo_KONEKTA-1200.webp') type('image/webp'),
-      url('/images/projects/Fondo_KONEKTA-1200.jpg') type('image/jpeg')
+      url('/images/projects/crm/Fondo_KONEKTA-1200.webp') type('image/webp'),
+      url('/images/projects/crm/Fondo_KONEKTA-1200.jpg') type('image/jpeg')
     );
   }
 
@@ -1620,16 +1637,6 @@ $field-graphite-dark: #262247;
       height: 100%;
       object-fit: cover;
     }
-
-    // Every cover is a wide capture of a live site, so a 16:10 frame
-    // still throws width away — keep the edge that carries the logo.
-    img[data-align="left"] {
-      object-position: left center;
-    }
-
-    img[data-align="right"] {
-      object-position: right center;
-    }
   }
 
   &__body {
@@ -1693,6 +1700,178 @@ $field-graphite-dark: #262247;
 
 :root[data-theme="dark"] .project-tile[data-tint="graphite"] {
   --field: #{$field-graphite-dark};
+}
+
+// ---------------------------------------------- the deck (< $bp-sm)
+// On a phone the feed's column of tiles is a deck instead: the same
+// .project-tile, one in front and the next two behind it, so a section
+// that was six screens' worth of cards stands one card tall.
+//
+// The cards all sit in one grid cell, which is what keeps them the same
+// size without measuring anything: the cell is as tall as the tallest
+// card and every card stretches to it, so the lower edges of the cards
+// behind line up under the one in front whichever of them is up. The
+// room those edges need (the peek of the third card, below the cell) is
+// the stack's bottom padding, so the deck is exactly one card plus
+// $deck-peek × 2 tall.
+//
+// <ProjectsDeck> only decides which place each card is in (`data-pos`:
+// 0 front, 1 and 2 behind, hidden for the rest) and lets the stylesheet
+// move them between poses. Scaled from the bottom-centre, so a card
+// behind only ever grows out of its own lower edge — the tint shows as a
+// strip under the front card, not as a smaller card peeking round it.
+$deck-peek: 12px;
+$deck-move: 420ms;
+
+.projects-deck {
+  // The same hand-over the feed makes on a filter change.
+  &[data-swapping] {
+    opacity: 0;
+    transition: opacity 140ms $ease-in-out;
+  }
+
+  &__stack {
+    display: grid;
+    padding-bottom: $deck-peek * 2;
+    // The cards stack with z-index; keep that from reaching the page.
+    isolation: isolate;
+    // Sideways is the swipe's; vertical stays the page's scroll.
+    touch-action: pan-y;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  &__card {
+    grid-area: 1 / 1;
+    display: flex;
+    min-width: 0;
+    transform-origin: 50% 100%;
+    transition:
+      transform $deck-move $ease-out,
+      opacity $deck-move $ease-out;
+
+    &[data-pos="0"] {
+      z-index: 3;
+    }
+
+    &[data-pos="1"] {
+      z-index: 2;
+      transform: translateY($deck-peek) scale(0.95);
+    }
+
+    &[data-pos="2"] {
+      z-index: 1;
+      transform: translateY($deck-peek * 2) scale(0.9);
+    }
+
+    // Past the third the cards wait in the third one's place, unseen, and
+    // fade up as they reach it.
+    &[data-pos="hidden"] {
+      z-index: 0;
+      opacity: 0;
+      transform: translateY($deck-peek * 2) scale(0.9);
+    }
+
+    &:not([data-pos="0"]) {
+      pointer-events: none;
+    }
+  }
+
+  // The tile itself is untouched — only what the deck needs from it.
+  .project-tile {
+    flex: 1;
+    min-width: 0;
+    box-shadow: 0 10px 24px -12px rgba($ink, 0.4);
+  }
+
+  // Cards share a height, so a short one has room to spare: the action
+  // keeps to the foot of the card rather than to the end of its text.
+  .project-tile__action {
+    margin-top: auto;
+    padding-top: 0.4rem;
+  }
+
+  // A picture is not something to pick up: dragging it would start the
+  // browser's own image drag and cancel the swipe.
+  img {
+    pointer-events: none;
+    -webkit-user-drag: none;
+  }
+
+  &__controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 18px;
+  }
+
+  // "01 / 06". The total recedes so the number that moves is the one read.
+  &__count {
+    font-family: $font-display;
+    font-size: 20px;
+    font-weight: $fw-ultra;
+    line-height: 1;
+    color: var(--text);
+  }
+
+  &__total {
+    color: var(--text-faint);
+  }
+
+  &__buttons {
+    display: flex;
+    gap: 16px;
+  }
+
+  // The desktop page arrows, at a thumb's size.
+  &__btn {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    padding: 0;
+    color: var(--on-brand);
+    cursor: pointer;
+    background-color: var(--brand);
+    border: 0;
+    border-radius: 50%;
+    // $brand at 12%.
+    box-shadow: 0 0 0 6px rgba($brand, 0.12);
+    transition:
+      background-color $dur-base $ease-out,
+      scale $dur-base $ease-out;
+
+    svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    &:active {
+      scale: 0.94;
+    }
+
+    // Past the halo, which is 6px of the same colour.
+    &:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 8px;
+    }
+  }
+
+  @include reduced-motion {
+    &__card {
+      transition: none;
+    }
+
+    &__btn {
+      transition: none;
+    }
+
+    &[data-swapping] {
+      opacity: 1;
+      transition: none;
+    }
+  }
 }
 
 // ---------------------------------------------- the sheet
@@ -1914,14 +2093,6 @@ $field-graphite-dark: #262247;
       width: 100%;
       height: 100%;
       object-fit: cover;
-    }
-
-    img[data-align="left"] {
-      object-position: left center;
-    }
-
-    img[data-align="right"] {
-      object-position: right center;
     }
   }
 

@@ -15,6 +15,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { KonektaCard } from './KonektaCard'
 import { ProjectCard } from './ProjectCard'
 import { ProjectSheet } from './ProjectSheet'
+import { ProjectsDeck } from './ProjectsDeck'
 import { ProjectsFeed } from './ProjectsFeed'
 import './Projects.scss'
 
@@ -26,6 +27,13 @@ const groups = projectsData as ProjectGroup[]
  * ProjectSheet. Matches the `down($bp-lg)` the stylesheet uses.
  */
 const FEED = '(max-width: 1023.98px)'
+
+/**
+ * On a phone the feed's column is a swipeable deck instead, so six
+ * projects are one card tall rather than six — see ProjectsDeck. From
+ * $bp-sm the feed is two cards to a row and stays as it is.
+ */
+const PHONE = '(max-width: 639.98px)'
 
 /**
  * The filter tab the section is steering people toward. konekta, the CRM,
@@ -140,6 +148,7 @@ export function Projects() {
   // all of it dormant rather than half-running against a layout it was
   // never written for.
   const isFeed = useMediaQuery(FEED)
+  const isPhone = useMediaQuery(PHONE)
   const [sheetId, setSheetId] = useState<string | null>(null)
   // The card that opened the sheet, so focus can go back to it.
   const sheetTrigger = useRef<HTMLElement | null>(null)
@@ -160,6 +169,12 @@ export function Projects() {
     sheetTrigger.current = null
     trigger.focus()
   }, [sheetId])
+
+  // The feed and the deck both open a project the same way.
+  const openSheet = (project: Project, trigger: HTMLElement) => {
+    sheetTrigger.current = trigger
+    setSheetId(project.id)
+  }
 
   const list = useMemo(() => byKind.get(shown) ?? [], [shown])
   const leadProject = useMemo(
@@ -729,14 +744,21 @@ export function Projects() {
             >
               <KonektaCard />
             </div>
+          ) : isPhone && list.length > 1 ? (
+            // Keyed by the tab so a filter change deals a fresh deck from
+            // the first card, rather than carrying over a place in a set
+            // that is no longer there.
+            <ProjectsDeck
+              key={shown}
+              projects={list}
+              swapping={swapping}
+              onOpen={openSheet}
+            />
           ) : (
             <ProjectsFeed
               projects={list}
               swapping={swapping}
-              onOpen={(project, trigger) => {
-                sheetTrigger.current = trigger
-                setSheetId(project.id)
-              }}
+              onOpen={openSheet}
             />
           )
         ) : (
