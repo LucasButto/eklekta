@@ -1214,10 +1214,13 @@ $field-graphite-dark: #262247;
       height: auto;
       aspect-ratio: auto;
       width: $peek-w-wide;
-      translate: none;
-      rotate: none;
+      // The whole move is `translate`, like the phone's, and never
+      // `transform`: the production minifier folds `translate`/`rotate`
+      // written next to a `transform` into it and drops the zeroes, which
+      // let the phone's tilt from the base rule through.
+      rotate: 0deg;
       transform-origin: center;
-      transition: transform $dur-slow $ease-out;
+      transition: translate $dur-slow $ease-out;
       // A share of the card's width stops being the right measure once
       // the card gets very wide: on an odd count's full-row closer 59%
       // is 703px, most of the row. The cap is in rem so it still rides
@@ -1234,7 +1237,7 @@ $field-graphite-dark: #262247;
         -16px -14px 40px rgb(0 0 0 / 22%);
       // Parked far enough below the card that the aluminium edge and the
       // shadow (which reaches ~55px above the lid) stay out of sight.
-      transform: translate($peek-rest-wide, calc(100% + 64px));
+      translate: $peek-rest-wide calc(100% + 64px);
 
       // The camera, centred in the top bezel: a lens with a ring and a
       // glint, so it reads as a camera and not a speck of dust.
@@ -1264,10 +1267,9 @@ $field-graphite-dark: #262247;
     .projects__cell[data-view="grid"]:not(.projects__cell--narrow)
       .project-card:hover
       .project-card__peek {
-      translate: none;
-      rotate: none;
-      transform: translate($peek-rest-wide, $peek-rest-y);
-      transition: transform $dur-slow $ease-out;
+      translate: $peek-rest-wide $peek-rest-y;
+      rotate: 0deg;
+      transition: translate $dur-slow $ease-out;
     }
   }
 }
