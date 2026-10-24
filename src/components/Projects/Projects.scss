@@ -67,20 +67,19 @@ $peek-w-wide: 59%;
 $peek-rest-wide: 9%;
 $peek-rest-y: 10%;
 // Where each landed peek's left edge falls, and so where the title's
-// measure has to stop. Narrow: the tipped phone's leftmost corner, which
-// measured 54–61% of the card across 1280–1920 (the phone is sized off the
-// card height, so it takes more of a taller card). Wide: the laptop at
-// 40%, and then a further step back — the panel is big enough that a
-// title running right up against it would read as crowding rather than as
-// two things sharing a card.
-// In cqw (the card is the container, see below) so the title's own size can
-// be fitted to the same measure: a % does the same job for max-width but
-// cannot be divided into a font-size.
-$head-max: 52cqw;
-$head-max-wide: 40cqw;
-// What a letter of the title's face takes of its font-size, at the heavy end
-// of the set (AMECOM measures 0.96; most words sit at 0.75–0.9).
-$title-em-per-letter: 0.95;
+// measure has to stop, in cqw of the card's content box (the card is the
+// container, see below). Narrow: the tipped phone leans left from a
+// corner below the card, so its edge is furthest left at the top and
+// steps right going down; level with the top of a three-line title it
+// measured 62–63cqw across 1024–1440, and the measure stops ~4cqw short
+// of that. Wide: the laptop's left edge sits at 46cqw at every width (its
+// share of the card is fixed), and the measure stops 3cqw short — the
+// panel is big enough that a title running right up against it would
+// read as crowding. Wide enough that "COMISIONES" and "TRASLADO" fit
+// whole from 1280 up; a word that does not is split at a syllable rather
+// than set smaller (see .project-card__word).
+$head-max: 58cqw;
+$head-max-wide: 43cqw;
 
 // ---- the devices the peek is shown in
 // Narrow cards hold the screenshot in a phone, wide ones in a laptop lid.
@@ -977,6 +976,19 @@ $field-graphite-dark: #262247;
     overflow-wrap: break-word;
   }
 
+  // One word of the name. Every title is set at the same size, so a word
+  // wider than the measure ("LIQUIDACIONES" beside the phone) is split
+  // rather than shrunk: ProjectCard marks its syllables with soft hyphens,
+  // and they only count in here. As an inline-block the word is atomic on
+  // the title's lines — one that fits a line moves down whole instead of
+  // being hyphenated to fill the end of the one before — and max-width
+  // holds the one that cannot to the measure, so it breaks inside.
+  &__word {
+    display: inline-block;
+    max-width: 100%;
+    hyphens: manual;
+  }
+
   &__sub {
     font-size: $text-sm;
     font-weight: $fw-medium;
@@ -1164,19 +1176,6 @@ $field-graphite-dark: #262247;
     max-width: var(--measure);
   }
 
-  // The name is set as large as the card allows, but never so large that
-  // its longest word cannot fit the measure: a word wider than the measure
-  // is broken mid-word (see .project-card__title), and "LIQUIDACIONES"
-  // came out as "LIQUIDACI / ONES". Projects.tsx hands over the length of
-  // that word in --word. Short names never shrink: the min() leaves them at
-  // $card-title.
-  .projects__cell[data-view="grid"] .project-card__title {
-    font-size: min(
-      #{$card-title},
-      calc(var(--measure) / (var(--word, 1) * #{$title-em-per-letter}))
-    );
-  }
-
   // The bento's big cards take the peek differently. They are nearly
   // twice as wide as they are tall, and a strip crossing in flat over
   // that much width reads as a bar being drawn across the card rather
@@ -1276,15 +1275,11 @@ $field-graphite-dark: #262247;
 
 // A card with no screenshot has no peek to keep clear of, so its title
 // takes the whole card — otherwise long single words ("Liquidaciones")
-// were cut mid-word to fit a measure reserved for a panel that never
-// arrives. More specific than both measures above, so it wins at every
-// width and in the wide cards too.
+// were split to fit a measure reserved for a panel that never arrives.
+// More specific than both measures above, so it wins at every width and
+// in the wide cards too.
 .projects__cell[data-view="grid"] .project-card[data-shot="none"] .project-card__head {
   max-width: none;
-}
-
-.projects__cell[data-view="grid"] .project-card[data-shot="none"] .project-card__title {
-  font-size: $card-title;
 }
 
 // Graphite is the one field that cannot survive the theme swap

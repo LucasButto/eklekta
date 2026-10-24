@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, type CSSProperties } from "react";
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useRef,
+  type CSSProperties,
+} from "react";
 import { preload } from "react-dom";
 import type { Project } from "@/types";
 import {
@@ -7,6 +13,7 @@ import {
   PANEL_WIDTHS,
   PHONE_WIDTHS,
 } from "./coverSet";
+import { softHyphenate } from "./softHyphens";
 
 export type CardView = "grid" | "lead" | "rail";
 
@@ -166,9 +173,6 @@ export function ProjectCard({
       style={
         {
           "--i": index,
-          // The longest word of the name, in letters: the title is sized
-          // so that word fits beside the peek (see Projects.scss).
-          "--word": Math.max(...project.title.split(/\s+/).map((w) => w.length)),
         } as CSSProperties
       }
     >
@@ -195,8 +199,20 @@ export function ProjectCard({
               <span className="project-card__eyebrow">{category}</span>
             )}
             <span className="project-card__head">
+              {/* Word by word, so only a word too wide for a line is ever
+                  split, and then at a syllable (see .project-card__word). */}
               <span className="project-card__title">
-                {project.title.toUpperCase()}
+                {project.title
+                  .toUpperCase()
+                  .split(/\s+/)
+                  .map((word, i) => (
+                    <Fragment key={i}>
+                      {i > 0 && " "}
+                      <span className="project-card__word">
+                        {softHyphenate(word)}
+                      </span>
+                    </Fragment>
+                  ))}
               </span>
               {isGrid && (
                 <span className="project-card__sub">{project.subtitle}</span>
