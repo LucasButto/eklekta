@@ -1,7 +1,19 @@
-import { useCallback, useEffect, useRef, type CSSProperties } from "react";
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useRef,
+  type CSSProperties,
+} from "react";
 import { preload } from "react-dom";
 import type { Project } from "@/types";
-import { coverSet, COVER_LARGE_WIDTHS, COVER_WIDTHS } from "./coverSet";
+import {
+  coverSet,
+  COVER_WIDTHS,
+  PANEL_WIDTHS,
+  PHONE_WIDTHS,
+} from "./coverSet";
+import { softHyphenate } from "./softHyphens";
 
 export type CardView = "grid" | "lead" | "rail";
 
@@ -36,11 +48,12 @@ interface ProjectCardProps {
 // is bytes nobody sees.
 const PEEK_SIZES = "(min-width: 1024px) 13vw, 38vw";
 const PEEK_SIZES_WIDE = "(min-width: 1024px) 29vw, 38vw";
-// The opened panel is the detail grid's `lead` track — measured, ~32vw
-// of the viewport from $bp-lg up, and the full container width below
-// it. Declared a notch over each so the slot never comes out narrower
-// than the frame it fills, which is what makes the browser settle for
-// the step below and scale it up.
+// The opened panel is the detail grid's `lead` track, held to 4:5 (see
+// the lead cell in Projects.scss) — measured, at most ~32vw of the
+// viewport from $bp-lg up, and the full container width below it.
+// Declared a notch over each so the slot never comes out narrower than
+// the frame it fills, which is what makes the browser settle for the
+// step below and scale it up.
 const SHOT_SIZES = "(min-width: 1024px) 33vw, 92vw";
 
 /**
@@ -78,28 +91,34 @@ export function ProjectCard({
   const bigPeek = isGrid && span !== "narrow";
   const peekSizes = bigPeek ? PEEK_SIZES_WIDE : PEEK_SIZES;
 
-  // Both the hover peek and the opened panel show the portrait crop.
-  // Automation work has no dedicated vertical, so it falls back to the
-  // landscape `cover` (those files are already portrait).
-  // Some work has no screenshot at all (see Project.cover): its card is
-  // the poster alone — no peek, and no picture once opened.
-  const stem = project.coverLarge ?? project.cover;
-  const hasShot = Boolean(stem);
-  const widths = project.coverLarge ? COVER_LARGE_WIDTHS : COVER_WIDTHS;
-  const set = coverSet(stem ?? "", widths);
-  const align = project.alignImg ?? "center";
+  // Each place the work is shown has a picture of its own, drawn for that
+  // frame (see Project.images): the peek is the laptop in a wide card and
+  // the phone in a narrow one, and the opened panel is the project's 4:5 board.
+  // Some work has none at all: its card is the poster alone — no peek, and
+  // no picture once opened.
+  const art = project.images;
+  const hasShot = Boolean(art);
+  const peek = art
+    ? bigPeek
+      ? coverSet(art.laptop, COVER_WIDTHS)
+      : coverSet(art.phone, PHONE_WIDTHS)
+    : null;
+  const shot = art ? coverSet(art.panel, PANEL_WIDTHS) : null;
+  const set = isLead ? shot : peek;
 
   // Warm the opened panel's step on hover / focus so the FLIP into the
-  // detail isn't waiting on a fetch. The peek already has the same
-  // image at a much smaller step, which is a different resource.
+  // detail isn't waiting on a fetch. The peek is a different picture, so
+  // nothing of it is already on its way.
+  const shotSrc = shot?.src;
+  const shotWebp = shot?.webp;
   const warm = useCallback(() => {
-    if (isLead || !hasShot) return;
-    preload(set.src, {
+    if (isLead || !shotSrc || !shotWebp) return;
+    preload(shotSrc, {
       as: "image",
-      imageSrcSet: set.webp,
+      imageSrcSet: shotWebp,
       imageSizes: SHOT_SIZES,
     });
-  }, [isLead, hasShot, set.src, set.webp]);
+  }, [isLead, shotSrc, shotWebp]);
 
   // Register on a stable callback ref, not an effect: the ref fires
   // during commit, before <Projects>'s FLIP layout effect reads the
@@ -151,7 +170,11 @@ export function ProjectCard({
       data-view={view}
       data-reveal={settled ? "shown" : "hidden"}
       role="listitem"
-      style={{ "--i": index } as CSSProperties}
+      style={
+        {
+          "--i": index,
+        } as CSSProperties
+      }
     >
       <button
         type="button"
@@ -176,8 +199,20 @@ export function ProjectCard({
               <span className="project-card__eyebrow">{category}</span>
             )}
             <span className="project-card__head">
+              {/* Word by word, so only a word too wide for a line is ever
+                  split, and then at a syllable (see .project-card__word). */}
               <span className="project-card__title">
-                {project.title.toUpperCase()}
+                {project.title
+                  .toUpperCase()
+                  .split(/\s+/)
+                  .map((word, i) => (
+                    <Fragment key={i}>
+                      {i > 0 && " "}
+                      <span className="project-card__word">
+                        {softHyphenate(word)}
+                      </span>
+                    </Fragment>
+                  ))}
               </span>
               {isGrid && (
                 <span className="project-card__sub">{project.subtitle}</span>
@@ -186,11 +221,11 @@ export function ProjectCard({
           </>
         )}
 
-        {/* Opened, the card *is* the screenshot; in the bento only part
-            of it shows, and only on hover. The wrapper is aria-hidden
+        {/* Opened, the card *is* the picture; in the bento a device holds
+            a different one, and only on hover. The wrapper is aria-hidden
             (the button already has its own label), so the alt below is
             for crawlers and image search rather than for screen readers. */}
-        {hasShot && (isLead || isGrid) && (
+        {set && (isLead || isGrid) && (
           <span
             className={isLead ? "project-card__shot" : "project-card__peek"}
             aria-hidden="true"
@@ -209,7 +244,6 @@ export function ProjectCard({
                 loading={isLead ? "eager" : "lazy"}
                 decoding="async"
                 fetchPriority={isLead ? "high" : undefined}
-                data-align={align}
               />
             </picture>
           </span>

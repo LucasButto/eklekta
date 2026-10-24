@@ -48,31 +48,33 @@ export interface Project {
    */
   tint?: string
   /**
-   * Path stem for the landscape cover — `${cover}-{400,800,1200}.{webp,jpg}`
-   * are the real files (see coverSet in ProjectCard). The fallback for
-   * projects with no portrait crop of their own. Optional: work with no
-   * public screenshot (desktop tools, internal apps) is shown as the
-   * colour poster alone, with no peek and no picture in the dialog.
+   * The project's pictures — one per place it is shown, each drawn for
+   * that frame so none of them is cropped. Every value is a path stem
+   * (see coverSet). Optional, all or nothing: work with no public
+   * picture (desktop tools, internal apps) is the colour poster alone,
+   * with no peek and no picture once opened. They live in
+   * `public/images/projects/<filter tab>/`.
    */
-  cover?: string
-  /**
-   * Path stem for the portrait crop — `${coverLarge}-{440,832}.{webp,jpg}`.
-   * It is the screenshot that slides in from the card's right edge on
-   * hover and, larger, the one framed inside the opened project's panel.
-   * Optional: automation work has no dedicated vertical, so it falls
-   * back to `cover` (those are already portrait).
-   */
-  coverLarge?: string
-  /**
-   * Which part of the screenshot carries the brand. Every one is a wide
-   * capture of a live site dropped into a portrait frame, so
-   * object-fit: cover throws most of the width away — 'left' or 'right'
-   * keeps whichever edge holds the logo and headline instead of
-   * centring on whatever happens to sit in the middle. Optional,
-   * defaults to 'center' when a project has no lopsided crop to worry
-   * about.
-   */
-  alignImg?: 'left' | 'center' | 'right'
+  images?: {
+    /**
+     * Landscape — `${laptop}-{400,800,1200}.{webp,jpg}`. The laptop lid
+     * the bento's wide cards raise on hover, and the picture the feed,
+     * the deck and the sheet show below $bp-lg.
+     */
+    laptop: string
+    /**
+     * Portrait — `${phone}-{440,832}.{webp,jpg}`. The phone the narrow
+     * cards tip in on hover.
+     */
+    phone: string
+    /**
+     * 4:5 — `${panel}-{560,840,1122}.{webp,jpg}`. The picture the
+     * opened project's panel shows — the identity board of a website, the
+     * step by step of an automation; the panel keeps this proportion so
+     * it is never cropped.
+     */
+    panel: string
+  }
   /**
    * External link to the live site. Optional: automation and CRM work has
    * no public URL, so the dialog just drops the "Ver sitio" button.

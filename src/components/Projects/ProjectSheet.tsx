@@ -290,13 +290,11 @@ export function ProjectSheet({ project: next, onClose }: ProjectSheetProps) {
 
   if (!project) return null;
 
-  // The LANDSCAPE cover, not the portrait `-V` crop the desktop panel
-  // uses. That panel is a tall column, so a 0.71-ratio file fits it; the
-  // sheet's frame is 16:10, and feeding it the portrait crop meant
-  // object-fit threw away 56% of every image — on Prosperi it sliced
-  // straight through the wordmark in the artwork. Same picture, the
-  // orientation this frame was built for.
-  const set = project.cover ? coverSet(project.cover, COVER_WIDTHS) : null;
+  // A LANDSCAPE picture: the sheet's frame is 16:10, and a portrait one
+  // would have object-fit throw most of it away. That is the laptop
+  // picture drawn for the desktop bento.
+  const stem = project.images?.laptop;
+  const set = stem ? coverSet(stem, COVER_WIDTHS) : null;
 
   return (
     <dialog
@@ -370,7 +368,6 @@ export function ProjectSheet({ project: next, onClose }: ProjectSheetProps) {
                   alt={`${project.title}: ${project.subtitle}`}
                   decoding="async"
                   fetchPriority="high"
-                  data-align={project.alignImg ?? "center"}
                 />
               </picture>
             )}
