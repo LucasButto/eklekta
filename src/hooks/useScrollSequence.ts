@@ -19,14 +19,14 @@ const READ_LINE = 0.5;
  * is short enough to read as a catch, and it can never trap — it ends
  * on a clock.
  */
-const HOLD_MS = 200;
+export const HOLD_MS = 200;
 
 /**
  * The escape hatch. Keep scrolling hard through the beat — this much
  * wheel distance while it holds — and it lets go early, so a reader who
  * does not want to stop never has to wait it out.
  */
-const ABORT_PX = 360;
+export const ABORT_PX = 360;
 
 /**
  * How far a service has to get from the line before it may be held
@@ -57,7 +57,7 @@ const CLEAR_PX = 250;
  * the page has been still for COOLDOWN.
  */
 const FLING_DIST = 2000;
-const FLING_JUMP = 1200;
+export const FLING_JUMP = 1200;
 const FLING_COOLDOWN = 400;
 
 /**
