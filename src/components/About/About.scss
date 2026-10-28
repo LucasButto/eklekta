@@ -1,37 +1,25 @@
 @use "sass:math";
 @use "styles" as *;
 
-// The stage (the big photo) and the peek (the blurred one waiting off
-// the right edge) both hold the ratio of the photo they show — width
-// comes from the grid, height follows — so a resize only ever scales a
-// photo, never re-crops it. Two cuts of each photo (see About.tsx): the
-// landscape original on phones and from $bp-3xl (1080p) up, and a square
-// recut across the laptop band in between, where the stage column is too
-// narrow for a landscape frame to keep any height. The originals are not
-// one ratio (1.39 to 1.78): 16:10 is where the widest one (escala) keeps
-// both the arch and the shoe, and the taller three only give up floor or
-// sky, since the crop is anchored to the top (see the img below).
+// The phone rail's photo: the landscape original, held to its ratio.
 $ratio-photo: math.div(16, 10);
-$ratio-notebook: 1;
 
-// The travel. TRAVEL_MS in About.tsx runs the geometry half of the same
-// move and has to match; kept in sync by eye.
-$travel: 850ms;
+// The step change on the stage: the photos cross-fade over $fade while
+// drifting $drift sideways — the old one off toward one side, the new
+// one in from the other. A nudge, not a slide in from the frame's edge:
+// a share of the stage's width (cqw — the stage is the container), and
+// every photo runs exactly that far past both of the stage's sides, so
+// the drift never pulls an edge into view (see &__slide).
+$fade: 700ms;
 
-// The corner catch-up (see &__slide's transition). Whichever pair of
-// corners is landing in a bleed this move stays at its rounded start
-// value until $radius-delay has passed, then snaps flat over this
-// short a window — ending exactly as $travel does, so the flattening
-// reads as the photo settling into place, not squaring off mid-flight.
-$radius-settle: $dur-fast;
-$radius-delay: $travel - $radius-settle;
+// The entrance from the hero (see &__split's entrance block): slower than
+// the page's $dur-reveal on purpose.
+$entrance: 1200ms;
+$drift: 4cqw;
 
 // One beat for the whole step change below $bp-lg: the photo, the title
 // and the body come in on the SAME animation, each $cascade-step after the
-// one before it (photo 0, title 1×, body 2×). What made it read as two
-// separate animations was uneven spacing — the title used to wait 380ms
-// for the photo but the body only 130ms for the title — so the step is
-// the same everywhere, and it is the gap the body already had.
+// one before it (photo 0, title 1×, body 2×).
 $cascade-step: 130ms;
 
 .about {
@@ -51,6 +39,38 @@ $cascade-step: 130ms;
   z-index: 2;
   background-color: var(--bg);
 
+  // The seam with the hero. Without this the hero photo ended on a hard
+  // line against the page colour, and the air above the heading read as
+  // a hole rather than a pause. A band of --bg fading to clear, hung off
+  // this section's top edge so it lies over the bottom of the hero photo
+  // and rides up with the section as the hero zooms out — the photo
+  // dissolves into the page instead of being cut off. Eased stops, not
+  // a straight two-stop ramp, so the fade has no visible start line.
+  // It reaches a hair into the section (same colour, so unseen): butted
+  // exactly against the edge, a hairline of hero still showed at the seam.
+  &::before {
+    position: absolute;
+    inset-inline: 0;
+    bottom: calc(100% - 2px);
+    height: clamp(6rem, 22svh, 13rem);
+    background: linear-gradient(
+      to top,
+      var(--bg),
+      color-mix(in srgb, var(--bg) 82%, transparent) 25%,
+      color-mix(in srgb, var(--bg) 45%, transparent) 55%,
+      color-mix(in srgb, var(--bg) 14%, transparent) 80%,
+      transparent
+    );
+    pointer-events: none;
+    content: "";
+  }
+
+  // Clear air above, then the split runs to the section's bottom edge:
+  // the next section's own top margin is the gap below.
+  @include up($bp-lg) {
+    padding-block: calc(#{$section-y} + #{$section-gap} * 2) 0;
+  }
+
   &__intro {
     @include container;
 
@@ -66,107 +86,168 @@ $cascade-step: 130ms;
     .text-slab::before {
       inset-block: 0.16em -0.02em;
     }
-  }
 
-  // ------------------------------------------------ the carousel
-  // Proceso's four steps, walked one at a time. Every slide is a grid
-  // item of this one grid for the whole life of the section — only the
-  // slot it is placed in changes — so the photo that travels from the
-  // peek into the stage stays the same DOM node the whole way and a
-  // plain FLIP (see About.tsx) carries it.
-  //
-  // Stacked below $bp-lg: photo, copy, controls. The peek has nowhere to
-  // live in one column, so it drops out and the slides simply cross-fade.
-  &__feature {
-    @include container;
-
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: $space-lg;
-    align-items: center;
-
-    // The whole carousel — photo, copy and the gaps between — is the swipe
-    // surface below $bp-lg (see About.tsx). `pan-y` keeps the page's own
-    // vertical scroll and hands the horizontal axis to the gesture; it
-    // used to be set on the active photo alone, which is why a swipe over
-    // the text did nothing at all.
-    @include down($bp-lg) {
-      touch-action: pan-y;
-    }
-
+    // Inside the text column, which sets its width (see &__text). The
+    // shared display size is set for a full-width row; this column is
+    // about half that, so the heading steps down to stay inside it.
     @include up($bp-lg) {
-      // The stage column gives up width to the panel next to it — the
-      // copy reads better with the extra room than the photo needed it.
-      // The photo's height follows its width (see $ratio-notebook).
-      grid-template-columns:
-        minmax(0, 0.73fr)
-        minmax(19rem, 1fr)
-        minmax(0, 0.36fr);
-      gap: clamp(1.5rem, 0.75rem + 2.4vw, 3.5rem);
-    }
+      max-width: none;
+      margin: 0;
+      padding-inline: 0;
 
-    // Hovering the advance button — or the peek photo itself, now that
-    // it's clickable too — lifts and sharpens that photo, so the link
-    // between either control and the incoming step reads before the
-    // first click.
-    &:has(.about__nav-btn--next:hover),
-    &:has(.about__nav-btn--next:focus-visible),
-    &:has(.about__slide[data-slot="next"]:hover),
-    &:has(.about__slide[data-slot="next"]:focus-visible) {
-      .about__slide[data-slot="next"] {
-        img {
-          filter: blur(1px) saturate(0.95);
-        }
-
-        &::after {
-          opacity: 0.1;
-        }
+      .section-heading__title {
+        font-size: clamp(2.5rem, 0.5rem + 3.5vw, 4.5rem);
       }
     }
   }
 
-  &__slide {
-    position: relative;
-    grid-area: 1 / 1;
-    aspect-ratio: $ratio-photo;
-    margin: 0;
-    overflow: hidden;
-    background-color: var(--surface-2);
-    border-radius: $radius-md;
-    // Geometry belongs to the grid and to the FLIP; the soft-focus half
-    // of the move is a transition, and so are the corners — the bleed
-    // sides (border-*-radius reset to 0 in the up($bp-lg) slot rules
-    // below) would otherwise snap to square the instant data-slot
-    // changes, a frame before the FLIP even starts moving the photo.
-    // $radius-settle here is the base (immediate) speed — the corner a
-    // slot change is UN-bleeding rounds off at this pace, right away.
-    // The two slot rules below override the delay on whichever pair is
-    // headed the other way, into a bleed, so THAT pair holds its round
-    // corner through the flight and only flattens at the very end (see
-    // $radius-delay) instead of squaring off before the photo has
-    // visibly gone anywhere.
-    transition:
-      opacity $travel $ease-out,
-      border-start-start-radius $radius-settle $ease-out,
-      border-end-start-radius $radius-settle $ease-out,
-      border-start-end-radius $radius-settle $ease-out,
-      border-end-end-radius $radius-settle $ease-out;
+  // ------------------------------------------------ desktop split
+  // Half and half: heading and the current step on the left, the photo
+  // filling the right half of the screen, edge to edge and one screen
+  // tall — so it fills the screen exactly when the scroll stops on it
+  // (useScrollBeat), on the way down and on the way back up. The photo
+  // stays one full screen tall whether the navbar is showing or not —
+  // unlike the Servicios panel, it never shrinks to make room for the
+  // bar.
+  &__split {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 
-    // Which edge the photo slides in from below $bp-lg — the same
-    // convention &__copy uses, and read from the same place (About.tsx
-    // writes `data-direction` on both): forward brings it in from the
-    // right, going back from the left. Unused above $bp-lg, where the
-    // FLIP owns the slide's movement.
+  // The text block is one group — heading, then the step right under
+  // it — centred in its half, both ways. Pinned to the container edge
+  // instead, it sat far left of a narrow column on a wide screen and
+  // crowded the photo, so the whole page read as leaning right.
+  &__text {
+    align-self: center;
+    display: flex;
+    flex-direction: column;
+    gap: $space-xl;
+    align-items: center;
+    justify-content: center;
+    padding: $space-xl var(--gutter);
+
+    // Wide enough for the heading's longest line ("que tu negocio") at
+    // every size the heading steps through; rem, so it rides the root
+    // ramp along with the heading.
+    > * {
+      width: min(100%, 44rem);
+    }
+  }
+
+  // Half the screen wide and one screen tall, so its ratio follows the
+  // screen: 0.89 on a 16:10 window, about square on most 16:9 browser
+  // windows, ~1.3 on an ultrawide. Square photos cover all of them with
+  // little lost. Where the copy beside it runs taller than the screen (a
+  // short laptop window) the row grows with it and the photo holds still
+  // at the top while the copy scrolls by — the way the Servicios panel
+  // does — instead of leaving a band of empty page above or below it.
+  &__stage {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    display: grid;
+    height: 100svh;
+    overflow: hidden;
+    // No fill of its own: while the photo slides in, the part of the frame
+    // it has not reached yet is just page.
+    // What $drift's cqw is measured against.
+    container-type: inline-size;
+
+    // Which way the photos drift on a step change (see &__slide):
+    // forward, the old one leaves to the left and the new one comes in
+    // from the right; back, the mirror. Set from About.tsx's
+    // `stepDirection`, the same value the copy's own slide reads.
     --dir: 1;
 
     &[data-direction="backward"] {
       --dir: -1;
     }
+  }
 
-    // <picture> is inline by default, so the img's `height: 100%` below had
-    // no box to resolve against and fell back to its natural ratio — the
-    // photo stopped short and the frame's grey showed beneath it. A block
-    // picture that fills the frame gives `object-fit: cover` its box.
+  &__photos {
+    display: grid;
+    grid-area: 1 / 1;
+  }
+
+  // The entrance from the hero: the heading and the step come in from the
+  // left, the photo from the right, on their own clock — slower than the
+  // page's other Reveals — once the split starts to show (data-entered,
+  // set by useScrollEntrance a little after its top edge comes on
+  // screen). Starting that early is what lets a slower entrance still be
+  // done by the time the photo is about halfway into view. Reveal's own
+  // trigger is overridden here so all three share the one start.
+  @include up($bp-lg) {
+    &__intro [data-reveal],
+    &__panel[data-reveal],
+    &__photos[data-reveal] {
+      transition:
+        opacity $entrance $ease-out,
+        transform $entrance $ease-out;
+    }
+
+    &__intro [data-reveal],
+    &__panel[data-reveal] {
+      opacity: 0;
+      transform: translate3d(-12rem, 0, 0);
+    }
+
+    &__panel[data-reveal] {
+      transition-delay: 150ms;
+    }
+
+    // Starts most of the way home — a quarter of its width short, with
+    // three quarters already where they end up — and fades in as it
+    // covers the rest, rather than travelling in from the screen's edge.
+    &__photos[data-reveal] {
+      opacity: 0;
+      transform: translate3d(25%, 0, 0);
+    }
+
+    &__split[data-entered] {
+      .about__intro [data-reveal],
+      .about__panel[data-reveal],
+      .about__photos[data-reveal] {
+        opacity: 1;
+        transform: none;
+      }
+    }
+  }
+
+  // On a step change two things used to open a gap. The drift pulled a
+  // photo's edge into the frame, leaving a strip with only the other
+  // photo (or nothing) in it; and with one photo fading out while the
+  // other faded in, there was a stretch where neither was solid and the
+  // page showed through both. So every photo overscans the stage by
+  // $drift on each side — the overhang is clipped, and no drift can bring
+  // an edge into view — and the new photo is laid over the old one and
+  // fades in on top while the old one stays solid underneath, drifting
+  // off. The old one still reads as fading out: it is being covered.
+  &__slide {
+    grid-area: 1 / 1;
+    margin: 0 calc(-1 * #{$drift});
+    opacity: 0;
+
+    &[data-state="active"] {
+      z-index: 2;
+      opacity: 1;
+      animation: about-photo-in $fade $ease-out both;
+    }
+
+    // Holds its end frame (`both`: transparent, drifted) until the next
+    // change turns it back into a plain idle slide, which looks the same.
+    &[data-state="leaving"] {
+      z-index: 1;
+      animation: about-photo-out $fade $ease-out both;
+    }
+
+    // A plain swap: no fade, no drift.
+    &[data-state] {
+      @include reduced-motion {
+        animation: none;
+      }
+    }
+
     picture {
       display: block;
       width: 100%;
@@ -178,215 +259,28 @@ $cascade-step: 130ms;
       width: 100%;
       height: 100%;
       object-fit: cover;
-      // Heads sit high in every photo; what a landscape original loses to
-      // $ratio-photo comes off the bottom.
+      // Heads sit high in every photo: whatever the ratio takes off
+      // vertically comes off the bottom.
       object-position: 50% 0%;
-      // On the img, not the figure: blurring the frame itself would eat
-      // its own rounded edges, whereas the frame clips a blurred picture
-      // cleanly.
-      transition: filter $travel $ease-out;
-    }
-
-    // The scrim that pushes the waiting photo back behind the copy. In
-    // --bg so it reads as distance in either theme rather than a wash.
-    &::after {
-      position: absolute;
-      inset: 0;
-      background-color: var(--bg);
-      opacity: 0;
-      transition: opacity $travel $ease-out;
-      pointer-events: none;
-      content: "";
-    }
-
-    // ---- slots
-    // Above .about__panel's own z-index (3): the incoming photo's FLIP
-    // carries it from the peek column, straight across the panel's own
-    // column, into the stage — it has to ride over the copy for that
-    // crossing to read, not duck behind it.
-    //
-    // Doubles as the back control (see isActive in About.tsx): clicking
-    // it sends it the other way, over to the peek side.
-    &[data-slot="active"] {
-      z-index: 4;
-      opacity: 1;
-      cursor: pointer;
-
-      &:focus-visible {
-        outline: 2px solid var(--focus);
-        outline-offset: 2px;
-      }
-    }
-
-    // The step that just left. It holds the stage at opacity 0 while the
-    // new photo flies in over it, so it fades in place instead of
-    // darting off sideways; About.tsx parks it once the travel is done.
-    &[data-slot="out"] {
-      z-index: 1;
-      opacity: 0;
-    }
-
-    &[data-slot="next"],
-    &[data-slot="rest"] {
-      img {
-        filter: blur(3px) saturate(0.8);
-      }
-
-      &::after {
-        opacity: 0.34;
-      }
-    }
-
-    // Doubles as the advance control (see isNext in About.tsx) — it
-    // needs its own cursor and focus ring, not just the arrow button's.
-    &[data-slot="next"] {
-      z-index: 1;
-      opacity: 1;
-      cursor: pointer;
-
-      &:focus-visible {
-        outline: 2px solid var(--focus);
-        outline-offset: 2px;
-      }
-    }
-
-    &[data-slot="rest"] {
-      z-index: 0;
-      opacity: 0;
-    }
-
-    // One column: only the stage exists, and the deck behind it is not
-    // laid out at all — which is also what tells the FLIP to sit this
-    // one out (a slide measuring zero at either end is skipped).
-    @include down($bp-lg) {
-      &[data-slot="next"],
-      &[data-slot="rest"] {
-        display: none;
-      }
-
-      // The stage is the swipe surface here (see About.tsx). `pan-y`
-      // hands the vertical axis to the page — a thumb scrolling down
-      // over the photo still scrolls the page — and keeps the
-      // horizontal one for the gesture, which is what stops the browser
-      // treating a sideways drag as an overscroll.
-      &[data-slot="active"] {
-        touch-action: pan-y;
-
-        // The photo arrives the way the copy does: a short slide from
-        // --dir's edge with a fade, the same keyframe. Here — where
-        // there is no peek slot for it to travel from — it used to
-        // simply appear, because the opacity transition above cannot run
-        // on an element that has just come out of display: none. An
-        // animation can, and it restarts each time a slide BECOMES
-        // active, which is exactly when the copy remounts.
-        //
-        // No delay, on purpose: it is the first thing in the cascade,
-        // and the title and body follow at 1× and 2× $cascade-step (see
-        // &__copy). The same duration and curve as they have, so the
-        // three read as one movement and not as a photo and then some
-        // text.
-        animation: about-copy-in $dur-slow $ease-out both;
-
-        @include reduced-motion {
-          animation: none;
-        }
-      }
-    }
-
-    // The laptop band shows the square cut (NOTEBOOK_MEDIA in About.tsx);
-    // 1080p and up go back to the landscape original.
-    @include up($bp-lg) {
-      aspect-ratio: $ratio-notebook;
-    }
-
-    @include up($bp-3xl) {
-      aspect-ratio: $ratio-photo;
-    }
-
-    @include up($bp-lg) {
-      &[data-slot="active"],
-      &[data-slot="out"] {
-        @include bleed-start;
-
-        grid-area: 1 / 1;
-        border-start-start-radius: 0;
-        border-end-start-radius: 0;
-        // These two are bleeding to the left edge in this slot — held
-        // rounded (see the base transition) until $radius-delay, then
-        // flatten. Order matches the shorthand above: opacity,
-        // start-start, end-start, start-end, end-end.
-        transition-delay: 0s, $radius-delay, $radius-delay, 0s, 0s;
-      }
-
-      &[data-slot="next"],
-      &[data-slot="rest"] {
-        @include bleed-end;
-
-        grid-area: 1 / 3;
-        border-start-end-radius: 0;
-        border-end-end-radius: 0;
-        // Mirrored: these two bleed right in this slot, so they are the
-        // ones held rounded until the end here instead.
-        transition-delay: 0s, 0s, 0s, $radius-delay, $radius-delay;
-      }
     }
   }
 
   &__panel {
-    position: relative;
-    z-index: 3;
-    grid-area: 2 / 1;
     display: flex;
     flex-direction: column;
     gap: $space-md;
     align-items: flex-start;
-
-    @include up($bp-lg) {
-      grid-area: 1 / 2;
-      // The photo travelling from the peek to the stage rides over this
-      // whole column (see &__slide's z-index) — it briefly covers the
-      // copy as it passes, the way a card would slide across a desk.
-      padding: clamp(1rem, 2vw, 2rem) clamp(1rem, 0.4rem + 1.6vw, 2.25rem);
-      background-color: var(--bg);
-      border-radius: $radius-md;
-    }
   }
 
-  // The live region — a stable wrapper, since the copy inside it is
-  // keyed and remounts on every step. Reserves the tallest step's own
-  // box (measured against the longest of the four `detail` paragraphs,
-  // at $bp-lg — the narrowest column, where wrapping runs longest) so
-  // every step renders the same height here regardless of copy length;
-  // combined with &__nav's margin-top, that's what keeps the controls
-  // from shifting when the text changes.
+  // Every step's copy sits in this one cell — the invisible sizers make
+  // it as tall as the longest step, the live one sits at its top.
   &__copy-slot {
+    display: grid;
     width: 100%;
 
-    // Below $bp-lg the slot used to be exactly as tall as the step being
-    // shown, so the controls under it rose and fell with the word count
-    // (the reserved min-height below only exists from $bp-lg). About.tsx
-    // now renders an invisible copy of every step into the same grid
-    // cell, which makes the cell as tall as the LONGEST of them at
-    // whatever width the phone happens to be — no measured number to go
-    // stale. The visible copy sits at the top of it, so the title never
-    // moves either.
-    @include down($bp-lg) {
-      display: grid;
-
-      > * {
-        grid-area: 1 / 1;
-        align-self: start;
-      }
-    }
-
-    @include up($bp-lg) {
-      min-height: 24rem;
-      // Centers .about__copy in this reserved box instead of pinning it
-      // to the top — a short step's text used to just sit high with all
-      // the slack left underneath it.
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
+    > * {
+      grid-area: 1 / 1;
+      align-self: start;
     }
   }
 
@@ -396,40 +290,19 @@ $cascade-step: 130ms;
     gap: $space-sm;
     align-items: flex-start;
 
-    // Which side the copy rides in from — the same edge the photo
-    // itself travels from (peek → stage is a straight horizontal FLIP,
-    // no vertical move), so the text reads as part of the same card
-    // arriving rather than drifting up on its own. Forward mirrors the
-    // incoming photo (from the right); backward mirrors the outgoing
-    // one's retreat (from the left). Set from About.tsx's `direction`.
+    // Which side the copy rides in from: forward from the right, back
+    // from the left. Set from About.tsx's `stepDirection`.
     --dir: 1;
 
     &[data-direction="backward"] {
       --dir: -1;
     }
 
-    // Title, then body — one after another, not the whole block arriving
-    // at once. Same construction Proyectos uses to bring in an opened
-    // project's readout (.projects__readout > *): held briefly, then
-    // each line's own fade + slide, stepped by --line. Starting at the
-    // same instant as the photo (no hold at all) buried the two reveals
-    // into one blur instead of reading as a sequence — but waiting the
-    // full $travel for the photo to land left the panel empty too long.
-    // This splits the difference: the text starts partway through the
-    // photo's travel, not at either end of it.
+    // Title, then body, each a $cascade-step behind the other, starting
+    // a beat into the photo's cross-fade.
     > * {
       animation: about-copy-in $dur-slow $ease-out both;
-      animation-delay: calc(380ms + var(--line, 0) * 130ms);
-
-      // Below $bp-lg there is no travelling photo to wait for — it slides
-      // in with the copy — so the 380ms hold above has nothing to hold
-      // for. The copy joins the cascade instead: title one step after the
-      // photo, body one step after the title. (--line is 0 for the title
-      // and 1 for the body; the photo itself sits at 0, see
-      // &__slide[data-slot='active'].)
-      @include down($bp-lg) {
-        animation-delay: calc((var(--line, 0) + 1) * #{$cascade-step});
-      }
+      animation-delay: calc((var(--line, 0) + 1) * #{$cascade-step});
     }
 
     > :nth-child(1) {
@@ -682,9 +555,36 @@ $cascade-step: 130ms;
   }
 }
 
-// Each line slides into place from --dir's edge — mirroring the
-// photo's own left/right FLIP instead of the plain rise Proyectos'
-// projects-readout-in uses. No `to` block: `both` plus the element's
+// The stage photos (see &__slide). In: from transparent and $drift off
+// to --dir's side, to the slide's own resting state. Out: drifts the
+// other way the whole time but stays solid until the new photo on top
+// of it has all but finished fading in — only then does it drop out,
+// unseen, so the frame is never see-through.
+@keyframes about-photo-in {
+  from {
+    opacity: 0;
+    transform: translateX(calc(var(--dir, 1) * #{$drift}));
+  }
+}
+
+@keyframes about-photo-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+
+  90% {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(calc(var(--dir, 1) * -#{$drift}));
+  }
+}
+
+// Each line slides into place from --dir's edge, instead of the plain
+// rise Proyectos' projects-readout-in uses. No `to` block: `both` plus the element's
 // own resting opacity/transform already is the end state.
 @keyframes about-copy-in {
   from {
